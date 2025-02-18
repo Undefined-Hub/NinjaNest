@@ -1,7 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
-
+const { generateToken } = require("../utils/jwtHelper");
 // ! Register a new user
 const registerUser = async (req, res) => {
   const { name, username, email, password } = req.body;
@@ -17,9 +17,9 @@ const registerUser = async (req, res) => {
     newUser.password = await bcrypt.hash(password, salt); // ! Hash the password
     await newUser.save(); // ! Save the user to the database
     res.status(201).json({ message: "User registered successfully" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
+  } 
+  catch (error) {
+    next(error);
   }
 };
 
@@ -43,18 +43,11 @@ const loginUser = async (req, res) => {
       },
     };
     // ! Generate a token & send with the user id
-    jwt.sign(
-      payload,
-      process.env.JWT_SECRET,
-      { expiresIn: 3600 },
-      (err, token) => {
-        if (err) throw err;
-        res.json({ token });
-      }
-    );
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
+    const token = generateToken(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+    res.status(200).json({ message: "Logged in successfully", token });
+  } 
+  catch (error) {
+    next(error);
   }
 };
 

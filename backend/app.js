@@ -1,7 +1,7 @@
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
-const { connectToMongo } = require("./src/config/db");
+const connectToMongo = require("./src/config/db");
 const authRoutes = require("./src/routes/authRoutes");
 const userRoutes = require("./src/routes/userRoutes");
 
@@ -13,7 +13,7 @@ app.use(express.json());
 app.use(morgan('dev'));
 
 app.get('/', (req, res) => {
-    res.send('Welcome to the Salon Management App!');
+    res.send('Welcome to the Ninja Nest App!');
   });
 
 // Test route for error handling
@@ -29,7 +29,7 @@ app.use("/api/auth",  authRoutes);
 app.use("/api/user", userRoutes);
 
 // Error handling middleware
-const { errorHandler } = require('./middlewares/errorHandler');
+const { errorHandler } = require('./src/middlewares/errorHandler');
 app.use(errorHandler);
 
 // Database connection
