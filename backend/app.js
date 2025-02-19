@@ -4,10 +4,14 @@ const cors = require('cors');
 const connectToMongo = require("./src/config/db");
 const authRoutes = require("./src/routes/authRoutes");
 const userRoutes = require("./src/routes/userRoutes");
+
 const mailRoutes = require("./src/routes/mailRoutes");
 const propertyRoutes = require("./src/routes/propertyRoutes");
+
+const rentRoutes = require("./src/routes/monthRentRoutes");
 const reviewRoutes = require("./src/routes/reviewRoutes");
 const bookingRoutes = require("./src/routes/bookingRoutes");
+
 const app = express();
 
 // Middleware
@@ -31,6 +35,14 @@ app.get('/test-error', (req, res, next) => {
 app.use("/api/auth",  authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/email", mailRoutes);
+
+app.use("/api/mail", mailRoutes);
+app.use("/api/property", propertyRoutes);
+
+
+app.use("/api/review", reviewRoutes);
+app.use("/api/booking", bookingRoutes);
+app.use("/api/rents", rentRoutes);
 
 // Error handling middleware
 const { errorHandler } = require('./src/middlewares/errorHandler');

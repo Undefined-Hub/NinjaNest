@@ -6,7 +6,9 @@ const User = require("../models/User");
 const getBookings = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const bookings = await Booking.find({ property_id: id }).populate("user_id landlord_id");
+        const bookings = await Booking.find({ property_id: id })
+            .populate("user_id", "_id name")
+            .populate("landlord_id", "_id name");
         res.status(200).json(bookings);
     } catch (error) {
         next(error);
@@ -17,7 +19,9 @@ const getBookings = async (req, res, next) => {
 const getBookingById = async (req, res, next) => {
     try {
         const { bid } = req.params;
-        const booking = await Booking.findById(bid).populate("user_id landlord_id property_id");
+        const bookings = await Booking.find({ property_id: id })
+            .populate("user_id", "_id name")
+            .populate("landlord_id", "_id name");
         if (!booking) return res.status(404).json({ message: "Booking not found" });
         res.status(200).json(booking);
     } catch (error) {

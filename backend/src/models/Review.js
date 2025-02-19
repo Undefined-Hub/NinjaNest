@@ -13,13 +13,13 @@ const ReviewSchema = new Schema(
       type: Schema.Types.ObjectId,
       // type: String,
       required: true,
-      // ref: "User",
+      ref: "User",
     },
     landlord_id: {
       type: Schema.Types.ObjectId,
       // type: String,
       required: true,
-      // ref: "User",
+      ref: "User",
     },
     comment: {
       type: String,
