@@ -6,7 +6,8 @@ const authRoutes = require("./src/routes/authRoutes");
 const userRoutes = require("./src/routes/userRoutes");
 const mailRoutes = require("./src/routes/mailRoutes");
 const propertyRoutes = require("./src/routes/propertyRoutes");
-
+const reviewRoutes = require("./src/routes/reviewRoutes");
+const bookingRoutes = require("./src/routes/bookingRoutes");
 const app = express();
 
 // Middleware
@@ -29,8 +30,6 @@ app.get('/test-error', (req, res, next) => {
 // Routes
 app.use("/api/auth",  authRoutes);
 app.use("/api/user", userRoutes);
-app.use("/api/mail", mailRoutes);
-app.use("/api/property", propertyRoutes);
 
 // Error handling middleware
 const { errorHandler } = require('./src/middlewares/errorHandler');
