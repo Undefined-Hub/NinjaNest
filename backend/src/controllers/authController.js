@@ -1,7 +1,8 @@
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const { generateToken } = require("../utils/jwtHelper");
+const { sendChangePasswordMail } = require("./mailController");
+
 // ! Register a new user
 const registerUser = async (req, res) => {
   const { name, username, email, password } = req.body;
@@ -70,6 +71,8 @@ const changePassword = async (req, res, next) => {
       const salt = await bcrypt.genSalt(10); // ! Salt to hash the password
       user.password = await bcrypt.hash(newPassword, salt); // ! Hash the new password
       await user.save(); // ! Save the user to the database
+      // TODO: Send a mail to the user that the password has been changed
+      sendChangePasswordMail(email);
       res.status(200).json({ message: "Password changed successfully" });
     } catch (error) {
       next(error);

@@ -30,6 +30,7 @@ app.get('/test-error', (req, res, next) => {
 // Routes
 app.use("/api/auth",  authRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/email", mailRoutes);
 
 // Error handling middleware
 const { errorHandler } = require('./src/middlewares/errorHandler');
