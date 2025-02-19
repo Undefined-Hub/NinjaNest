@@ -29,6 +29,8 @@ app.get('/test-error', (req, res, next) => {
 // Routes
 app.use("/api/auth",  authRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/mail", mailRoutes);
+app.use("/api/property", propertyRoutes);
 
 // Error handling middleware
 const { errorHandler } = require('./src/middlewares/errorHandler');
