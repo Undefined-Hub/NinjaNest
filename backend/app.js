@@ -4,7 +4,7 @@ const cors = require('cors');
 const connectToMongo = require("./src/config/db");
 const authRoutes = require("./src/routes/authRoutes");
 const userRoutes = require("./src/routes/userRoutes");
-
+const mailRoutes = require("./src/routes/mailRoutes");
 const app = express();
 
 // Middleware
@@ -27,6 +27,7 @@ app.get('/test-error', (req, res, next) => {
 // Routes
 app.use("/api/auth",  authRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/email", mailRoutes);
 
 // Error handling middleware
 const { errorHandler } = require('./src/middlewares/errorHandler');
