@@ -2,11 +2,29 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const { generateToken, verifyToken } = require("../utils/jwtHelper");
 const { sendChangePasswordMail } = require("./mailController");
+const { validateInput } = require("../utils/validateInput");
+const z = require("zod");
+
+// ! Validation schema
+// ! Register schema
+const registerSchema = z.object({
+  name: z.string().min(3).max(50),
+  username: z.string().min(3).max(50),
+  email: z.string().email(),
+  password: z.string().min(6),
+});
+
+// ! Login schema
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+});
+
 
 // ! Register a new user
-const registerUser = async (req, res) => {
-  const { name, username, email, password } = req.body;
+const registerUser = async (req, res,next) => {
   try {
+    const { name, username, email, password } = validateInput(registerSchema, req.body);
     // ! Check if user already exists
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -25,8 +43,8 @@ const registerUser = async (req, res) => {
 
 // ? Login user
 const loginUser = async (req, res, next) => {
-  const { email, password } = req.body;
   try {
+    const { email, password } = validateInput(loginSchema, req.body);
     // Check if user exists
     const user = await User.findOne({ email }).select("+password");
     if (!user) {
