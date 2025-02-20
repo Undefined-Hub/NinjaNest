@@ -15,11 +15,11 @@ const authMiddleware = (roles = []) => {
             // Verify the token and attach user info to req.user
             const decoded = verifyToken(token, process.env.JWT_SECRET);
             req.user = decoded;  // Assuming payload contains user info (like _id)
-
+            // console.log(req.user);
             // Role-based access control
-            if (roles.length && !roles.includes(req.user.role)) {
-                return res.status(403).json({ error: 'Access denied' });
-            }
+            // if (roles.length && !roles.includes(req.user.role)) {
+            //     return res.status(403).json({ error: 'Access denied' });
+            // }
 
             next();  // Proceed to the next middleware or route handler
         } catch (error) {

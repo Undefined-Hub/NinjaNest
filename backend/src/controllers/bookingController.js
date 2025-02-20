@@ -19,7 +19,7 @@ const getBookings = async (req, res, next) => {
 const getBookingById = async (req, res, next) => {
     try {
         const { bid } = req.params;
-        const bookings = await Booking.find({ property_id: id })
+        const booking = await Booking.find({ _id: bid })
             .populate("user_id", "_id name")
             .populate("landlord_id", "_id name");
         if (!booking) return res.status(404).json({ message: "Booking not found" });

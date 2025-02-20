@@ -1,6 +1,6 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
-const { generateToken } = require("../utils/jwtHelper");
+const { generateToken, verifyToken } = require("../utils/jwtHelper");
 const { sendChangePasswordMail } = require("./mailController");
 
 // ! Register a new user
@@ -24,33 +24,70 @@ const registerUser = async (req, res) => {
 };
 
 // ? Login user
-const loginUser = async (req, res) => {
+const loginUser = async (req, res, next) => {
   const { email, password } = req.body;
   try {
-    // ! Check if user exists
+    // Check if user exists
     const user = await User.findOne({ email }).select("+password");
     if (!user) {
-      return res.status(400).json({ message: "User does not exists" });
+      return res.status(400).json({ message: "User does not exist" });
     }
-    // ! Check if password is correct
+
+    // Check if password is correct
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid password" });
     }
-    const payload = {
-      user: {
-        id: user.id,
-      },
-    };
-    // ! Generate a token & send with the user id
-    const token = generateToken(payload, process.env.JWT_SECRET, {
-      expiresIn: "1h",
+
+    const payload = { user: { id: user.id } };
+
+    // Generate Access & Refresh Tokens
+    const accessToken = generateToken(payload, process.env.JWT_SECRET, { expiresIn: "1h" }); // Shorter lifespan
+    const refreshToken = generateToken(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: "7d" }); // Longer lifespan
+
+    // Store refresh token securely (e.g., in DB or cookies)
+    user.refreshToken = refreshToken;
+    await user.save();
+
+    // Send tokens (access in JSON, refresh as HTTP-only cookie)
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true, // Prevents access via JavaScript
+      secure: true, // Use only in HTTPS
+      sameSite: "Strict",
     });
-    res.status(200).json({ message: "Logged in successfully", token });
+
+    res.status(200).json({ message: "Logged in successfully", accessToken });
   } catch (error) {
     next(error);
   }
 };
+
+// ? Refresh Access Token
+const refreshAccessToken = async (req, res,next) => {
+  try {
+    const { refreshToken } = req.cookies; // Get from HTTP-only cookie
+    console.log("refreshToken", refreshToken);
+    if (!refreshToken) {
+      return res.status(401).json({ message: "Refresh token not found" });
+    }
+
+    // Verify refresh token
+    const decoded = verifyToken(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const user = await User.findById(decoded.user.id);
+    if (!user || user.refreshToken !== refreshToken) {
+      return res.status(403).json({ message: "Invalid refresh token" });
+    }
+
+    // Generate new access token
+    const newAccessToken = generateToken({ user: { id: user.id } }, process.env.JWT_SECRET, { expiresIn: "15m" });
+    res.status(200).json({ accessToken: newAccessToken });
+  } catch (error) {
+    res.status(403).json({ message: "Invalid or expired refresh token" });
+      // next(error);
+  }
+};
+
+
 
 // ? Change password
 const changePassword = async (req, res, next) => {
@@ -107,4 +144,5 @@ module.exports = {
   loginUser,
   changePassword,
   logoutUser,
+  refreshAccessToken,
 };

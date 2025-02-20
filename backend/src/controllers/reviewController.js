@@ -29,7 +29,8 @@ const getReviews = async (req, res) => {
 
 // Add a new review
 const addReview = async (req, res) => {
-    const { property_id, user_id, landlord_id, comment, trustScore, rating } = req.body;
+    const  user_id = req.user.user.id;
+    const { property_id,landlord_id, comment, trustScore, rating } = req.body;
     try {
         const newReview = new Review({ property_id, user_id, landlord_id, comment, trustScore, rating });
         if(trustScore > 5 || trustScore < 1) return res.status(400).json({ message: "Trust score must be between 1 and 5" });

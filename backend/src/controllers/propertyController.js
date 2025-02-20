@@ -28,8 +28,9 @@ const createProperty = async (req, res, next) => {
         if (!title || !location || !rent || !amenities || !roomType || !description || !address || !deposit || !images || !isAvailable || !latitude || !longitude) {
             return res.status(400).json({ message: 'All fields are required' });
         }
-        // const landlord_id = req.user._id;
-        const landlord_id = req.headers.landlord_id;
+        const  landlord_id = req.user.user.id;
+        console.log(" landlord_id", landlord_id );
+        
         const verified = false;
         const avgrating = 0;
         const averageTrustScore = 0;
@@ -71,21 +72,42 @@ const getProperty = async (req, res) => {
 
 
 // ! Update a property
-const updateProperty = async (req, res) => {
+const updateProperty = async (req, res, next) => {
     try {
+        const landlord_id = req.user.user.id;
         const propertyId = req.params.id;
         const { title, location, rent, amenities, roomType, description, address, deposit, images, isAvailable, latitude, longitude } = req.body;
+
+        const property = await Property.findOne({ _id: propertyId});
+        if (!property) {
+            return res.status(404).json({ message: 'Property not found' });
+        }
+        if (property.landlord_id.toString() !== landlord_id) {
+            return res.status(403).json({ message: 'You can only update your own properties' });
+        }
+
         const updatedProperty = await Property.findByIdAndUpdate(propertyId, { title, location, rent, amenities, roomType, description, address, deposit, images, isAvailable, latitude, longitude }, { new: true });
-        res.status(200).json({msg:"Updated property details succesfully ", updatedProperty });
+        res.status(200).json({ msg: "Updated property details successfully", updatedProperty });
     } catch (error) {
         next(error);
     }
 }
 
 // ! Delete a property
-const deleteProperty = async (req, res) => {
+const deleteProperty = async (req, res, next) => {
     try {
+        const landlord_id = req.user.user.id;
         const propertyId = req.params.id;
+
+        const property = await Property.findOne({ _id: propertyId});
+        if (!property) {
+            return res.status(404).json({ message: 'Property not found' });
+        }
+        if (property.landlord_id.toString() !== landlord_id) {
+            return res.status(403).json({ message: 'You can only update your own properties' });
+        }
+       
+
         await Property.findByIdAndDelete(propertyId);
         res.status(200).json({ message: 'Property deleted successfully' });
     } catch (error) {

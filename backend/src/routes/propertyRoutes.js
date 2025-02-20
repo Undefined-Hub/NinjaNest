@@ -1,18 +1,19 @@
 const express = require("express");
 const router = express.Router();
+const authMiddleware = require('../middlewares/authMiddleware');
 
 const {createProperty, getProperties, getProperty, updateProperty, deleteProperty} = require("../controllers/propertyController");
 
 
-router.post("/", createProperty); // Create a new property
+router.post("/",authMiddleware(),  createProperty); // Create a new property
 
 router.get("/", getProperties); // Fetch all properties
 
-router.get("/:id", getProperty); // Fetch a single property
+router.get("/:id",authMiddleware(), getProperty); // Fetch a single property
 
-router.put("/:id", updateProperty); // Update a property
+router.put("/:id",authMiddleware(),  updateProperty); // Update a property
 
-router.delete("/:id", deleteProperty); // Delete a property
+router.delete("/:id",authMiddleware(), deleteProperty); // Delete a property
 
 
 module.exports = router;

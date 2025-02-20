@@ -3,10 +3,11 @@ const MonthRent = require("../models/MonthRent");
 // Add a new rent transaction
 const addRent = async (req, res, next) => {
     try {
-        const { booking_id, property_id, user_id, landlord_id, month, due_date, amount_due } = req.body;
+        const user_id = req.user.user.id;
+        const { booking_id, property_id, landlord_id, month, due_date, amount_due } = req.body;
 
         // Ensure all required fields are provided
-        if (!booking_id || !property_id || !user_id || !landlord_id || !month || !due_date || !amount_due) {
+        if (!booking_id || !property_id || !landlord_id || !month || !due_date || !amount_due) {
             return res.status(400).json({ message: "Missing required fields" });
         }
 
@@ -49,7 +50,7 @@ const getRents = async (req, res, next) => {
 const getRentById = async (req, res, next) => {
     try {
         const  {id}  = req.params;
-        console.log(id);
+        // console.log(id);
         
         const rent = await MonthRent.findById(id)
             .populate("user_id", "_id name")
