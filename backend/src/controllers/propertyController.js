@@ -1,4 +1,6 @@
 const Property = require("../models/Property");
+const { validateInput } = require("../utils/validateInput");
+const z = require("zod");
 // {
 //     "_id": "ObjectId",   
 //     "landlord_id": "ObjectId",   
@@ -21,13 +23,25 @@ const Property = require("../models/Property");
 // }
 
 
+const propertySchema = z.object({
+    title: z.string().min(3).max(50),
+    location: z.string().min(3).max(50),
+    rent: z.number().min(1),
+    amenities: z.array(z.string()).min(1),
+    roomType: z.string().min(3).max(50),
+    description: z.string().min(3).max(500),
+    address: z.string().min(3).max(50),
+    deposit:  z.number().min(1),
+    images: z.array(z.string()).min(1),
+    isAvailable: z.boolean(),
+    latitude: z.string().min(3).max(50),
+    longitude: z.string().min(3).max(50),
+});
+
 // ! Create a new property
 const createProperty = async (req, res, next) => {
     try {
-        const { title, location, rent, amenities, roomType, description, address, deposit, images, isAvailable, latitude, longitude } = req.body;
-        if (!title || !location || !rent || !amenities || !roomType || !description || !address || !deposit || !images || !isAvailable || !latitude || !longitude) {
-            return res.status(400).json({ message: 'All fields are required' });
-        }
+        const { title, location, rent, amenities, roomType, description, address, deposit, images, isAvailable, latitude, longitude }=validateInput(propertySchema, req.body);
         const  landlord_id = req.user.user.id;
         console.log(" landlord_id", landlord_id );
         
@@ -76,7 +90,7 @@ const updateProperty = async (req, res, next) => {
     try {
         const landlord_id = req.user.user.id;
         const propertyId = req.params.id;
-        const { title, location, rent, amenities, roomType, description, address, deposit, images, isAvailable, latitude, longitude } = req.body;
+        const { title, location, rent, amenities, roomType, description, address, deposit, images, isAvailable, latitude, longitude } = validateInput(propertySchema, req.body);
 
         const property = await Property.findOne({ _id: propertyId});
         if (!property) {

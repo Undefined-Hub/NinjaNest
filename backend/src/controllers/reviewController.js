@@ -1,4 +1,14 @@
 const Review = require("../models/Review");
+const { validateInput } = require("../utils/validateInput");
+const z = require("zod");
+
+const reviewSchema = z.object({
+    property_id: z.string().min(3).max(50),
+    landlord_id: z.string().min(3).max(50),
+    comment: z.string().min(3).max(500),
+    trustScore: z.number().min(1).max(5),
+    rating: z.number().min(0).max(5),
+});
 
 const getReviews = async (req, res) => {
     try {
@@ -30,7 +40,7 @@ const getReviews = async (req, res) => {
 // Add a new review
 const addReview = async (req, res) => {
     const  user_id = req.user.user.id;
-    const { property_id,landlord_id, comment, trustScore, rating } = req.body;
+    const { property_id,landlord_id, comment, trustScore, rating } = validateInput(reviewSchema, req.body);
     try {
         const newReview = new Review({ property_id, user_id, landlord_id, comment, trustScore, rating });
         if(trustScore > 5 || trustScore < 1) return res.status(400).json({ message: "Trust score must be between 1 and 5" });
@@ -56,15 +66,15 @@ const deleteReview = async (req, res) => {
 };
 
 // Update a review
-const updateReview = async (req, res) => {
+const updateReview = async (req, res,next) => {
     try {
         const { id } = req.params;
-        const updatedReview = await Review.findByIdAndUpdate(id, req.body, { new: true, runValidators: true });
+        const validatedData = validateInput(reviewSchema, req.body);
+        const updatedReview = await Review.findByIdAndUpdate(id, validatedData, { new: true, runValidators: true });
         if (!updatedReview) return res.status(404).json({ message: "Review not found" });
         res.status(200).json({ message: "Review updated successfully", review: updatedReview });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Failed to update review", error: error.message });
+        next(error);
     }
 };
 
