@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import google from '../assets/google.svg';
 import axios from 'axios';
-
+import { fetchUser } from '../features/User/userSlice';
+import { useSelector,useDispatch } from 'react-redux';
 const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
 const AuthPage = () => {
+    const {user, loading, error} = useSelector((state) => state.user);
+
     const [auth, setAuth] = useState(true);
     const [signupData, setSignupData] = useState({ fullName: '', username: '', email: '', password: '' });
     const [loginData, setLoginData] = useState({ email: '', password: '' });
-
+    const dispatch = useDispatch();
     useEffect(() => {
         window.scrollTo(0, 0);
+        dispatch(fetchUser('aryanrpatil'));
     }, []);
 
     const handleSignupChange = (e) => {
@@ -31,6 +35,13 @@ const AuthPage = () => {
                     password: loginData.password,
                 });
                 console.log('Login Response:', response.data);
+                localStorage.setItem('token', response.data.accessToken);
+                if(error){
+                    console.log('Error fetching user details :- '+error); 
+                }
+                console.log(`User Details`);
+                console.log(user);
+                
             } catch (error) {
                 console.error('Error logging in NinjaNest:', error);
             }

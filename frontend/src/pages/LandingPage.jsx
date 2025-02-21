@@ -1,11 +1,20 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
+import { useSelector ,useDispatch} from 'react-redux';
+import { fetchUser } from '../features/User/userSlice';
+useSelector
 const LandingPage = () => {
+    const {user , loading, error} = useSelector((state) => state.user);
+    const dispatch = useDispatch();
     useEffect(() => {
+        dispatch(fetchUser('aryanrpatil'));
         window.scrollTo(0, 0);  // Scroll to the top of the page when the component mounts
     }, []);
     const navigate = useNavigate();
+    console.log('User Details');
+    console.log(user);
+    
     return (
         <div>
             {/* Hero Section */}
