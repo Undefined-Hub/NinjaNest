@@ -35,6 +35,7 @@ const AuthPage = () => {
                     password: loginData.password,
                 });
                 console.log('Login Response:', response.data);
+                alert('Logged in successfully');
                 localStorage.setItem('token', response.data.accessToken);
                 if(error){
                     console.log('Error fetching user details :- '+error); 

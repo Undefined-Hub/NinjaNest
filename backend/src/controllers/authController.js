@@ -126,8 +126,7 @@ const changePassword = async (req, res, next) => {
       const salt = await bcrypt.genSalt(10); // ! Salt to hash the password
       user.password = await bcrypt.hash(newPassword, salt); // ! Hash the new password
       await user.save(); // ! Save the user to the database
-      // TODO: Send a mail to the user that the password has been changed
-      sendChangePasswordMail(email);
+      sendChangePasswordMail(email); // ! Send email to user about password change
       res.status(200).json({ message: "Password changed successfully" });
     } catch (error) {
       next(error);
