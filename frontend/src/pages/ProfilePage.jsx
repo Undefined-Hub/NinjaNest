@@ -26,14 +26,14 @@ const ProfilePage = () => {
                             {/* Section to hold multiple tabs */}
                             <div className='flex flex-col w-full h-full mt-8 space-y-5'> {/* Tabs section */}
                                 <div
-                                    className={`flex flex-col hover:cursor-pointer active:scale-95 transition-all ease-in-out duration-300 p-4 rounded-2xl ${activeTab === 'Overview' ? 'bg-violet-900 text-tertiary-text' : 'bg-transparent text-secondary-text'
+                                    className={`flex flex-col hover:cursor-pointer active:scale-95 transition-all ease-in-out duration-300 p-4 rounded-2xl ${activeTab === 'Overview' ? 'bg-menu-active-bg text-tertiary-text' : 'bg-transparent text-secondary-text'
                                         }`}
                                     onClick={() => setActiveTab('Overview')}
                                 >
                                     <p className='text-xl font-semibold'>Overview</p>
                                 </div>
                                 <div
-                                    className={`flex flex-col hover:cursor-pointer active:scale-95 transition-all ease-in-out duration-300 p-4 rounded-2xl ${activeTab === 'Properties' ? 'bg-violet-900 text-tertiary-text' : 'bg-transparent text-secondary-text'
+                                    className={`flex flex-col hover:cursor-pointer active:scale-95 transition-all ease-in-out duration-300 p-4 rounded-2xl ${activeTab === 'Properties' ? 'bg-menu-active-bg text-tertiary-text' : 'bg-transparent text-secondary-text'
                                         }`}
                                     onClick={() => setActiveTab('Properties')}
                                 >

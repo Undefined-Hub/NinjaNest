@@ -5,6 +5,7 @@ export default {
     extend: {
       colors: {
         "main-bg": "#111827",
+        "menu-active-bg": "#302d57",
         "sub-bg": "#18212f",
         "secondary-text": "#727986",
         "tertiary-text": "#a186e7",
