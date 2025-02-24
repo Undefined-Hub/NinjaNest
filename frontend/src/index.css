@@ -2,3 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Hide scrollbar for Webkit browsers */
+::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+    /* Optional: for better compatibility */
+}
+
+::-webkit-scrollbar-thumb {
+    background: transparent;
+}
