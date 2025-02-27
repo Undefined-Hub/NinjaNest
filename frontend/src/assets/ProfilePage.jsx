@@ -6,8 +6,8 @@ import calendar from '../assets/calendar.svg'
 import people from '../assets/people.svg'
 import { useNavigate } from 'react-router-dom'
 const ProfilePage = () => {
-    let navigate = useNavigate()
     const [activeTab, setActiveTab] = useState('Overview') // State to hold the active tab
+    let navigate = useNavigate();
     return (
         <>
             <div className='flex justify-center items-center bg-main-bg p-4'> {/* Main container for profile page */}
@@ -64,7 +64,7 @@ const ProfilePage = () => {
                                                 <img src={card.icon} alt={card.title} className='h-6 w-6' />
                                             </div>
                                             <p className='text-secondary-text font-semibold text-lg'>{card.title}</p>
-                                            <p className='text-white font-semibold text-2xl'>{card.value}</p>
+                                            <p className='text-white font-semibold text-xl'>{card.value}</p>
                                             <p className='text-secondary-text font-semibold text-lg'>{card.date}</p>
                                         </div>
                                     ))}
@@ -74,7 +74,8 @@ const ProfilePage = () => {
                                     <div className='flex justify-between'>
                                         <p className='text-white text-xl font-bold'>Current Property</p>
                                         <p className='text-tertiary-text text-lg font-semibold hover:cursor-pointer hover:underline'
-                                            onClick={() => navigate('/details')}>View Details</p>
+                                        onClick={() => navigate('/details')}
+                                        >View Details</p>
                                     </div>
                                     <div className='flex flex-col md:flex-row gap-4 mt-4'>
                                         <img src={house1} alt='property' className='w-full md:w-1/2 h-52 object-cover rounded-2xl' />

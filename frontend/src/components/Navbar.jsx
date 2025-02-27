@@ -10,7 +10,7 @@ const Navbar = () => {
 
     return (
         <header className="bg-[#111827] flex justify-between items-center text-white p-3 md:px-16">
-            <div className="text-2xl bg-gradient-to-r from-[#7c3bf1] to-[#2761e9] bg-clip-text text-transparent font-bold">
+            <div className="text-2xl bg-gradient-to-r from-[#7c3bf1] to-[#2761e9] bg-clip-text text-transparent font-bold hover:cursor-pointer" onClick={() => navigate("/")}>
                 NinjaNest
             </div>
             <nav className="hidden md:flex space-x-4 text-[#727986] font-bold font-mono">

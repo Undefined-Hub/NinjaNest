@@ -6,6 +6,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import './App.css'
 import ProfilePage from './pages/ProfilePage';
+import DetailsPage from './pages/DetailsPage';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/details" element={<DetailsPage />} />
         </Routes>
         <Footer />
       </Router>

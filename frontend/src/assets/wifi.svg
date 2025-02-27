@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Updated SVG with new color -->
+<svg width="800px" height="800px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_15_191)">
+<rect width="24" height="24" fill="none"/>
+<path d="M9 14C9 14 9.5 12 12 12C14.5 12 15 14 15 14" stroke="#a186e7" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M7 12C7 12 7.83333 9 12 9C16.1667 9 17 12 17 12" stroke="#a186e7" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M5 10C5 10 6.16667 6 12 6C17.8333 6 19 10 19 10" stroke="#a186e7" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="12" cy="17" r="2" stroke="#a186e7" stroke-linejoin="round"/>
+</g>
+<defs>
+<clipPath id="clip0_15_191">
+<rect width="24" height="24"/>
+</clipPath>
+</defs>
+</svg>
