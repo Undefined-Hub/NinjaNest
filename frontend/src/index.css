@@ -12,3 +12,7 @@
 ::-webkit-scrollbar-thumb {
     background: transparent;
 }
+
+.button-click {
+    @apply active:scale-95 transition-all ease-out active:opacity-75;
+  }

@@ -21,10 +21,10 @@ const Navbar = () => {
                 ))}
             </nav>
             <div className="flex gap-4 text-md">
-                <button className="text-[#fbfbfb] p-2 px-4 bg-[#18212f] rounded-lg font-bold" onClick={() => navigate("/profile")}>
+                <button className="text-[#fbfbfb] p-2 px-4 bg-[#18212f] rounded-lg font-bold button-click" onClick={() => navigate("/profile")}>
                     Sign In
                 </button>
-                <button className="text-[#fbfbfb] p-2 px-4 bg-gradient-to-r from-[#7c3bf1] to-[#2761e9] rounded-lg font-bold">
+                <button className="text-[#fbfbfb] p-2 px-4 bg-gradient-to-r from-[#7c3bf1] to-[#2761e9] rounded-lg font-bold button-click">
                     Sign Up
                 </button>
             </div>

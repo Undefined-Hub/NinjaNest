@@ -34,7 +34,7 @@ return (
                     </div>
                 </div>
             </div>
-            <div className="p-4 mx-32 border-t-[0.5px] border-[#727986] flex justify-center items-center pt-4">
+            <div className="p-4 mx-5 md:mx-32 border-t-[0.5px] border-[#727986] flex justify-center items-center pt-4">
                 &copy; 2025 NinjaNest. All rights reserved.
             </div>
         </footer>

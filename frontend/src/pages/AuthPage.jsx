@@ -63,7 +63,7 @@ const AuthPage = () => {
     };
 
     return (
-        <div className="bg-gray-100 h-screen flex justify-center items-center space-x-2">
+        <div className="bg-gray-100 h-screen flex justify-center items-center space-x-2 px-5 md:px-0 ">
             <div className="flex place-content-evenly border border-gray-300 bg-white rounded-xl shadow-md w-full max-w-2xl min-h-[500px] p-8">
                 {!auth && (
                     <div className="flex flex-col justify-center items-center w-full md:w-1/2">
