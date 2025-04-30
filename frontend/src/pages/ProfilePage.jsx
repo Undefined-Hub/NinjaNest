@@ -5,8 +5,11 @@ import pay from '../assets/pay.svg'
 import calendar from '../assets/calendar.svg'
 import people from '../assets/people.svg'
 import { useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux';
 const ProfilePage = () => {
     let navigate = useNavigate()
+    const { user, loading, error } = useSelector((state) => state.user);
+    // user.user && console.log(`User Details: (ProfilePage) `, user);
     const [activeTab, setActiveTab] = useState('Overview') // State to hold the active tab
     return (
         <>
@@ -17,8 +20,8 @@ const ProfilePage = () => {
                             <div className='flex justify-start items-center space-x-4'> {/* Profile image and details */}
                                 <img src={pfp} alt='profile' className='h-16 w-16 rounded-full object-cover' />
                                 <div className='flex flex-col'>
-                                    <p className='text-white text-xl font-bold hover:cursor-pointer'>Pawan Malgavi</p>
-                                    <p className='text-secondary-text text-lg font-semibold hover:cursor-pointer'>@pawann</p>
+                                    <p className='text-white text-xl font-bold hover:cursor-pointer'>{user?.user?.name || "Guest"}</p>
+                                    <p className='text-secondary-text text-lg font-semibold hover:cursor-pointer'>@{user?.user?.username}</p>
                                 </div>
                             </div>
                             <div className='flex flex-col w-full h-full mt-6 space-y-4'> {/* Tabs section */}

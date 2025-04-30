@@ -20,11 +20,13 @@ const loginSchema = z.object({
   password: z.string().min(6),
 });
 
-
 // ! Register a new user
-const registerUser = async (req, res,next) => {
+const registerUser = async (req, res, next) => {
   try {
-    const { name, username, email, password } = validateInput(registerSchema, req.body);
+    const { name, username, email, password } = validateInput(
+      registerSchema,
+      req.body
+    );
     // ! Check if user already exists
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -60,8 +62,14 @@ const loginUser = async (req, res, next) => {
     const payload = { user: { id: user.id } };
 
     // Generate Access & Refresh Tokens
-    const accessToken = generateToken(payload, process.env.JWT_SECRET, { expiresIn: "1h" }); // Shorter lifespan
-    const refreshToken = generateToken(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: "7d" }); // Longer lifespan
+    const accessToken = generateToken(payload, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    }); // Shorter lifespan
+    const refreshToken = generateToken(
+      payload,
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: "7d" }
+    ); // Longer lifespan
 
     // Store refresh token securely (e.g., in DB or cookies)
     user.refreshToken = refreshToken;
@@ -74,14 +82,22 @@ const loginUser = async (req, res, next) => {
       sameSite: "Strict",
     });
 
-    res.status(200).json({ message: "Logged in successfully", accessToken });
+    res.status(200).json({
+      message: "Logged in successfully",
+      accessToken,
+      user: {
+        username: user.username,
+        email: user.email,
+        name: user.name,
+      },
+    });
   } catch (error) {
     next(error);
   }
 };
 
 // ? Refresh Access Token
-const refreshAccessToken = async (req, res,next) => {
+const refreshAccessToken = async (req, res, next) => {
   try {
     const { refreshToken } = req.cookies; // Get from HTTP-only cookie
     console.log("refreshToken", refreshToken);
@@ -97,15 +113,17 @@ const refreshAccessToken = async (req, res,next) => {
     }
 
     // Generate new access token
-    const newAccessToken = generateToken({ user: { id: user.id } }, process.env.JWT_SECRET, { expiresIn: "15m" });
+    const newAccessToken = generateToken(
+      { user: { id: user.id } },
+      process.env.JWT_SECRET,
+      { expiresIn: "15m" }
+    );
     res.status(200).json({ accessToken: newAccessToken });
   } catch (error) {
     res.status(403).json({ message: "Invalid or expired refresh token" });
-      // next(error);
+    // next(error);
   }
 };
-
-
 
 // ? Change password
 const changePassword = async (req, res, next) => {

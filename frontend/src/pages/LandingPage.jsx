@@ -8,8 +8,8 @@ import rupees from "../assets/rupee.svg";
 import robot from "../assets/LandingRobot.svg";
 import shield from "../assets/LandingShield.svg";
 import roomate from "../assets/LandingPerson.svg";
-import blob from "../assets/Blob.svg";
-import blob2 from "../assets/Blob2.svg";
+import blob from "../assets/blob.svg";
+import blob2 from "../assets/blob2.svg";
 import Squares from "../blocks/Backgrounds/Squares/Squares";
 useSelector;
 const LandingPage = () => {

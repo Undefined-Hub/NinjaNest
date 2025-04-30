@@ -13,18 +13,18 @@ const Navbar = () => {
             <div className="text-2xl bg-gradient-to-r from-[#7c3bf1] to-[#2761e9] bg-clip-text text-transparent font-bold hover:cursor-pointer" onClick={() => navigate("/")}>
                 NinjaNest
             </div>
-            <nav className="hidden md:flex space-x-4 text-[#727986] font-bold font-mono">
+            <nav className="hidden md:flex space-x-8 text-[#727986] font-bold">
                 {["Home", "Search", "Features", "Contact"].map((item) => (
-                    <li key={item} className="list-none">
+                    <li key={item} className="list-none hover:cursor-pointer hover:text-tertiary-text">
                         {item}
                     </li>
                 ))}
             </nav>
             <div className="flex gap-4 text-md">
-                <button className="text-[#fbfbfb] p-2 px-4 bg-[#18212f] rounded-lg font-bold button-click" onClick={() => navigate("/profile")}>
+                <button className="text-[#fbfbfb] p-2 px-4 bg-[#18212f] rounded-lg font-bold button-click" onClick={() => navigate("/auth")}>
                     Sign In
                 </button>
-                <button className="text-[#fbfbfb] p-2 px-4 bg-gradient-to-r from-[#7c3bf1] to-[#2761e9] rounded-lg font-bold button-click">
+                <button className="text-[#fbfbfb] p-2 px-4 bg-gradient-to-r from-[#7c3bf1] to-[#2761e9] rounded-lg font-bold button-click" onClick={() => navigate("/profile")}>
                     Sign Up
                 </button>
             </div>
