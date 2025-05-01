@@ -1,6 +1,7 @@
 const Property = require("../models/Property");
 const { validateInput } = require("../utils/validateInput");
 const z = require("zod");
+
 // {
 //     "_id": "ObjectId",   
 //     "landlord_id": "ObjectId",   
@@ -57,7 +58,7 @@ const createProperty = async (req, res, next) => {
 };
 
 // ! Fetch all properties
-const getProperties = async (req, res) => {
+const getProperties = async (req, res,next) => {
     try {
         const properties = await Property.find();
         if (properties.length === 0) {
