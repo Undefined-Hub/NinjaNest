@@ -2,63 +2,51 @@ const Property = require("../models/Property");
 const { validateInput } = require("../utils/validateInput");
 const z = require("zod");
 
-// {
-//     "_id": "ObjectId",   
-//     "landlord_id": "ObjectId",   
-//     "title": "Spacious 2BHK Near College",   .
-//     "location": "Bangalore",   .
-//     "rent": 10000,   .
-//     "amenities": ["WiFi", "Furnished", "Parking"],   .
-//     "room_type": "2BHK",   .
-//     "verified": true,   
-//     "avgrating": 3.2,   
-//     "created_at": "timestamp"   
-//     "description": "",   .
-//     "address": "",   .
-//     "deposit": "",   .
-//     "images": [],   .
-//     "isAvailable": "",   .
-//     "latitude":"",    
-//     "longitude":"",    
-//     "avgtrustScore": 4.2, 
-// }
-
-
+// Updated propertySchema (without `roomType`)
 const propertySchema = z.object({
     title: z.string().min(3).max(50),
     location: z.string().min(3).max(50),
     rent: z.number().min(1),
     amenities: z.array(z.string()).min(1),
-    roomType: z.string().min(3).max(50),
     description: z.string().min(3).max(500),
-    address: z.string().min(3).max(50),
-    deposit:  z.number().min(1),
+    address: z.string().min(3).max(100),
+    deposit: z.number().min(1),
     images: z.array(z.string()).min(1),
     isAvailable: z.boolean(),
-    latitude: z.string().min(3).max(50),
-    longitude: z.string().min(3).max(50),
+    latitude: z.string().min(1),
+    longitude: z.string().min(1),
+    propertyType: z.string().optional(),       // new
+    flatType: z.string().optional(),           // new
+    area: z.string().optional(),               // new
+    mainImage: z.string().optional(),          // new
+    roomDetails: z.object({                    // new
+        beds: z.number().nullable().optional(),
+        occupiedBeds: z.number().nullable().optional()
+    }).optional()
 });
 
 // ! Create a new property
 const createProperty = async (req, res, next) => {
     try {
-        const { title, location, rent, amenities, roomType, description, address, deposit, images, isAvailable, latitude, longitude }=validateInput(propertySchema, req.body);
-        const  landlord_id = req.user.user.id;
-        console.log(" landlord_id", landlord_id );
-        
-        const verified = false;
-        const avgrating = 0;
-        const averageTrustScore = 0;
-      
-        const property = await Property.create({ landlord_id, title, location, rent, amenities, roomType, verified, avgrating, description, address, deposit, images, isAvailable, latitude, longitude ,averageTrustScore});
-        res.status(201).json({ msg:"Property has been successfully listed.",property });
+        const validatedData = validateInput(propertySchema, req.body);
+        const landlord_id = req.user.user.id;
+
+        const property = await Property.create({
+            landlord_id,
+            ...validatedData,
+            isVerified: false,
+            averageRating: 0,
+            averageTrustScore: 0
+        });
+
+        res.status(201).json({ msg: "Property has been successfully listed.", property });
     } catch (error) {
         next(error);
     }
 };
 
 // ! Fetch all properties
-const getProperties = async (req, res,next) => {
+const getProperties = async (req, res, next) => {
     try {
         const properties = await Property.find();
         if (properties.length === 0) {
@@ -70,12 +58,10 @@ const getProperties = async (req, res,next) => {
     }
 };
 
-
 // ! Fetch a single property
-const getProperty = async (req, res) => {
+const getProperty = async (req, res, next) => {
     try {
-        const propertyId = req.params.id;
-        const property = await Property.findById(propertyId);
+        const property = await Property.findById(req.params.id);
         if (!property) {
             return res.status(404).json({ message: 'Property not found' });
         }
@@ -85,15 +71,15 @@ const getProperty = async (req, res) => {
     }
 };
 
-
 // ! Update a property
 const updateProperty = async (req, res, next) => {
     try {
         const landlord_id = req.user.user.id;
         const propertyId = req.params.id;
-        const { title, location, rent, amenities, roomType, description, address, deposit, images, isAvailable, latitude, longitude } = validateInput(propertySchema, req.body);
 
-        const property = await Property.findOne({ _id: propertyId});
+        const validatedData = validateInput(propertySchema, req.body);
+
+        const property = await Property.findById(propertyId);
         if (!property) {
             return res.status(404).json({ message: 'Property not found' });
         }
@@ -101,12 +87,12 @@ const updateProperty = async (req, res, next) => {
             return res.status(403).json({ message: 'You can only update your own properties' });
         }
 
-        const updatedProperty = await Property.findByIdAndUpdate(propertyId, { title, location, rent, amenities, roomType, description, address, deposit, images, isAvailable, latitude, longitude }, { new: true });
+        const updatedProperty = await Property.findByIdAndUpdate(propertyId, validatedData, { new: true });
         res.status(200).json({ msg: "Updated property details successfully", updatedProperty });
     } catch (error) {
         next(error);
     }
-}
+};
 
 // ! Delete a property
 const deleteProperty = async (req, res, next) => {
@@ -114,21 +100,20 @@ const deleteProperty = async (req, res, next) => {
         const landlord_id = req.user.user.id;
         const propertyId = req.params.id;
 
-        const property = await Property.findOne({ _id: propertyId});
+        const property = await Property.findById(propertyId);
         if (!property) {
             return res.status(404).json({ message: 'Property not found' });
         }
         if (property.landlord_id.toString() !== landlord_id) {
-            return res.status(403).json({ message: 'You can only update your own properties' });
+            return res.status(403).json({ message: 'You can only delete your own properties' });
         }
-       
 
         await Property.findByIdAndDelete(propertyId);
         res.status(200).json({ message: 'Property deleted successfully' });
     } catch (error) {
         next(error);
     }
-}
+};
 
 module.exports = {
     createProperty,

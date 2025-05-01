@@ -11,7 +11,9 @@ export default {
         "tertiary-text": "#a186e7",
         "cards-bg": "#283141",
         "logo-blue": "#5695E1",
-        "main-purple": "#7c3bf1"
+        "main-purple": "#7c3bf1",
+        "logout-red": "#572d2d",      // background
+        "logout-text": "#e78686", 
       },
     },
   },
