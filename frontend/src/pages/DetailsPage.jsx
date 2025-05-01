@@ -10,13 +10,59 @@ import water_supply_svg from '../assets/water_supply.svg';
 import garden_svg from '../assets/garden.svg';
 import review_star_full from '../assets/review_star_full.svg';
 import robot from '../assets/robot.svg';
+import { useSelector } from 'react-redux';
 const DetailsPage = () => {
+    const {user} = useSelector((state) => state.user);
+    console.log("User Details:", user.user.name);
+    
+
+
     const { propertyId } = useParams();
     console.log("Property ID:", propertyId);
 
     const [propertyData, setPropertyData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [showModal, setShowModal] = useState(false);
+    const [selectedOption, setSelectedOption] = useState('ownerPrice');
+    const [minPrice, setMinPrice] = useState('');
+    const [maxPrice,setMaxPrice] = useState('');
+    const handleSendRentRequest = () => {
+        if (selectedOption === 'customRange' && (!minPrice || !maxPrice)) {
+            alert('Please enter a valid price range.');
+            return;
+        }
+        
+        const requestData = {
+            propertyId,
+            requestedPrice: selectedOption === 'customRange' 
+                ? { min: parseFloat(minPrice), max: parseFloat(maxPrice) } 
+                : { fixed: propertyData?.rent },
+            requestorName: user.user?.name, // Replace with the actual requestor's name
+            ownerName: propertyData?.landlord_id, // Replace with the actual owner's name
+            ownerId: propertyData?.landlord_id,
+            requestorId: user.user?._id,
+            status: 'pending',
+            message: user.user?.name+" is intrested to rent this property"  // Replace with the actual owner's ID
+        };
+    
+        console.log('Sending Rent Request:', requestData);
+    
+        axios.post('http://localhost:3000/api/request', requestData, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+        })
+        .then((response) => {
+            console.log('Rent request sent successfully:', response.data);
+            alert('Rent request sent successfully!');
+            setShowModal(false);
+        })
+        .catch((error) => {
+            console.error('Error sending rent request:', error);
+            alert('Failed to send rent request. Please try again.');
+        });
+    };
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -266,9 +312,81 @@ const DetailsPage = () => {
                             </div>
                         </div>
                         <div className='flex flex-col space-y-3'> {/* Contact Button */}
-                            <button className='flex w-full bg-main-purple p-3 rounded-lg justify-center items-center hover:bg-violet-700'> {/* Contact Button */}
-                                <p className='text-white font-bold text-base'>Book Now</p>
-                            </button> {/* Contact Button */}
+                        <button
+                            className='flex w-full bg-main-purple p-3 rounded-lg justify-center items-center hover:bg-violet-700'
+                            onClick={() => setShowModal(true)}
+                        >
+                            <p className='text-white font-bold text-base'>Book Now</p>
+                        </button>
+
+                        {/* Modal */}
+                        {showModal && (
+                            <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50">
+                                <div className="bg-sub-bg p-6 rounded-lg w-11/12 max-w-md">
+                                    <h2 className="text-white text-lg font-semibold mb-4">Send Rent Request</h2>
+                                    <div className="flex flex-col space-y-3">
+                                        <div>
+                                            <p className="text-white font-medium mb-2">Choose Rent Option:</p>
+                                            <div className="flex flex-col space-y-2">
+                                                <label className="flex items-center space-x-2">
+                                                    <input
+                                                        type="radio"
+                                                        name="rentOption"
+                                                        value="ownerPrice"
+                                                        onChange={() => setSelectedOption('ownerPrice')}
+                                                        className="form-radio text-main-purple"
+                                                    />
+                                                    <span className="text-white">Owner's Rent Price: ₹{propertyData?.rent?.toLocaleString('en-IN')}</span>
+                                                </label>
+                                                <label className="flex items-center space-x-2">
+                                                    <input
+                                                        type="radio"
+                                                        name="rentOption"
+                                                        value="customRange"
+                                                        onChange={() => setSelectedOption('customRange')}
+                                                        className="form-radio text-main-purple"
+                                                    />
+                                                    <span className="text-white">Custom Price Range</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        {selectedOption === 'customRange' && (
+                                            <div>
+                                                <p className="text-white font-medium mb-2">Enter Your Price Range:</p>
+                                                <input
+                                                    type="number"
+                                                    placeholder="Min Price"
+                                                    value={minPrice}
+                                                    onChange={(e) => setMinPrice(e.target.value)}
+                                                    className="w-full p-2 rounded-lg bg-cards-bg text-white mb-2"
+                                                />
+                                                <input
+                                                    type="number"
+                                                    placeholder="Max Price"
+                                                    value={maxPrice}
+                                                    onChange={(e) => setMaxPrice(e.target.value)}
+                                                    className="w-full p-2 rounded-lg bg-cards-bg text-white"
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="flex justify-end space-x-3 mt-4">
+                                        <button
+                                            className="bg-slate-600 px-4 py-2 rounded-lg text-white hover:bg-slate-700"
+                                            onClick={() => setShowModal(false)}
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            className="bg-main-purple px-4 py-2 rounded-lg text-white hover:bg-violet-700"
+                                            onClick={handleSendRentRequest}
+                                        >
+                                            Send Rent Request
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                             <button className='flex w-full bg-slate-600 p-3 rounded-lg justify-center items-center hover:bg-slate-700'> {/* Contact Button */}
                                 <p className='text-white font-bold text-base'>Contact Landlord</p>
                             </button>

@@ -1,0 +1,21 @@
+{
+    "user": {
+        "user": {
+            "_id": "67b8188751b2d26609a8b36a",
+            "name": "ARP",
+            "username": "aryanrpatil",
+            "email": "aryanrpatil2023@gmail.com",
+            "college": "",
+            "phone": "",
+            "preferences": {},
+            "profilePicture": "",
+            "favorites": [],
+            "listedProperties": [],
+            "currentRental": null,
+            "trustScore": 0,
+            "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjdiODE4ODc1MWIyZDI2NjA5YThiMzZhIn0sImlhdCI6MTc0NjExNTYyMiwiZXhwIjoxNzQ2NzIwNDIyfQ.8ccRU7cMPzk5TMpc-P9ACQkpCzEcGi-d_cBQ-KQxFdQ"
+        }
+    },
+    "loading": false,
+    "error": false
+}

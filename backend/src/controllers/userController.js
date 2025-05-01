@@ -10,8 +10,8 @@ const fetchUser = async (req, res) => {
       return res.status(400).json({ message: "User doesn't exist" });
     }
     // ! Remove password field before sending the response
-    const { password, createdAt, updatedAt, __v, _id, ...userWithoutPassword } = userExists.toObject();
-    res.status(200).json({ user: userWithoutPassword });
+    const { password, createdAt, updatedAt, __v, ...userWithoutPassword } = userExists.toObject();
+    res.status(200).json({ user: userWithoutPassword});
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });

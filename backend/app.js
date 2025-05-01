@@ -8,7 +8,7 @@ const userRoutes = require("./src/routes/userRoutes");
 
 const mailRoutes = require("./src/routes/mailRoutes");
 const propertyRoutes = require("./src/routes/propertyRoutes");
-
+const requestRoutes = require("./src/routes/requestRoutes");
 const rentRoutes = require("./src/routes/monthRentRoutes");
 const reviewRoutes = require("./src/routes/reviewRoutes");
 const bookingRoutes = require("./src/routes/bookingRoutes");
@@ -44,6 +44,7 @@ app.use("/api/review", reviewRoutes);
 app.use("/api/booking", bookingRoutes);
 app.use("/api/rents", rentRoutes);
 
+app.use("/api/request", requestRoutes);
 // Error handling middleware
 const { errorHandler } = require("./src/middlewares/errorHandler");
 app.use(errorHandler);
