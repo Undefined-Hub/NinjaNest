@@ -13,7 +13,7 @@
 //     "mainImage": "img1.jpg",                        // ✅ New: Main display image for cards
 //     "latitude": "12.9716",
 //     "longitude": "77.5946",
-    
+
 //     "propertyType": "Flat",                         // ✅ New: Either 'Flat' or 'Room'
 //     "flatType": "2BHK",                             // ✅ New: Type of flat
 //     "roomDetails": {                                // ✅ Still included for Room type (optional for Flat)
@@ -21,13 +21,12 @@
 //       "occupiedBeds": null
 //     },
 //     "area": "1250 sq. ft",                          // ✅ New: Area of the property
-  
+
 //     "isVerified": true,
 //     "averageRating": 3.2,
 //     "averageTrustScore": 4.2,
 //     "created_at": "timestamp"
 //   }
-  
 
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
@@ -38,6 +37,10 @@ const PropertySchema = new Schema(
       type: Schema.Types.ObjectId,
       required: true,
       ref: "User",
+    },
+    landlord_name: {
+      type: String,
+      required: true,
     },
     title: {
       type: String,

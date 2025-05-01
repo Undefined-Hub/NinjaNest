@@ -8,7 +8,6 @@ const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
 const AuthPage = () => {
     const [auth, setAuth] = useState(true);
-
     const [signupData, setSignupData] = useState({ fullName: '', username: '', email: '', password: '' });
     const [loginData, setLoginData] = useState({ email: '', password: '' });
     const navigate = useNavigate();
@@ -18,7 +17,6 @@ const AuthPage = () => {
 
     useEffect(() => {
         window.scrollTo(0, 0);
-        dispatch(fetchUser('aryanrpatil'));
     }, []);
 
 
@@ -78,12 +76,6 @@ const AuthPage = () => {
 
     return (
         <>
-            {user && (
-                <div className="text-sm mt-2 text-green-600">
-                    Logged in as: <strong>{user.username}</strong>
-                </div>
-            )}
-
             <div className="bg-gray-100 h-screen flex justify-center items-center space-x-2 px-5 md:px-0 ">
                 <div className="flex place-content-evenly border border-gray-300 bg-white rounded-xl shadow-md w-full max-w-2xl min-h-[500px] p-8">
                     {!auth && (

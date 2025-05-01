@@ -13,6 +13,12 @@ import blob2 from "../assets/blob2.svg";
 import Squares from "../blocks/Backgrounds/Squares/Squares";
 useSelector;
 const LandingPage = () => {
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  
+  const user = useSelector((state) => state.user.user);
   const features = [
     {
       title: "AI-Powered Recommendation",
@@ -76,7 +82,7 @@ const LandingPage = () => {
             </div>
             <button
               className="text-[#fbfbfb] p-2 px-6 bg-gradient-to-r from-[#7c3bf1] to-[#2761e9] rounded-lg font-bold button-click  "
-              onClick={() => navigate("/details")}
+              onClick={() => navigate("/properties")}
             >
               Search
             </button>
@@ -85,44 +91,50 @@ const LandingPage = () => {
         {/* Hero Section 1 END*/}
       </div>
 
-    {/* Hero Section 2 and 3 Combined */}
-        <div className=" relative bg-gradient-to-b from-[#0a1a2b] via-[#0a1a2b] via-60% to-[#162a3b] backdrop-blur-3xl overflow-hidden "> 
-        <img src={blob} alt="" className="absolute top-[-200px] right-[-100px] md:top-[-300px]  md:right-[-300px] md:w-[50%] z-[-1] blur-2xl"/>
-        <img src={blob2} alt="" className="absolute bottom-[-200px] left-[-200px] md:bottom-[-300px] md:left-[-300px] md:w-[50%] z-[-1] blur-2xl"/>
-          <div className=" flex flex-col py-28 items-center ">
-            {/* Hero Section 2 */}
-        <div className="flex flex-col items-center justify-center w-[90vw] md:w-[70vw] mb-32 ">
-          <h1 className="text-white text-center text-3xl font-bold my-10">
-            Smart Features for Smart Living
-          </h1>
-          <div className="flex flex-col md:flex-row justify-between gap-5">
-            {features.map((feature) => (
-              <FeatureCard
-                title={feature.title}
-                desc={feature.desc}
-                icon={feature.icon}
-                iconbg={feature.iconbg}
-              />
-            ))}
+      {/* Hero Section 2 and 3 Combined */}
+      <div className=" relative bg-gradient-to-b from-[#0a1a2b] via-[#0a1a2b] via-60% to-[#162a3b] backdrop-blur-3xl overflow-hidden ">
+        <img src={blob} alt="" className="absolute top-[-200px] right-[-100px] md:top-[-300px]  md:right-[-300px] md:w-[50%] z-[-1] blur-2xl" />
+        <img src={blob2} alt="" className="absolute bottom-[-200px] left-[-200px] md:bottom-[-300px] md:left-[-300px] md:w-[50%] z-[-1] blur-2xl" />
+        <div className=" flex flex-col py-28 items-center ">
+          {/* Hero Section 2 */}
+          <div className="flex flex-col items-center justify-center w-[90vw] md:w-[70vw] mb-32 ">
+            <h1 className="text-white text-center text-3xl font-bold my-10">
+              Smart Features for Smart Living
+            </h1>
+            <div className="flex flex-col md:flex-row justify-between gap-5">
+              {features.map((feature) => (
+                <FeatureCard
+                  title={feature.title}
+                  desc={feature.desc}
+                  icon={feature.icon}
+                  iconbg={feature.iconbg}
+                />
+              ))}
+            </div>
+          </div>
+          {/* Hero Section 3 */}
+          <div className="flex flex-col  items-center justify-center w-[80vw] h-[40vh]">
+            <h1 className="text-white text-center text-3xl md:text-4xl font-bold my-5">
+              Ready to Find Your Perfect Student Home?
+            </h1>
+            <p className=" text-secondary-text  text-justify text-base md:text-lg font-medium  ">
+              Join thousands of students who have found their ideal accommodation
+              using NinjaNest.
+            </p>
+            <button
+              className="my-5 text-[#fbfbfb] py-4 px-6 bg-gradient-to-r from-[#7c3bf1] to-[#2761e9] rounded-lg font-bold button-click  "
+              onClick={() => {
+                if (user) {
+                  navigate("/properties");
+                } else {
+                  navigate("/auth");
+                }
+              }}
+            >
+              Get Started Now
+            </button>
           </div>
         </div>
-        {/* Hero Section 3 */}
-        <div className="flex flex-col  items-center justify-center w-[80vw] h-[40vh]">
-          <h1 className="text-white text-center text-3xl md:text-4xl font-bold my-5">
-            Ready to Find Your Perfect Student Home?
-          </h1>
-          <p className=" text-secondary-text  text-justify text-base md:text-lg font-medium  ">
-            Join thousands of students who have found their ideal accommodation
-            using NinjaNest.
-          </p>
-          <button
-            className="my-5 text-[#fbfbfb] py-4 px-6 bg-gradient-to-r from-[#7c3bf1] to-[#2761e9] rounded-lg font-bold button-click  "
-            onClick={() => navigate("/auth")}
-          >
-            Get Started Now
-          </button>
-        </div>
-      </div>
       </div>
     </>
   );
