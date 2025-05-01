@@ -1,174 +1,282 @@
 import React, { useState } from 'react';
-
-const steps = ['Basic Info', 'Pricing & Availability', 'Features', 'Media & Location', 'Review'];
+import { useForm, FormProvider, Controller } from 'react-hook-form';
+import { FaFileAlt, FaDollarSign, FaCogs, FaMapMarkerAlt, FaCheckCircle } from 'react-icons/fa';  // Icons for steps
+import Step1BasicInfo from './steps/Step1BasicInfo';
+import Step2Pricing from './steps/Step2Pricing';
+import Step3Features from './steps/Step3Features';
+import Step4MediaLocation from './steps/Step4MediaLocation';
 
 const AddProperty = () => {
   const [step, setStep] = useState(0);
-  const [formData, setFormData] = useState({});
+  const methods = useForm({
+    defaultValues: {
+      landlord_name: '',
+      title: '',
+      location: '',
+      address: '',
+      rent: '',
+      deposit: '',
+      isAvailable: false,
+      description: '',
+      amenities: [],
+      images: [],
+      mainImage: '',
+      latitude: '',
+      longitude: '',
+      propertyType: '',
+      flatType: '',
+      roomDetails: { beds: '', occupiedBeds: '' },
+      area: '',
+      isVerified: false,
+      averageRating: '',
+    },
+  });
 
-  const updateFormData = (newData) => setFormData({ ...formData, ...newData });
+  const nextStep = () => setStep((prev) => prev + 1);
+  const prevStep = () => setStep((prev) => prev - 1);
+  const handleSubmit = async (data) => {
+    try {
+      
+      const token = localStorage.getItem('token');
+      const userState = localStorage.getItem('userState');
+      const parsedState = JSON.parse(userState);
+      const name = parsedState.user.user.name;
 
-  const nextStep = () => setStep((prev) => Math.min(prev + 1, steps.length - 1));
-  const prevStep = () => setStep((prev) => Math.max(prev - 1, 0));
-
-  const handleSubmit = () => {
-    console.log('Final Form Data:', formData);
-  };
-
-  const Input = ({ label, name, type = 'text', placeholder }) => (
-    <div className="flex flex-col gap-1">
-      <label className="text-secondary-text text-sm">{label}</label>
-      <input
-        type={type}
-        name={name}
-        placeholder={placeholder}
-        className="bg-cards-bg text-primary-text px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple"
-        onChange={(e) => updateFormData({ [name]: e.target.value })}
-        value={formData[name] || ''}
-      />
-    </div>
-  );
-
-  const Step1 = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <Input label="Title" name="title" placeholder="e.g. Cozy 2BHK in Pune" />
-      <Input label="Location" name="location" placeholder="e.g. Pune" />
-      <Input label="Address" name="address" placeholder="Street address" />
-      <Input label="Room Type" name="roomType" placeholder="e.g. 2BHK" />
-      <div className="sm:col-span-2">
-        <Input label="Description" name="description" placeholder="Write about your property..." />
-      </div>
-    </div>
-  );
-
-  const Step2 = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <Input label="Rent (₹)" name="rent" type="number" placeholder="e.g. 15000" />
-      <Input label="Deposit (₹)" name="deposit" type="number" placeholder="e.g. 30000" />
-      <div className="flex items-center gap-2">
-        <label className="text-secondary-text">Is Available?</label>
-        <input
-          type="checkbox"
-          checked={formData.isAvailable || false}
-          onChange={(e) => updateFormData({ isAvailable: e.target.checked })}
-        />
-      </div>
-    </div>
-  );
-
-  const Step3 = () => {
-    const amenities = ['WiFi', 'AC', 'Parking', 'Geyser', 'TV'];
-    return (
-      <div className="flex flex-col gap-4">
-        <div>
-          <label className="text-secondary-text">Amenities</label>
-          <div className="flex flex-wrap gap-2 mt-2">
-            {amenities.map((item) => (
-              <label
-                key={item}
-                className="bg-cards-bg text-primary-text px-3 py-1 rounded cursor-pointer hover:bg-main-purple/40"
-              >
-                <input
-                  type="checkbox"
-                  className="mr-2"
-                  checked={formData.amenities?.includes(item) || false}
-                  onChange={(e) => {
-                    const selected = formData.amenities || [];
-                    updateFormData({
-                      amenities: e.target.checked
-                        ? [...selected, item]
-                        : selected.filter((a) => a !== item),
-                    });
-                  }}
-                />
-                {item}
-              </label>
-            ))}
-          </div>
-        </div>
-        <Input label="Average Rating" name="rating" type="number" placeholder="1-5" />
-      </div>
-    );
-  };
-
-  const Step4 = () => (
-    <div className="flex flex-col gap-4">
-      <Input label="Image URL" name="image" placeholder="e.g. https://imagehost.com/photo.jpg" />
-      <Input label="Latitude" name="lat" placeholder="e.g. 18.5204" />
-      <Input label="Longitude" name="lng" placeholder="e.g. 73.8567" />
-    </div>
-  );
-
-  const Review = () => (
-    <div className="bg-cards-bg p-4 rounded text-primary-text">
-      <pre className="whitespace-pre-wrap break-words">{JSON.stringify(formData, null, 2)}</pre>
-    </div>
-  );
-
-  const renderStep = () => {
-    switch (step) {
-      case 0:
-        return <Step1 />;
-      case 1:
-        return <Step2 />;
-      case 2:
-        return <Step3 />;
-      case 3:
-        return <Step4 />;
-      case 4:
-        return <Review />;
-      default:
-        return null;
+      // Convert fields that should be numbers
+      const preparedData = {
+        ...data,
+        rent: Number(data.rent),
+        deposit: Number(data.deposit),
+        averageRating: Number(data.averageRating),
+        roomDetails: {
+          beds: Number(data.roomDetails.beds),
+          occupiedBeds: Number(data.roomDetails.occupiedBeds),
+        },
+        landlord_name: name, // Add landlord name to the data
+      };
+      const response = await fetch('http://localhost:3000/api/property/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(preparedData),
+      });
+  
+      if (response.ok) {
+        alert('Property listed successfully!');
+      } else {
+        const errorData = await response.json();
+        console.error('Error response:', errorData);
+        alert('Failed to list the property. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('An error occurred. Please check the console for details.');
     }
   };
+  
+  
+  
+  // Check if current step is completed
+  const isStepCompleted = () => {
+    if (step === 0) {
+      return methods.formState.isValid && methods.formState.isDirty;
+    }
+    if (step === 1) {
+      return methods.formState.isValid && methods.formState.isDirty;
+    }
+    if (step === 2) {
+      return methods.formState.isValid && methods.formState.isDirty;
+    }
+    if (step === 3) {
+      return methods.formState.isValid && methods.formState.isDirty;
+    }
+    if (step === 4) {
+      return true; // Always enable next for review step
+    }
+    return false;
+  };
 
-  const completionPercentage = Math.round(((step + 1) / steps.length) * 100);
+  const getStepClass = (index) => {
+    if (index < step) return 'text-main-purple';
+    if (index === step) return 'text-white bg-main-purple';
+    return 'text-gray-500';
+  };
 
   return (
-    <div className="min-h-screen bg-main-bg text-primary-text py-10 px-6 sm:px-20">
-      <div className="max-w-4xl mx-auto bg-sub-bg p-8 rounded-xl shadow-xl">
-        <h1 className="text-3xl font-bold mb-6">Add New Property</h1>
-        <div className="flex gap-2 mb-6">
-          {steps.map((s, i) => (
-            <div
-              key={s}
-              className={`px-4 py-2 text-sm rounded-full transition-all duration-200 ${
-                i === step
-                  ? 'bg-main-purple text-white'
-                  : formData[steps[i].toLowerCase().replace(/ & /g, '').replace(/ /g, '')]
-                  ? 'bg-green-500 text-white'
-                  : 'bg-cards-bg text-tertiary-text'
-              }`}
-            >
-              {s}
+    <FormProvider {...methods}>
+      <div className="min-h-screen bg-main-bg text-primary-text py-10 px-6 sm:px-20">
+        <div className="max-w-4xl mx-auto bg-sub-bg p-8 rounded-xl shadow-xl">
+          <h1 className="text-3xl font-bold mb-6">Add New Property</h1>
+
+          {/* Step Indicator */}
+          <div className="flex justify-between items-center mb-6">
+            {[...Array(5)].map((_, index) => (
+              <div key={index} className="flex flex-col items-center justify-center relative">
+                {/* Step Circle */}
+                <div
+                  className={`w-12 h-12 flex items-center justify-center rounded-full border-2 transition-all duration-300 ${getStepClass(
+                    index
+                  )} ${index < step ? 'bg-main-purple border-main-purple' : 'border-main-purple'}`}
+                >
+                  {index < step ? (
+                    <FaCheckCircle className="text-white w-6 h-6" />
+                  ) : index === step ? (
+                    index === 0 ? (
+                      <FaFileAlt className="w-6 h-6 text-white" />
+                    ) : index === 1 ? (
+                      <FaDollarSign className="w-6 h-6 text-white" />
+                    ) : index === 2 ? (
+                      <FaCogs className="w-6 h-6 text-white" />
+                    ) : index === 3 ? (
+                      <FaMapMarkerAlt className="w-6 h-6 text-white" />
+                    ) : (
+                      <FaCheckCircle className="w-6 h-6 text-white" />
+                    )
+                  ) : index === 0 ? (
+                    <FaFileAlt className="w-6 h-6 text-gray-500" />
+                  ) : index === 1 ? (
+                    <FaDollarSign className="w-6 h-6 text-gray-500" />
+                  ) : index === 2 ? (
+                    <FaCogs className="w-6 h-6 text-gray-500" />
+                  ) : index === 3 ? (
+                    <FaMapMarkerAlt className="w-6 h-6 text-gray-500" />
+                  ) : (
+                    <FaCheckCircle className="w-6 h-6 text-gray-500" />
+                  )}
+                </div>
+
+                {/* Connecting Line */}
+                {index < 4 && (
+                  <div className="absolute top-5 left-16 w-[120px] -z-1 h-1 bg-main-purple"></div>
+                )}
+
+                {/* Step Label */}
+                <div className="mt-2 text-center text-sm">
+                  {index === 0 && 'Basic Info'}
+                  {index === 1 && 'Pricing'}
+                  {index === 2 && 'Features'}
+                  {index === 3 && 'Media'}
+                  {index === 4 && 'Review'}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Step Content */}
+          <div className="mb-6">
+            {step === 0 && <Step1BasicInfo />}
+            {step === 1 && <Step2Pricing />}
+            {step === 2 && <Step3Features />}
+            {step === 3 && <Step4MediaLocation />}
+            {step === 4 && (
+              <div className="flex flex-col gap-6">
+                <h2 className="text-2xl font-semibold mb-4">Review Your Details</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {/* Display all the form data here */}
+                  <div className="bg-cards-bg px-6 py-4 rounded shadow focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text">
+                    <strong>Title:</strong> <span className="text-gray-300">{methods.getValues('title')}</span>
+                  </div>
+                  <div className="bg-cards-bg px-6 py-4 rounded shadow focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text">
+                    <strong>Location:</strong> <span className="text-gray-300">{methods.getValues('location')}</span>
+                  </div>
+                  <div className="bg-cards-bg px-6 py-4 rounded shadow focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text">
+                    <strong>Address:</strong> <span className="text-gray-300">{methods.getValues('address')}</span>
+                  </div>
+                  <div className="bg-cards-bg px-6 py-4 rounded shadow focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text">
+                    <strong>Rent:</strong> <span className="text-gray-300">{methods.getValues('rent')}</span>
+                  </div>
+                  <div className="bg-cards-bg px-6 py-4 rounded shadow focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text">
+                    <strong>Deposit:</strong> <span className="text-gray-300">{methods.getValues('deposit')}</span>
+                  </div>
+                  <div className="bg-cards-bg px-6 py-4 rounded shadow focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text">
+                    <strong>Amenities:</strong> <span className="text-gray-300">{methods.getValues('amenities').join(', ')}</span>
+                  </div>
+                  
+                  {/* Images Section - Spans full row and larger images */}
+                  <div className="bg-cards-bg px-6 py-4 rounded shadow focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text col-span-2">
+                    <strong>Images:</strong>
+                    <div className="flex flex-wrap gap-4 mt-2 justify-center">
+                      {methods.getValues('images').map((img, index) => (
+                        <img
+                          key={index}
+                          src={img}
+                          alt={`img-${index}`}
+                          className="h-40 w-40 object-cover rounded-lg shadow-lg"
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="bg-cards-bg px-6 py-4 rounded shadow focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text">
+                    <strong>Latitude:</strong> <span className="text-gray-300">{methods.getValues('latitude')}</span>
+                  </div>
+                  <div className="bg-cards-bg px-6 py-4 rounded shadow focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text">
+                    <strong>Longitude:</strong> <span className="text-gray-300">{methods.getValues('longitude')}</span>
+                  </div>
+                  <div className="bg-cards-bg px-6 py-4 rounded shadow focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text">
+                    <strong>Property Type:</strong> <span className="text-gray-300">{methods.getValues('propertyType')}</span>
+                  </div>
+                  <div className="bg-cards-bg px-6 py-4 rounded shadow focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text">
+                    <strong>Flat Type:</strong> <span className="text-gray-300">{methods.getValues('flatType')}</span>
+                  </div>
+                  <div className="bg-cards-bg px-6 py-4 rounded shadow focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text">
+                    <strong>Room Details:</strong>
+                    <div className="text-gray-300">Beds: {methods.getValues('roomDetails.beds')}</div>
+                    <div className="text-gray-300">Occupied: {methods.getValues('roomDetails.occupiedBeds')}</div>
+                  </div>
+                  <div className="bg-cards-bg px-6 py-4 rounded shadow focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text">
+                    <strong>Area:</strong> <span className="text-gray-300">{methods.getValues('area')} sq ft</span>
+                  </div>
+                  <div className="bg-cards-bg px-6 py-4 rounded shadow focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text">
+                    <strong>Verified:</strong> <span className="text-gray-300">{methods.getValues('isVerified') ? 'Yes' : 'No'}</span>
+                  </div>
+                  <div className="bg-cards-bg px-6 py-4 rounded shadow focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text">
+                    <strong>Average Rating:</strong> <span className="text-gray-300">{methods.getValues('averageRating')}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+
+          </div>
+
+          {/* Navigation Buttons */}
+          <div className="flex justify-between items-center">
+            <div>
+              {step > 0 && (
+                <button
+                  onClick={prevStep}
+                  className="px-6 py-2 rounded bg-logout-red text-logout-text"
+                >
+                  Back
+                </button>
+              )}
             </div>
-          ))}
-        </div>
 
-        <div className="mb-6">{renderStep()}</div>
-
-        <div className="flex justify-between items-center">
-          <span className="text-sm text-secondary-text">{completionPercentage}% Completed</span>
-          <div className="flex gap-4">
-            {step > 0 && (
-              <button onClick={prevStep} className="px-6 py-2 rounded bg-logout-red text-logout-text">
-                Back
-              </button>
-            )}
-
-            {step < steps.length - 1 ? (
-              <button onClick={nextStep} className="ml-auto px-6 py-2 rounded bg-main-purple text-white">
-                Next
-              </button>
-            ) : (
-              <button onClick={handleSubmit} className="ml-auto px-6 py-2 rounded bg-logo-blue text-white">
-                Submit Property
-              </button>
-            )}
+            <div>
+              {step < 4 ? (
+                <button
+                  onClick={nextStep}
+                  disabled={!isStepCompleted()}
+                  className={`ml-auto px-6 py-2 rounded ${!isStepCompleted() ? 'bg-gray-300' : 'bg-main-purple'} text-white`}
+                >
+                  Next
+                </button>
+              ) : (
+                <button
+                  onClick={methods.handleSubmit(handleSubmit)}
+                  className="ml-auto px-6 py-2 rounded bg-logo-blue text-white"
+                >
+                  Final Submit
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </FormProvider>
   );
 };
 

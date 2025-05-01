@@ -5,6 +5,7 @@ const z = require("zod");
 // Updated propertySchema (without `roomType`)
 const propertySchema = z.object({
     title: z.string().min(3).max(50),
+    landlord_name: z.string().min(3).max(50), // new
     location: z.string().min(3).max(50),
     rent: z.number().min(1),
     amenities: z.array(z.string()).min(1),
@@ -33,7 +34,6 @@ const createProperty = async (req, res, next) => {
     try {
         const validatedData = validateInput(propertySchema, req.body);
         const landlord_id = req.user.user.id;
-
         const property = await Property.create({
             landlord_id,
             ...validatedData,

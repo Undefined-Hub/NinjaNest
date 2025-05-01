@@ -13,6 +13,7 @@ import { FiSettings } from "react-icons/fi";
 import { FiLogOut } from "react-icons/fi";
 import { AiOutlinePlus } from "react-icons/ai";
 import { AiOutlineBell } from "react-icons/ai";
+import axios from 'axios';
 
 const menuItems = [
     { label: "Overview", icon: <AiOutlineHome /> },
@@ -170,100 +171,77 @@ const ProfilePage = () => {
     )
 }
 
-const MyProperties = () => {
-    const properties = [
-        {
-            id: 1,
-            name: 'Nagala Park Property',
-            title: 'Bhoot Bangla',
-            distance: '1.2 Kilometers away from D. Y. Patil College',
-            roomType: '3 BHK',
-            floor: '5th Floor',
-            image: house1,
-        },
-        {
-            id: 2,
-            name: 'Kasaba Bawada Property',
-            title: 'Hogwarts Castle',
-            distance: '0.3 Kilometers away from D. Y. Patil College',
-            roomType: '3 BHK',
-            floor: '5th Floor',
-            image: house1,
-        },
-        {
-            id: 3,
-            name: 'Shivaji Peth Property',
-            title: 'Royal Palace',
-            distance: '2.0 Kilometers away from D. Y. Patil College',
-            roomType: '2 BHK',
-            floor: '3rd Floor',
-            image: house1,
-        },
-        {
-            id: 4,
-            name: 'Rajarampuri Property',
-            title: 'Modern Villa',
-            distance: '1.5 Kilometers away from D. Y. Patil College',
-            roomType: '4 BHK',
-            floor: '2nd Floor',
-            image: house1,
-        },
-        {
-            id: 5,
-            name: 'Tarabai Park Property',
-            title: 'Green Meadows',
-            distance: '0.8 Kilometers away from D. Y. Patil College',
-            roomType: '3 BHK',
-            floor: '1st Floor',
-            image: house1,
-        },
-    ];
-
-    return (
-        <div className='flex flex-col w-full space-y-4 '>
-            <button className='flex items-center justify-center space-x-2 w-1/5 bg-main-purple hover:bg-[#6b2bd2] transition-all duration-300 p-3 rounded-lg self-end'>
-                <AiOutlinePlus className='text-white text-base' />
-                <span className='text-white font-semibold text-sm'>Add Property</span>
-            </button>
 
 
-            <div className='w-full  flex flex-col space-y-6 h-[75vh] overflow-y-auto'>
-                {properties.map((property) => (
-                    <div key={property.id} className='w-full bg-sub-bg rounded-xl p-5'>
-                        <div className='flex justify-between'>
-                            <p className='text-white text-lg font-bold'>{property.name}</p>
-                            <p className='text-tertiary-text text-base font-semibold hover:cursor-pointer hover:underline'>
-                                View Details
-                            </p>
-                        </div>
-                        <div className='flex flex-col md:flex-row gap-3 mt-3'>
-                            <img
-                                src={property.image}
-                                alt={property.title}
-                                className='w-full md:w-1/2 h-44 object-cover rounded-xl'
-                            />
-                            <div className='flex flex-col space-y-2 w-full md:w-1/2'>
-                                <p className='text-white text-lg font-semibold'>{property.title}</p>
-                                <p className='text-secondary-text font-semibold text-base'>{property.distance}</p>
-                                <div className='grid grid-cols-2 gap-3'>
-                                    <div className='flex flex-col bg-cards-bg rounded-xl p-2'>
-                                        <p className='text-secondary-text text-base font-semibold'>Room Type</p>
-                                        <p className='text-white text-base font-semibold'>{property.roomType}</p>
+    const MyProperties = () => {
+        const [properties, setProperties] = useState([]);
+        const navigate = useNavigate();
+
+        useEffect(() => {
+            const fetchProperties = async () => {
+                try {
+                    const response = await axios.get('http://localhost:3000/api/property/');
+                    console.log('Fetched properties:', response.data.properties);
+                    setProperties(response.data.properties);
+                } catch (error) {
+                    console.error('Error fetching properties:', error);
+                }
+            };
+
+            fetchProperties();
+        }, []);
+
+        return (
+            <div className='flex flex-col w-full space-y-4'>
+                <button
+                    className='flex items-center justify-center space-x-2 w-1/5 bg-main-purple hover:bg-[#6b2bd2] transition-all duration-300 p-3 rounded-lg self-end'
+                    onClick={() => navigate('/add-property')}
+                >
+                    <AiOutlinePlus className='text-white text-base' />
+                    <span className='text-white font-semibold text-sm'>Add Property</span>
+                </button>
+
+                <div className='w-full flex flex-col space-y-6 h-[75vh] overflow-y-auto'>
+                    {properties.map((property, index) => (
+                        <div key={index} className='w-full bg-sub-bg rounded-xl p-5'>
+                            <div className='flex justify-between'>
+                                <p className='text-white text-lg font-bold'>{property.title}</p>
+                                <p
+                                    className='text-tertiary-text text-base font-semibold hover:cursor-pointer hover:underline'
+                                    onClick={() => navigate(`/properties/property/${property._id}`)}
+                                >
+                                    View Details
+                                </p>
+                            </div>
+                            <div className='flex flex-col md:flex-row gap-3 mt-3'>
+                                <img
+                                    src={property.mainImage}
+                                    alt={property.title}
+                                    className='w-full md:w-1/2 h-44 object-cover rounded-xl'
+                                />
+                                <div className='flex flex-col space-y-2 w-full md:w-1/2'>
+                                    <p className='text-white text-lg font-semibold'>{property.location}</p>
+                                    <p className='text-secondary-text font-semibold text-base'>{property.address}</p>
+                                    <div className='grid grid-cols-2 gap-3'>
+                                        <div className='flex flex-col bg-cards-bg rounded-xl p-2'>
+                                            <p className='text-secondary-text text-base font-semibold'>Rent</p>
+                                            <p className='text-white text-base font-semibold'>₹{property.rent}</p>
+                                        </div>
+                                        <div className='flex flex-col bg-cards-bg rounded-xl p-2'>
+                                            <p className='text-secondary-text text-base font-semibold'>Deposit</p>
+                                            <p className='text-white text-base font-semibold'>₹{property.deposit}</p>
+                                        </div>
                                     </div>
-                                    <div className='flex flex-col bg-cards-bg rounded-xl p-2'>
-                                        <p className='text-secondary-text text-base font-semibold'>Floor</p>
-                                        <p className='text-white text-base font-semibold'>{property.floor}</p>
-                                    </div>
+                                    <p className='text-secondary-text text-sm'>{property.description.slice(0, 100)}...</p>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                ))}
+                    ))}
+                </div>
             </div>
-        </div>
-    );
-}
-
+        );
+    };
+   
 
 
 

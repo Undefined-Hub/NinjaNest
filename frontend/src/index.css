@@ -1,7 +1,21 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import "leaflet/dist/leaflet.css";
+@import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
+@import "leaflet-control-geocoder/dist/Control.Geocoder.css";
 
+
+.leaflet-control-geosearch form input {
+    color: black !important;
+  }
+.leaflet-control-geosearch form input::placeholder {
+    color: #666 !important;
+  }  
+
+  .leaflet-control-geosearch .results > * {
+    color: #000 !important;
+  }
 /* Hide scrollbar for Webkit browsers */
 ::-webkit-scrollbar {
     width: 0px;
