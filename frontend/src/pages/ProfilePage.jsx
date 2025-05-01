@@ -13,7 +13,9 @@ import { FiSettings } from "react-icons/fi";
 import { FiLogOut } from "react-icons/fi";
 import { AiOutlinePlus } from "react-icons/ai";
 import { AiOutlineBell } from "react-icons/ai";
-import axios from 'axios';
+
+import axios from 'axios'
+import { MdManageAccounts } from "react-icons/md";
 
 const menuItems = [
     { label: "Overview", icon: <AiOutlineHome /> },
@@ -164,6 +166,10 @@ const ProfilePage = () => {
                         {activeTab === 'My Properties' &&
                             <MyProperties /> // Call the MyProperties component here
                         }
+                        {activeTab === 'Notifications' && 
+                        <Notifications/>
+
+                        }
                     </div>
                 </div>
             </div>
@@ -172,6 +178,281 @@ const ProfilePage = () => {
 }
 
 
+
+
+
+const Notifications = () => {
+    const [notifications, setNotifications] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [showModal, setShowModal] = useState(false); 
+    const {user} = useSelector((state)=>state.user)
+    const user_id =  user.user;// Assuming userId is stored in localStorage
+    // console.log(user_id)
+    useEffect(() => {
+        const fetchNotifications = async () => {
+            try {
+                const response = await axios.get('http://localhost:3000/api/request', {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                });
+                console.log(user_id._id === response.data[0].requestorId._id)
+                // Filter requests where the user is either the requestor or the owner
+                const userRequests = response.data.filter(
+                    (request) => request.requestorId._id === user_id._id || request.ownerId._id === user_id._id
+                );
+                console.log(userRequests)
+                setNotifications(userRequests);
+                setLoading(false);
+            } catch (err) {
+                console.error('Error fetching notifications:', err);
+                setError('Failed to load notifications.');
+                setLoading(false);
+            }
+        };
+
+        fetchNotifications();
+    }, [user_id._id]);
+
+    const getStatusColor = (status) => {
+        switch (status) {
+            case 'pending':
+                return 'text-yellow-500';
+            case 'accepted':
+                return 'text-green-500';
+            case 'rejected':
+                return 'text-red-500';
+            default:
+                return 'text-secondary-text';
+        }
+    };
+
+    const getNotificationMessage = (notification, userId) => {
+        if (notification.requestorId._id === userId) {
+            switch (notification.status) {
+                case 'accepted':
+                    return 'Request Accepted by Owner.';
+                case 'rejected':
+                    return 'Owner Rejected Your Request.';
+                default:
+                    return 'Request Sent to Owner is reviewing your request.';
+            }
+        } else {
+            return notification.message;
+        }
+    };
+    const handleRequestsClick = () => {
+        console.log('Requests button clicked!'+notifications);
+        setShowModal(true); // Show the modal when the button is clicked
+    };
+
+    const closeModal = () => {
+        setShowModal(false); // Close the modal
+    };
+
+    if (loading) {
+        return <p className="text-white">Loading notifications...</p>;
+    }
+
+    if (error) {
+        return <p className="text-red-500">{error}</p>;
+    }
+
+    return (
+        <div className="flex flex-col w-full space-y-4">
+            <div className='flex justify-between items-center'>
+                <p className="text-white text-lg font-bold">Notifications</p>
+                <button onClick={handleRequestsClick} className="flex items-center justify-center space-x-2 w-1/5 bg-main-purple hover:bg-[#6b2bd2] transition-all duration-300 p-2 rounded-lg self-end">
+                    <MdManageAccounts className="text-white text-base" />
+                    <span className="text-white font-semibold text-sm">Requests</span>
+                </button>
+                {/* Modal for property requests */}
+                {showModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                        <div className="bg-sub-bg rounded-xl p-5 w-3/4 max-h-[80vh]">
+                            <div className="flex justify-between items-center mb-4 h-6 overflow-y-auto">
+                                <p className="text-white text-lg font-bold">Property Requests</p>
+                                <button
+                                    onClick={closeModal}
+                                    className="text-white text-lg font-bold hover:text-red-500"
+                                >
+                                    &times;
+                                </button>
+                            </div>
+                            {notifications.length > 0 ? (
+                                <div className="flex flex-col space-y-3 overflow-y-auto h-[60vh]">
+                                    {notifications
+                                        .filter(notification => notification.ownerId._id === user_id._id)
+                                        .map((notification) => (
+                                            <div
+                                                key={notification._id}
+                                                className="flex flex-col bg-cards-bg rounded-xl p-4 space-y-2"
+                                            >
+                                                <div className="flex justify-between">
+                                                    <p className="text-white text-base font-semibold">
+                                                        {notification.requestorName} is interested in your property.
+                                                    </p>
+                                                    <p
+                                                        className={`text-base font-semibold ${getStatusColor(
+                                                            notification.status
+                                                        )}`}
+                                                    >
+                                                        {notification.status}
+                                                    </p>
+                                                </div>
+                                                
+                                                <p className="text-secondary-text text-sm font-semibold">
+                                                    Property ID: {notification.propertyId._id}
+                                                </p>
+                                                <p className="text-secondary-text text-sm font-semibold">
+                                                    Requested Price: ₹{(notification.requestedPrice.min && notification.requestedPrice.max)?notification.requestedPrice.min+" - "+notification.requestedPrice.max:(notification.requestedPrice?.fixed)}
+                                                </p>
+                                                {notification.status === 'pending' && (
+                                                    <div className="flex space-x-3 mt-2">
+                                                        <button
+                                                            onClick={async () => {
+                                                                try {
+                                                                    // Accept the request
+                                                                    await axios.put(
+                                                                        `http://localhost:3000/api/request/${notification._id}`,
+                                                                        { status: 'accepted' },
+                                                                        {
+                                                                            headers: {
+                                                                                Authorization: `Bearer ${localStorage.getItem('token')}`,
+                                                                            },
+                                                                        }
+                                                                    );
+
+                                                                    // Update the requestor's current rental
+                                                                    await axios.put(
+                                                                        `http://localhost:3000/api/user/updateUser/${notification.requestorId._id}`,
+                                                                        { currentRental: notification.propertyId._id },
+                                                                        {
+                                                                            headers: {
+                                                                                Authorization: `Bearer ${localStorage.getItem('token')}`,
+                                                                            },
+                                                                        }
+                                                                    );
+
+                                                                    // Update the property's availability
+                                                                    try {
+                                                                        const propertyResponse = await axios.get(
+                                                                            `http://localhost:3000/api/property/${notification.propertyId._id}`,
+                                                                            {
+                                                                                headers: {
+                                                                                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                                                                                },
+                                                                            }
+                                                                        );
+
+                                                                        const updatedProperty = {
+                                                                            ...propertyResponse.data.property,
+                                                                            isAvailable: false,
+                                                                        };
+                                                                        console.log(updatedProperty)
+                                                                        await axios.put(
+                                                                            `http://localhost:3000/api/property/${notification.propertyId._id}`,
+                                                                            updatedProperty,
+                                                                            {
+                                                                                headers: {
+                                                                                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                                                                                },
+                                                                            }
+                                                                        );
+                                                                    } catch (err) {
+                                                                        console.error('Error updating property availability:', err);
+                                                                    }
+
+                                                                    // Update the notifications state
+                                                                    setNotifications((prev) =>
+                                                                        prev.map((notif) =>
+                                                                            notif._id === notification._id
+                                                                                ? { ...notif, status: 'accepted' }
+                                                                                : notif
+                                                                        )
+                                                                    );
+                                                                } catch (err) {
+                                                                    console.error('Error processing request:', err);
+                                                                }
+                                                            }}
+                                                            className="space-x-2 w-1/5 text-white font-bold bg-main-purple hover:bg-[#6b2bd2] transition-all duration-300 p-2 rounded-lg"
+                                                        >
+                                                            Accept
+                                                        </button>
+                                                        <button
+                                                            onClick={async () => {
+                                                                try {
+                                                                    await axios.put(
+                                                                        `http://localhost:3000/api/request/${notification._id}`,
+                                                                        { status: 'rejected' },
+                                                                        {
+                                                                            headers: {
+                                                                                Authorization: `Bearer ${localStorage.getItem('token')}`,
+                                                                            },
+                                                                        }
+                                                                    );
+                                                                    setNotifications((prev) =>
+                                                                        prev.map((notif) =>
+                                                                            notif._id === notification._id
+                                                                                ? { ...notif, status: 'rejected' }
+                                                                                : notif
+                                                                        )
+                                                                    );
+                                                                } catch (err) {
+                                                                    console.error('Error rejecting request:', err);
+                                                                }
+                                                            }}
+                                                            className="bg-secondary-text text-white font-bold px-4 py-2 rounded-lg hover:bg-primary-text hover:text-black"
+                                                        >
+                                                            Reject
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                </div>
+                            ) : (
+                                <p className="text-secondary-text text-base font-semibold">
+                                    No requests found for your properties.
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                )}
+            </div>
+            <div className="w-full flex flex-col space-y-3 h-[64vh] overflow-y-auto">
+                {notifications.map((notification) => (
+                    <div
+                        key={notification._id}
+                        className="flex items-center justify-between bg-cards-bg rounded-xl p-4"
+                    >
+                        <div className="flex flex-col">
+                            <p className="text-white text-base font-semibold">
+                                {getNotificationMessage(notification, user_id._id)}
+                            </p>
+                            <p className="text-secondary-text text-sm font-semibold">
+                                Type: {notification.requestorId._id === user_id._id ? 'Sent' : 'Received'}
+                            </p>
+                            <p className="text-secondary-text text-sm font-semibold">
+                                Requested Price: ₹{(notification.requestedPrice.min && notification.requestedPrice.max)?notification.requestedPrice.min+" - "+notification.requestedPrice.max:(notification.requestedPrice?.fixed)}
+                            </p>
+                        </div>
+                        <p
+                            className={`text-base font-semibold ${getStatusColor(
+                                notification.status
+                            )}`}
+                        >
+                            {notification.status}
+                        </p>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+   
 
     const MyProperties = () => {
         const [properties, setProperties] = useState([]);
