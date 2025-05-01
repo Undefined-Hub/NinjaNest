@@ -35,6 +35,7 @@ const createProperty = async (req, res, next) => {
         const validatedData = validateInput(propertySchema, req.body);
         const landlord_id = req.user.user.id;
         const property = await Property.create({
+            landlord_name: validatedData.landlord_name, // new
             landlord_id,
             ...validatedData,
             isVerified: false,

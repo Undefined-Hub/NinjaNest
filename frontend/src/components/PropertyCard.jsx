@@ -60,7 +60,7 @@ const PropertyCard = ({ property }) => {
               />
             </div>
             <div>
-              <p className="text-md font-bold">Landlord</p>
+              <p className="text-md font-bold">{property.landlord_name?property.landlord_name:"Landlord XYZ"}</p>
               <p className="text-sm flex items-center gap-1 text-[#727986] text-md">
                 <span className="text-green-500">
                   <IoShieldCheckmark />

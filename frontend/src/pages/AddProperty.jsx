@@ -41,7 +41,6 @@ const AddProperty = () => {
       const userState = localStorage.getItem('userState');
       const parsedState = JSON.parse(userState);
       const name = parsedState.user.user.name;
-
       // Convert fields that should be numbers
       const preparedData = {
         ...data,
