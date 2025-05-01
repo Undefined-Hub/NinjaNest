@@ -7,8 +7,9 @@ const PropertyCard = ({ property }) => {
   return (
     <div
       id=""
-      className="flex flex-col w-[21rem] md:w-[22rem] rounded-2xl bg-[#18212f] justify-center h-fit overflow-hidden md:border-[0.1px] md:border-secondary-text hover:border-main-purple ease-in-out duration-300 cursor-pointer shadow-sm hover:shadow-[#a98cfc]" onClick={()=>{navigate("property/"+property._id)}}>
-      <div className="w-[21rem] md:w-[22rem] h-40">
+      className="flex flex-col w-[21rem] md:w-96 rounded-2xl bg-[#18212f] justify-center h-fit overflow-hidden md:border-[0.1px] md:border-secondary-text hover:border-main-purple ease-in-out duration-300 cursor-pointer shadow-sm hover:shadow-[#a98cfc]" onClick={()=>{navigate("property/"+property._id)}}>
+        {/* Image Div */}
+      <div className="w-[21rem] md:w-full h-40">
         <img
           src={property.images[0] || "https://placehold.co/1000"}
           className="object-cover w-full h-full"
@@ -23,24 +24,31 @@ const PropertyCard = ({ property }) => {
 
       <div className="flex flex-col px-2">
         <div className="flex justify-between text-white py-2">
+
+          {/* Title and Location*/}
           <div className="flex flex-col p-2 gap-1">
-          <p className="font-bold text-xl line-clamp-1">{property.title}</p>
+            <p className="font-bold text-xl line-clamp-1">{property.title}</p>
 
             <p className="text-sm flex items-center gap-1 text-[#727986]">
               <FaLocationDot />
               {property.location}
             </p>
           </div>
-          <div className="flex flex-col p-2 gap-1 items-center">
+
+          {/* Rent per month*/}
+          <div className="flex flex-col p-2 gap-1 justify-end items-end w-1/4">
             <h1 className="font-bold text-xl text-right text-[#a98cfc]">
               <span>₹</span>
               {property.rent?.toLocaleString('en-IN')}
             </h1>
-            <p className="text-sm text-[#727986]">per month</p>
+            <p className="text-xs text-[#727986]">per month</p>
           </div>
         </div>
 
         <hr className="w-72 md:w-80 self-center border-[#727986]" />
+
+
+          {/*Trust Score and Rating*/}
 
         <div className="flex justify-between text-white py-2">
           <div className="flex flex-row p-2 items-center gap-2">

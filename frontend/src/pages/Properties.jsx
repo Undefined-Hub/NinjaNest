@@ -53,7 +53,7 @@ function Properties() {
   }, [filters]);
 
   return (
-    <div className="w-screen bg-[#111827] p-10 md:py-14 md:px-6 flex flex-col md:flex-row md:justify-center">
+    <div className="w-screen bg-[#111827] p-10 md:py-14 md:px-6 md:gap-6 flex flex-col md:flex-row md:justify-center">
 
       <div className="bg-[#18212f] md:w-64 h-fit rounded-2xl text-white p-4 my-4">
         <Filters filters={filters} setFilters={setFilters} />
