@@ -9,6 +9,7 @@ export const fetchUser = createAsyncThunk("user/fetchDetails", async (data) => {
             "Authorization": `Bearer ${localStorage.getItem("token")}`,
         },
     });
+    console.log('Reached')
     const user = await response.json();
     console.log("User Details (userSlice): ", user);
     return user;
