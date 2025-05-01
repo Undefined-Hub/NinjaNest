@@ -14,10 +14,12 @@ import { BiCreditCard } from "react-icons/bi";
 import { FiSettings } from "react-icons/fi";
 import { FiLogOut } from "react-icons/fi";
 import { AiOutlinePlus } from "react-icons/ai";
+import { AiOutlineBell } from "react-icons/ai";
 
 const menuItems = [
   { label: "Overview", icon: <AiOutlineHome /> },
   { label: "My Properties", icon: <FaRegBuilding /> },
+{ label: "Notifications", icon: <AiOutlineBell /> },
   { label: "Roommates", icon: <FaUserFriends /> },
   { label: "Payment", icon: <BiCreditCard /> },
   { label: "Settings", icon: <FiSettings /> },

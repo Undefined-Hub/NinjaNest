@@ -22,7 +22,10 @@ const propertySchema = z.object({
     roomDetails: z.object({                    // new
         beds: z.number().nullable().optional(),
         occupiedBeds: z.number().nullable().optional()
-    }).optional()
+    }).optional(),
+    isVerified: z.boolean().optional(),            // new
+    averageRating: z.number().optional(),         // new
+    averageTrustScore: z.number().optional(), // new
 });
 
 // ! Create a new property

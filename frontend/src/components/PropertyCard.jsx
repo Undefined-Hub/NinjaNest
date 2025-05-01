@@ -9,14 +9,14 @@ const PropertyCard = ({ property }) => {
       id=""
       className="flex flex-col w-[21rem] md:w-96 rounded-2xl bg-[#18212f] justify-center h-fit overflow-hidden md:border-[0.1px] md:border-secondary-text hover:border-main-purple ease-in-out duration-300 cursor-pointer shadow-sm hover:shadow-[#a98cfc]" onClick={()=>{navigate("property/"+property._id)}}>
         {/* Image Div */}
-      <div className="w-[21rem] md:w-full h-40">
+      <div className="w-[21rem] md:w-full h-40 relative">
         <img
           src={property.images[0] || "https://placehold.co/1000"}
           className="object-cover w-full h-full"
           alt={property.title}
         />
         {property.isVerified && (
-          <p className="relative left-[13.2rem] bottom-[9.5rem] text-white font-bold bg-green-400 rounded-xl text-center w-fit px-2 text-sm">
+          <p className="absolute right-3 top-3 text-white font-bold bg-green-400 rounded-xl text-center w-fit px-2 text-sm">
             Verified
           </p>
         )}

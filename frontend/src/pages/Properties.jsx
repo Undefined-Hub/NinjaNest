@@ -62,13 +62,13 @@ function Properties() {
   }, [filters]);
 
   return (
-    <div className="w-screen bg-[#111827] p-10 md:py-14 md:px-6 md:gap-6 flex flex-col md:flex-row md:justify-center">
+    <div className="w-screen bg-[#111827] p-10 md:py-4 md:px-6 md:gap-6 flex flex-col md:flex-row md:justify-center">
 
-      <div className="bg-[#18212f] md:w-64 h-fit rounded-2xl text-white p-4 my-4">
+      <div className="bg-[#18212f] md:w-1/6 h-fit rounded-2xl text-white p-4 my-4">
         <Filters filters={filters} setFilters={setFilters} />
       </div>
 
-      <div className="md:w-5/6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 gap-y-4 md:p-4" id="propertiesContainer">
+      <div className="w-5/6 flex flex-wrap gap-4 md:p-4 h-[110vh] overflow-y-auto" id="propertiesContainer">
         {properties.map((property) => (
           <PropertyCard key={property._id} property={property} />
         ))}
@@ -135,6 +135,7 @@ const Filters = ({ filters, setFilters }) => {
       {/* Property Type */}
       <div className="my-2">
         <h1 className="font-bold">Property Type</h1>
+        <div className="flex gap-2 my-2 justify-around">
         {["Flat", "Room"].map((type) => (
           <label key={type} className="flex items-center gap-2 my-1">
             <input
@@ -154,6 +155,7 @@ const Filters = ({ filters, setFilters }) => {
             {type}
           </label>
         ))}
+        </div>
       </div>
 
       {/* Flat Type */}

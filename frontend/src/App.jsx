@@ -8,7 +8,7 @@ import Properties from './pages/Properties'
 import './App.css'
 import ProfilePage from './pages/ProfilePage';
 import DetailsPage from './pages/DetailsPage';
-
+import AddProperty from './pages/AddProperty';
 function App() {
   return (
     <>
@@ -20,6 +20,7 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/properties/property/:propertyId" element={<DetailsPage />} />
           <Route path="/properties" element={<Properties />} />
+          <Route path="/add-property" element={<AddProperty />} />
         </Routes>
         <Footer />
       </Router>
