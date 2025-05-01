@@ -8,11 +8,14 @@ function Properties() {
     amenities: [],
     minRent: "",
     maxRent: "",
-    roomType: [],
+    propertyType: "",
+    flatType: [],
     isVerified: null,
     isAvailable: null,
     minRating: "",
     minTrustScore: "",
+    totalBeds: "",
+    occupiedBeds: ""
   });
 
   useEffect(() => {
@@ -27,11 +30,14 @@ function Properties() {
             amenities,
             minRent,
             maxRent,
-            roomType,
+            propertyType,
+            flatType,
             isVerified,
             isAvailable,
             minRating,
             minTrustScore,
+            totalBeds,
+            occupiedBeds,
           } = filters;
 
           return (
@@ -39,7 +45,10 @@ function Properties() {
             (amenities.length === 0 || amenities.every((a) => p.amenities.includes(a))) &&
             (!minRent || p.rent >= parseInt(minRent)) &&
             (!maxRent || p.rent <= parseInt(maxRent)) &&
-            (roomType.length === 0 || roomType.includes(p.roomType)) &&
+            (!propertyType || p.propertyType === propertyType) &&
+            (propertyType !== "Flat" || flatType.length === 0 || flatType.includes(p.flatType)) &&
+            (propertyType !== "Room" || !totalBeds || p.roomDetails?.beds === parseInt(totalBeds)) &&
+            (propertyType !== "Room" || !occupiedBeds || p.roomDetails?.occupiedBeds === parseInt(occupiedBeds)) &&
             (isVerified === null || p.isVerified === isVerified) &&
             (isAvailable === null || p.isAvailable === isAvailable) &&
             (!minRating || p.averageRating >= parseFloat(minRating)) &&
@@ -59,15 +68,11 @@ function Properties() {
         <Filters filters={filters} setFilters={setFilters} />
       </div>
 
-      <div
-        className="md:w-5/6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 gap-y-4 md:p-4"
-        id="propertiesContainer"
-      >
+      <div className="md:w-5/6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 gap-y-4 md:p-4" id="propertiesContainer">
         {properties.map((property) => (
           <PropertyCard key={property._id} property={property} />
         ))}
       </div>
-
     </div>
   );
 }
@@ -95,11 +100,14 @@ const Filters = ({ filters, setFilters }) => {
       amenities: [],
       minRent: "",
       maxRent: "",
-      roomType: [],
+      propertyType: "",
+      flatType: [],
       isVerified: null,
       isAvailable: null,
       minRating: "",
       minTrustScore: "",
+      totalBeds: "",
+      occupiedBeds: ""
     });
   };
 
@@ -107,10 +115,7 @@ const Filters = ({ filters, setFilters }) => {
     <>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-lg font-bold">Filters</h1>
-        <button
-          className="text-sm bg-[#a98cfc] px-2 rounded-full font-bold"
-          onClick={resetFilters}
-        >
+        <button className="text-sm bg-[#a98cfc] px-2 rounded-full font-bold" onClick={resetFilters}>
           Reset
         </button>
       </div>
@@ -123,56 +128,103 @@ const Filters = ({ filters, setFilters }) => {
           placeholder="e.g. Mumbai"
           className="w-full rounded-lg py-1 px-2 bg-[#111827]"
           value={filters.location}
-          onChange={(e) =>
-            setFilters((prev) => ({ ...prev, location: e.target.value }))
-          }
+          onChange={(e) => setFilters((prev) => ({ ...prev, location: e.target.value }))}
         />
       </div>
 
-      {/* Room Type */}
+      {/* Property Type */}
       <div className="my-2">
-        <h1 className="font-bold">Room Type</h1>
-        <div className="flex flex-col gap-2 my-2">
-          {["1BHK", "2BHK", "3BHK", "Flat", "Room"].map((type) => (
-            <label key={type} className="flex items-center gap-2">
+        <h1 className="font-bold">Property Type</h1>
+        {["Flat", "Room"].map((type) => (
+          <label key={type} className="flex items-center gap-2 my-1">
+            <input
+              type="radio"
+              className="w-4 h-4"
+              checked={filters.propertyType === type}
+              onChange={() =>
+                setFilters((prev) => ({
+                  ...prev,
+                  propertyType: type,
+                  flatType: [],
+                  totalBeds: "",
+                  occupiedBeds: ""
+                }))
+              }
+            />
+            {type}
+          </label>
+        ))}
+      </div>
+
+      {/* Flat Type */}
+      {filters.propertyType === "Flat" && (
+        <div className="my-2">
+          <h1 className="font-bold">Flat Type</h1>
+          {["1BHK", "2BHK", "3BHK"].map((type) => (
+            <label key={type} className="flex items-center gap-2 my-1">
               <input
                 type="checkbox"
                 className="w-4 h-4"
-                checked={filters.roomType.includes(type)}
-                onChange={() => updateCheckboxList("roomType", type)}
+                checked={filters.flatType.includes(type)}
+                onChange={() => updateCheckboxList("flatType", type)}
               />
               {type}
             </label>
           ))}
         </div>
-      </div>
+      )}
+
+      {/* Room Details */}
+      {filters.propertyType === "Room" && (
+        <div className="my-2">
+          <h1 className="font-bold">Room Details</h1>
+          <div className="flex flex-col gap-2">
+            <label className="flex flex-col text-sm">
+              Total Beds
+              <input
+                type="number"
+                className="w-full rounded-lg py-1 px-2 bg-[#111827] mt-1"
+                placeholder="e.g. 3"
+                value={filters.totalBeds}
+                onChange={(e) => setFilters((prev) => ({ ...prev, totalBeds: e.target.value }))}
+              />
+            </label>
+            <label className="flex flex-col text-sm">
+              Occupied Beds
+              <input
+                type="number"
+                className="w-full rounded-lg py-1 px-2 bg-[#111827] mt-1"
+                placeholder="e.g. 1"
+                value={filters.occupiedBeds}
+                onChange={(e) => setFilters((prev) => ({ ...prev, occupiedBeds: e.target.value }))}
+              />
+            </label>
+          </div>
+        </div>
+      )}
 
       {/* Rent */}
       <div className="my-4">
         <h1 className="font-bold">Pricing</h1>
         <div className="flex flex-col gap-2 my-2">
-          <div className="flex items-center justify-around gap-2">
+          <div className="flex items-center justify-between gap-2">
             <label>Min.</label>
             <input
               type="number"
               className="w-32 rounded-lg py-1 bg-[#111827] text-center"
               placeholder="1000"
               value={filters.minRent}
-              onChange={(e) =>
-                setFilters((prev) => ({ ...prev, minRent: e.target.value }))
-              }
+              onChange={(e) => setFilters((prev) => ({ ...prev, minRent: e.target.value }))}
             />
           </div>
-          <div className="flex items-center justify-around gap-2">
+          <div className="flex items-center justify-between gap-2">
             <label>Max.</label>
             <input
               type="number"
               className="w-32 rounded-lg py-1 bg-[#111827] text-center"
               placeholder="5000"
               value={filters.maxRent}
-              onChange={(e) =>
-                setFilters((prev) => ({ ...prev, maxRent: e.target.value }))
-              }
+              onChange={(e) => setFilters((prev) => ({ ...prev, maxRent: e.target.value }))}
             />
           </div>
         </div>
@@ -235,9 +287,7 @@ const Filters = ({ filters, setFilters }) => {
           className="w-full rounded-lg py-1 px-2 bg-[#111827]"
           placeholder="e.g. 3.5"
           value={filters.minRating}
-          onChange={(e) =>
-            setFilters((prev) => ({ ...prev, minRating: e.target.value }))
-          }
+          onChange={(e) => setFilters((prev) => ({ ...prev, minRating: e.target.value }))}
         />
       </div>
 
@@ -252,9 +302,7 @@ const Filters = ({ filters, setFilters }) => {
           className="w-full rounded-lg py-1 px-2 bg-[#111827]"
           placeholder="e.g. 2.0"
           value={filters.minTrustScore}
-          onChange={(e) =>
-            setFilters((prev) => ({ ...prev, minTrustScore: e.target.value }))
-          }
+          onChange={(e) => setFilters((prev) => ({ ...prev, minTrustScore: e.target.value }))}
         />
       </div>
     </>
