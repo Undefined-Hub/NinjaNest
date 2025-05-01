@@ -18,7 +18,7 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/details" element={<DetailsPage />} />
+          <Route path="/details/:propertyId" element={<DetailsPage />} />
           <Route path="/properties" element={<Properties />} />
         </Routes>
         <Footer />

@@ -71,7 +71,7 @@ const PropertySchema = new Schema(
             required: true,
         },
         deposit: {
-            type: String,
+            type: Number,
             required: true,
         },
         images: {

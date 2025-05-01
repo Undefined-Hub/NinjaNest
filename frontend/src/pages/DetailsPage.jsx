@@ -1,4 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import axios from 'axios';
+
 import house from '../assets/house.jpg';
 import house1 from '../assets/house1.jpg';
 import parking_svg from '../assets/parking.svg';
@@ -8,6 +11,35 @@ import garden_svg from '../assets/garden.svg';
 import review_star_full from '../assets/review_star_full.svg';
 import robot from '../assets/robot.svg';
 const DetailsPage = () => {
+    const { propertyId } = useParams();
+    console.log("Property ID:", propertyId);
+
+    const [propertyData, setPropertyData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchProperty = async () => {
+            try {
+                const response = await axios.get(`http://localhost:3000/api/property/${propertyId}`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                console.log("Response Data:", response.data);
+                setPropertyData(response.data?.property);
+            } catch (err) {
+                console.error('Error fetching property:', err);
+                setError('Failed to load property');
+            } finally {
+                setLoading(false);
+            }
+        };
+        
+        fetchProperty();
+    }, [propertyId]);
+    console.log("Property Data:", propertyData);
+
     const [zoomedImage, setZoomedImage] = useState(null);
     return (
         <>
@@ -40,11 +72,11 @@ const DetailsPage = () => {
                         <div className='flex flex-col bg-sub-bg w-full rounded-xl p-6'> {/* Property Details Section */}
                             <div className='flex flex-col md:flex-row justify-between items-start w-full space-y-3 md:space-y-0'> {/* Contain the title & the rent of the house */}
                                 <div className='flex flex-col space-y-1 md:w-2/3'> {/* Title Section */}
-                                    <p className='text-white font-semibold text-xl md:text-3xl'>The White House</p>
+                                    <p className='text-white font-semibold text-xl md:text-3xl'>{propertyData?.title || 'Property Title Not Available'}</p>
                                     <p className='text-secondary-text font-medium md:font-semibold text-base'>1.2 Kilometers away from D. Y. Patil College of Engineering & Technology</p>
                                 </div>
                                 <div className='flex flex-col space-y-1 md:w-1/3 md:items-end text-right'> {/* Rent Section */}
-                                    <p className='text-tertiary-text font-bold text-xl md:text-3xl'>₹15,000</p>
+                                    <p className='text-tertiary-text font-bold text-xl md:text-3xl'>₹{propertyData?.rent?.toLocaleString('en-IN')}</p>
                                     <p className='text-secondary-text font-semibold text-base'>per month</p>
                                 </div>
                             </div>
@@ -74,11 +106,11 @@ const DetailsPage = () => {
                                 </div>
                                 <div className='flex w-full'> {/* Description Text */}
                                     <p className='text-slate-300 text-base text-justify'>
-                                        Lorem ipsum dolor sit amet consectetur, adipisicing elit. Nemo molestias delectus eum ad adipisci, ex officiis optio repellat sit alias. Omnis nisi eos, ullam nulla corporis perspiciatis esse a pariatur facere animi necessitatibus impedit deleniti nobis delectus exercitationem quo sed! Alias, fuga. Eos eum odit sint facilis, reprehenderit enim blanditiis!
+                                        {propertyData?.description}
                                     </p>
                                 </div>
                                 <div className='flex w-full justify-end'> {/* Last updated - Right aligned */}
-                                    <p className='text-secondary-text text-base font-semibold'>Last updated: 2 days ago</p>
+                                    <p className='text-secondary-text text-base font-semibold'>Last updated: {propertyData?.updatedAt}</p>
                                 </div>
                             </div>
 
@@ -91,10 +123,10 @@ const DetailsPage = () => {
                                 <div className='grid grid-cols-2 sm:grid-cols-3 gap-3'> {/* Grid layout for details */}
                                     {[
                                         { label: 'Property Type', value: 'Flat' },
-                                        { label: 'Type', value: '2 BHK' },
+                                        { label: 'Type', value: propertyData?.roomType },
                                         { label: 'Area', value: '1250 sq. ft' },
-                                        { label: 'Address', value: '123, White House Street, Kolhapur' },
-                                        { label: 'Initial Deposit', value: '₹50,000' },
+                                        { label: 'Address', value: propertyData?.address },
+                                        { label: 'Initial Deposit', value: '₹' + propertyData?.deposit?.toLocaleString('en-IN') },
                                         { label: 'Furnishing', value: 'Semi-Furnished' },
                                     ].map((item, index) => (
                                         <div key={index} className='bg-cards-bg p-3 rounded-lg flex flex-col space-y-1'>

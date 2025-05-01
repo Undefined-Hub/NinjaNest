@@ -77,7 +77,7 @@ const ProfilePage = () => {
                                     <div className='flex justify-between'>
                                         <p className='text-white text-lg font-bold'>Current Property</p>
                                         <p className='text-tertiary-text text-base font-semibold hover:cursor-pointer hover:underline'
-                                            onClick={() => navigate('/details')}>View Details</p>
+                                            onClick={() => navigate('/details/6813200e1e378f29717a5baf')}>View Details</p>
                                     </div>
                                     <div className='flex flex-col md:flex-row gap-3 mt-3'>
                                         <img src={house1} alt='property' className='w-full md:w-1/2 h-44 object-cover rounded-xl' />
