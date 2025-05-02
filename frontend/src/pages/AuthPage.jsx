@@ -7,7 +7,11 @@ import { useSelector, useDispatch } from 'react-redux';
 const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
 const AuthPage = () => {
-    const [auth, setAuth] = useState(true);
+    const [auth, setAuth] = useState(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const mode = urlParams.get('mode');
+        return mode === 'signin' ? true : mode === 'signup' ? false : true;
+    });
     const [signupData, setSignupData] = useState({ fullName: '', username: '', email: '', password: '' });
     const [loginData, setLoginData] = useState({ email: '', password: '' });
     const navigate = useNavigate();
@@ -36,7 +40,7 @@ const AuthPage = () => {
                 localStorage.setItem('token', response.data.accessToken);
                 if (error) console.log('Error fetching user details :- ' + error);
                 dispatch(fetchUser(response.data.user.username));
-                navigate('/profile');
+                navigate('/dashboard');
             } catch (error) {
                 alert('Error logging in NinjaNest!... Please try again!');
                 console.error('Error logging in NinjaNest:', error);

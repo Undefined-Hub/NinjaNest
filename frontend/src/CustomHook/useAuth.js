@@ -7,7 +7,7 @@ export const useAuth = () => {
     // console.log("User from useAuth: ", user.user.username);
     // console.log("Token from useAuth: ", token);
     return {
-        isLoggedIn: !!token && !!user?.user.username,
+        isLoggedIn: !!token && !!user?.user?.username,
         user,
     };
 };

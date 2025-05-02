@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import PropertyCard from "../components/PropertyCard";
 
-function Properties() {
+function Explore() {
   const [properties, setProperties] = useState([]);
   const [filters, setFilters] = useState({
     location: "",
@@ -311,4 +311,4 @@ const Filters = ({ filters, setFilters }) => {
   );
 };
 
-export default Properties;
+export default Explore;

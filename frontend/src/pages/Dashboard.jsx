@@ -17,6 +17,7 @@ import { useDispatch } from 'react-redux';
 import { logoutUser } from '../features/User/userSlice';
 import axios from 'axios'
 import { MdManageAccounts } from "react-icons/md";
+import { useAuth } from "../CustomHook/useAuth";
 
 const menuItems = [
     { label: "Overview", icon: <AiOutlineHome /> },
@@ -27,12 +28,12 @@ const menuItems = [
     { label: "Settings", icon: <FiSettings /> },
 ];
 
-const ProfilePage = () => {
+const Dashboard = () => {
     const dispatch = useDispatch();
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
-
+ 
 
     const handleLogout = () => {
         dispatch(logoutUser());
@@ -538,4 +539,4 @@ const MyProperties = () => {
 
 
 
-export default ProfilePage
+export default Dashboard

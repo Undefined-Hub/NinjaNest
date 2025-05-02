@@ -7,7 +7,7 @@ const PropertyCard = ({ property }) => {
   return (
     <div
       id=""
-      className="flex flex-col w-[21rem] md:w-96 rounded-2xl bg-[#18212f] justify-center h-fit overflow-hidden md:border-[0.1px] md:border-secondary-text hover:border-main-purple ease-in-out duration-300 cursor-pointer shadow-sm hover:shadow-[#a98cfc]" onClick={()=>{navigate("property/"+property._id)}}>
+      className="flex flex-col w-[21rem] md:w-96 rounded-2xl bg-[#18212f] justify-center h-fit overflow-hidden md:border-[0.1px] md:border-secondary-text/50 hover:border-main-purple ease-in-out duration-300 cursor-pointer shadow-sm hover:shadow-[#a98cfc]" onClick={()=>{navigate("property/"+property._id)}}>
         {/* Image Div */}
       <div className="w-[21rem] md:w-full h-40 relative">
         <img
