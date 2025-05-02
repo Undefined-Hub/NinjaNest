@@ -18,6 +18,13 @@ import { logoutUser } from '../features/User/userSlice';
 import axios from 'axios'
 import { MdManageAccounts } from "react-icons/md";
 import { useAuth } from "../CustomHook/useAuth";
+import { toast } from 'react-hot-toast';
+
+
+
+import roommate from '/images/roommate.svg'
+import payment from '/images/payment.svg'
+import profile from '/images/profile.svg'
 
 const menuItems = [
     { label: "Overview", icon: <AiOutlineHome /> },
@@ -37,9 +44,9 @@ const Dashboard = () => {
 
     const handleLogout = () => {
         dispatch(logoutUser());
-        alert('Logged out successfully!')
-        navigate('/'); // or navigate to login page
-    };
+        toast.success('Logged out successfully!');
+        navigate('/'); // or navigate('/login') based on your routing logic
+      };
 
     let navigate = useNavigate()
     const { user, loading, error } = useSelector((state) => state.user);
@@ -181,6 +188,48 @@ const Dashboard = () => {
                             <Notifications />
 
                         }
+
+                        {activeTab === 'Roommates' &&
+                        <div className='flex flex-col items-center justify-center h-[64vh] space-y-4'>
+                            <img
+                                src={roommate} // Replace with your illustration URL
+                                alt='No Roommates'
+                                className='w-1/2 h-auto'
+                            />
+                            <p className='text-secondary-text text-lg font-semibold text-center'>
+                                No roommates have joined the room yet. <br/>Stay tuned for updates!
+                            </p>
+                        </div>
+                }
+
+
+                      
+                    {activeTab === 'Payment' &&
+                        <div className='flex flex-col items-center justify-center h-[64vh] space-y-4'>
+                            <img
+                                src={payment} // Replace with your illustration URL
+                                alt='No Payment History'
+                                className='w-1/2 h-auto'
+                            />
+                            <p className='text-secondary-text text-lg font-semibold text-center'>
+                                No payment history is available yet. <br/>Stay tuned for updates or make your first payment!
+                            </p>
+                        </div>
+                    }
+
+                    {activeTab === 'Settings' &&
+                            <div className='flex flex-col items-center justify-center h-[64vh] space-y-4 w-full'>
+                                <img
+                                    src={profile} // Replace with your illustration URL
+                                    alt='Settings Coming Soon'
+                                    className='w-1/3 h-auto'
+                                />
+                                <p className='text-secondary-text text-lg font-semibold text-center'>
+                                    Settings functionality is coming soon. <br/>Stay tuned for updates!
+                                </p>
+                            </div>
+                        }
+
                     </div>
                 </div>
             </div>
@@ -190,7 +239,7 @@ const Dashboard = () => {
 
 
 
-
+import notification from '/images/notification.svg'
 
 const Notifications = () => {
     const [notifications, setNotifications] = useState([]);
@@ -432,49 +481,69 @@ const Notifications = () => {
                     </div>
                 )}
             </div>
-            <div className="w-full flex flex-col space-y-3 h-[64vh] overflow-y-auto">
-                {notifications.map((notification) => (
-                    <div
-                        key={notification._id}
-                        className="flex items-center justify-between bg-cards-bg rounded-xl p-4"
-                    >
-                        <div className="flex flex-col">
-                            <p className="text-white text-base font-semibold">
-                                {getNotificationMessage(notification, user_id._id)}
-                            </p>
-                            <p className="text-secondary-text text-sm font-semibold">
-                                Type: {notification.requestorId._id === user_id._id ? 'Sent' : 'Received'}
-                            </p>
-                            <p className="text-secondary-text text-sm font-semibold">
-                                Requested Price: ₹{(notification.requestedPrice.min && notification.requestedPrice.max)
-                                    ? notification.requestedPrice.min.toLocaleString('en-IN') + " - " + notification.requestedPrice.max.toLocaleString('en-IN')
-                                    : (notification.requestedPrice?.fixed?.toLocaleString('en-IN'))}
+            {notifications.length > 0 ? (
+                <div className="w-full flex flex-col space-y-3 h-[64vh] overflow-y-auto">
+                    {notifications.map((notification) => (
+                        <div
+                            key={notification._id}
+                            className="flex items-center justify-between bg-cards-bg rounded-xl p-4"
+                        >
+                            <div className="flex flex-col">
+                                <p className="text-white text-base font-semibold">
+                                    {getNotificationMessage(notification, user_id._id)}
+                                </p>
+                                <p className="text-secondary-text text-sm font-semibold">
+                                    Type: {notification.requestorId._id === user_id._id ? 'Sent' : 'Received'}
+                                </p>
+                                <p className="text-secondary-text text-sm font-semibold">
+                                    Requested Price: ₹{(notification.requestedPrice.min && notification.requestedPrice.max)
+                                        ? notification.requestedPrice.min.toLocaleString('en-IN') + " - " + notification.requestedPrice.max.toLocaleString('en-IN')
+                                        : (notification.requestedPrice?.fixed?.toLocaleString('en-IN'))}
+                                </p>
+                            </div>
+                            <p
+                                className={`text-base font-semibold ${getStatusColor(
+                                    notification.status
+                                )}`}
+                            >
+                                {notification.status}
                             </p>
                         </div>
-                        <p
-                            className={`text-base font-semibold ${getStatusColor(
-                                notification.status
-                            )}`}
-                        >
-                            {notification.status}
-                        </p>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="flex flex-col items-center justify-center h-[64vh] space-y-4">
+                    <img
+                        src={notification} // Replace with your illustration URL
+                        alt="No Notifications"
+                        className="w-1/3 h-auto"
+                    />
+                    <p className="text-secondary-text text-lg font-semibold text-center">
+                        You have no notifications at the moment. <br/>Stay tuned for updates!
+                    </p>
+                </div>
+            )}
         </div>
     );
 };
 
-
+import not_found from  '/images/not_found.svg'
 
 const MyProperties = () => {
     const [properties, setProperties] = useState([]);
     const navigate = useNavigate();
-
+    const token = localStorage.getItem('token');
     useEffect(() => {
         const fetchProperties = async () => {
             try {
-                const response = await axios.get('http://localhost:3000/api/property/');
+                const response = await axios.get('http://localhost:3000/api/property/landlord/allproperty', {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                      },
+                    }
+                );
+                
                 console.log('Fetched properties:', response.data.properties);
                 setProperties(response.data.properties);
             } catch (error) {
@@ -487,6 +556,7 @@ const MyProperties = () => {
 
     return (
         <div className='flex flex-col w-full space-y-4'>
+           { properties.length > 0 ? (
             <button
                 className='flex items-center justify-center space-x-2 w-1/5 bg-main-purple hover:bg-[#6b2bd2] transition-all duration-300 p-3 rounded-lg self-end'
                 onClick={() => navigate('/add-property')}
@@ -495,43 +565,65 @@ const MyProperties = () => {
                 <span className='text-white font-semibold text-sm'>Add Property</span>
             </button>
 
-            <div className='w-full flex flex-col space-y-6 h-[75vh] overflow-y-auto'>
-                {properties.map((property, index) => (
-                    <div key={index} className='w-full bg-sub-bg rounded-xl p-5'>
-                        <div className='flex justify-between'>
-                            <p className='text-white text-lg font-bold'>{property.title}</p>
-                            <p
-                                className='text-tertiary-text text-base font-semibold hover:cursor-pointer hover:underline'
-                                onClick={() => navigate(`/explore/property/${property._id}`)}
-                            >
-                                View Details
-                            </p>
-                        </div>
-                        <div className='flex flex-col md:flex-row gap-3 mt-3'>
-                            <img
-                                src={property.mainImage}
-                                alt={property.title}
-                                className='w-full md:w-1/2 h-44 object-cover rounded-xl'
-                            />
-                            <div className='flex flex-col space-y-2 w-full md:w-1/2'>
-                                <p className='text-white text-lg font-semibold'>{property.location}</p>
-                                <p className='text-secondary-text font-semibold text-base'>{property.address}</p>
-                                <div className='grid grid-cols-2 gap-3'>
-                                    <div className='flex flex-col bg-cards-bg rounded-xl p-2'>
-                                        <p className='text-secondary-text text-base font-semibold'>Rent</p>
-                                        <p className='text-white text-base font-semibold'>₹{property.rent}</p>
+            ) : (
+                "")}
+            {properties.length > 0 ? (
+                <div className='w-full flex flex-col space-y-6 h-[75vh] overflow-y-auto'>
+                    {properties.map((property, index) => (
+                        <div key={index} className='w-full bg-sub-bg rounded-xl p-5'>
+                            <div className='flex justify-between'>
+                                <p className='text-white text-lg font-bold'>{property.title}</p>
+                                <p
+                                    className='text-tertiary-text text-base font-semibold hover:cursor-pointer hover:underline'
+                                    onClick={() => navigate(`/explore/property/${property._id}`)}
+                                >
+                                    View Details
+                                </p>
+                            </div>
+                            <div className='flex flex-col md:flex-row gap-3 mt-3'>
+                                <img
+                                    src={property.mainImage}
+                                    alt={property.title}
+                                    className='w-full md:w-1/2 h-44 object-cover rounded-xl'
+                                />
+                                <div className='flex flex-col space-y-2 w-full md:w-1/2'>
+                                    <p className='text-white text-lg font-semibold'>{property.location}</p>
+                                    <p className='text-secondary-text font-semibold text-base'>{property.address}</p>
+                                    <div className='grid grid-cols-2 gap-3'>
+                                        <div className='flex flex-col bg-cards-bg rounded-xl p-2'>
+                                            <p className='text-secondary-text text-base font-semibold'>Rent</p>
+                                            <p className='text-white text-base font-semibold'>₹{property.rent}</p>
+                                        </div>
+                                        <div className='flex flex-col bg-cards-bg rounded-xl p-2'>
+                                            <p className='text-secondary-text text-base font-semibold'>Deposit</p>
+                                            <p className='text-white text-base font-semibold'>₹{property.deposit}</p>
+                                        </div>
                                     </div>
-                                    <div className='flex flex-col bg-cards-bg rounded-xl p-2'>
-                                        <p className='text-secondary-text text-base font-semibold'>Deposit</p>
-                                        <p className='text-white text-base font-semibold'>₹{property.deposit}</p>
-                                    </div>
+                                    <p className='text-secondary-text text-sm'>{property.description.slice(0, 100)}...</p>
                                 </div>
-                                <p className='text-secondary-text text-sm'>{property.description.slice(0, 100)}...</p>
                             </div>
                         </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            ) : (
+                <div className='flex flex-col items-center justify-center h-[75vh] space-y-4'>
+                    <img
+                        src={not_found} // Replace with your illustration URL
+                        alt='No Properties'
+                        className='w-1/3 h-auto'
+                    />
+                    <p className='text-secondary-text text-lg font-semibold'>
+                        You have not listed any properties yet. Add your first property now!
+                    </p>
+                    <button
+                        className='flex items-center justify-center space-x-2 bg-main-purple hover:bg-[#6b2bd2] transition-all duration-300 p-3 rounded-lg'
+                        onClick={() => navigate('/add-property')}
+                    >
+                        <AiOutlinePlus className='text-white text-base' />
+                        <span className='text-white font-semibold text-sm'>Add Property</span>
+                    </button>
+                </div>
+            )}
         </div>
     );
 };

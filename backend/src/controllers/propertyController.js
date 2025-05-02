@@ -75,6 +75,21 @@ const getProperty = async (req, res, next) => {
     }
 };
 
+
+// ! Fetch properties by landlord ID
+const getPropertiesByLandlordId = async (req, res, next) => {
+    try {
+        const landlord_id = req.user.user.id;
+        const properties = await Property.find({ landlord_id });
+        if (properties.length === 0) {
+            return res.status(404).json({ message: 'No properties found for this landlord' });
+        }
+        res.status(200).json({ properties });
+    } catch (error) {
+        next(error);
+    }
+};
+
 // ! Update a property
 const updateProperty = async (req, res, next) => {
     try {
@@ -124,5 +139,6 @@ module.exports = {
     getProperties,
     getProperty,
     updateProperty,
-    deleteProperty
+    deleteProperty,
+    getPropertiesByLandlordId
 };

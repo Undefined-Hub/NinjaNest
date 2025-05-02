@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-
+import { toast } from 'react-hot-toast';
 import house from '../assets/house.jpg';
 import house1 from '../assets/house1.jpg';
 import parking_svg from '../assets/parking.svg';
@@ -29,40 +29,44 @@ const DetailsPage = () => {
     const [maxPrice, setMaxPrice] = useState('');
     const handleSendRentRequest = () => {
         if (selectedOption === 'customRange' && (!minPrice || !maxPrice)) {
-            alert('Please enter a valid price range.');
-            return;
+          toast.error('Please enter a valid price range.');
+          return;
         }
-
+      
         const requestData = {
-            propertyId,
-            requestedPrice: selectedOption === 'customRange'
-                ? { min: parseFloat(minPrice), max: parseFloat(maxPrice) }
-                : { fixed: propertyData?.rent },
-            requestorName: user.user?.name, // Replace with the actual requestor's name
-            ownerName: propertyData?.landlord_id, // Replace with the actual owner's name
-            ownerId: propertyData?.landlord_id,
-            requestorId: user.user?._id,
-            status: 'Pending',
-            message: user.user?.name + " is intrested to rent this property"  // Replace with the actual owner's ID
+          propertyId,
+          requestedPrice: selectedOption === 'customRange'
+            ? { min: parseFloat(minPrice), max: parseFloat(maxPrice) }
+            : { fixed: propertyData?.rent },
+          requestorName: user.user?.name,
+          ownerName: propertyData?.landlord_id,
+          ownerId: propertyData?.landlord_id,
+          requestorId: user.user?._id,
+          status: 'Pending',
+          message: `${user.user?.name} is interested to rent this property`,
         };
-
+      
         console.log('Sending Rent Request:', requestData);
-
+      
+        const loadingToast = toast.loading('Sending rent request...');
+      
         axios.post('http://localhost:3000/api/request', requestData, {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
         })
-            .then((response) => {
-                console.log('Rent request sent successfully:', response.data);
-                alert('Rent request sent successfully!');
-                setShowModal(false);
-            })
-            .catch((error) => {
-                console.error('Error sending rent request:', error);
-                alert('Failed to send rent request. Please try again.');
-            });
-    };
+          .then((response) => {
+            toast.dismiss(loadingToast);
+            toast.success('Rent request sent successfully!');
+            console.log('Rent request response:', response.data);
+            setShowModal(false);
+          })
+          .catch((error) => {
+            toast.dismiss(loadingToast);
+            toast.error('Failed to send rent request. Please try again.');
+            console.error('Error sending rent request:', error);
+          });
+      };
 
     useEffect(() => {
         window.scrollTo(0, 0);
