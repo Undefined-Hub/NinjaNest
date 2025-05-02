@@ -5,13 +5,14 @@ import { fetchUser } from '../features/User/userSlice';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 const SERVER_URL = import.meta.env.VITE_SERVER_URL;
-
+import { toast } from 'react-hot-toast';
 const AuthPage = () => {
     const [auth, setAuth] = useState(() => {
         const urlParams = new URLSearchParams(window.location.search);
         const mode = urlParams.get('mode');
         return mode === 'signin' ? true : mode === 'signup' ? false : true;
     });
+
     const [signupData, setSignupData] = useState({ fullName: '', username: '', email: '', password: '' });
     const [loginData, setLoginData] = useState({ email: '', password: '' });
     const navigate = useNavigate();
@@ -31,35 +32,46 @@ const AuthPage = () => {
         setLoginData({ ...loginData, [e.target.name]: e.target.value });
     };
 
+    // toast.success('Property listed successfully!');
+    // toast.error('Failed to list property.');
+    // toast.loading('Uploading images...');
+    // toast('This is a normal toast!');
     const handleSubmit = async (e) => {
         e.preventDefault();
+      
         if (auth) {
-            try {
-                const response = await axios.post(`${SERVER_URL}/auth/login`, loginData);
-                alert('Logged in successfully');
-                localStorage.setItem('token', response.data.accessToken);
-                if (error) console.log('Error fetching user details :- ' + error);
-                dispatch(fetchUser(response.data.user.username));
-                navigate('/dashboard');
-            } catch (error) {
-                alert('Error logging in NinjaNest!... Please try again!');
-                console.error('Error logging in NinjaNest:', error);
-            }
+          const toastId = toast.loading('Logging in...');
+          try {
+            const response = await axios.post(`${SERVER_URL}/auth/login`, loginData);
+      
+            toast.success('Logged in successfully!', { id: toastId });
+      
+            localStorage.setItem('token', response.data.accessToken);
+            if (error) console.log('Error fetching user details :- ' + error);
+            dispatch(fetchUser(response.data.user.username));
+            navigate('/dashboard');
+          } catch (error) {
+            toast.error('Login failed! Please try again.', { id: toastId });
+            console.error('Error logging in NinjaNest:', error);
+          }
         } else {
-            try {
-                const response = await axios.post(`${SERVER_URL}/auth/register`, {
-                    name: signupData.fullName,
-                    username: signupData.username,
-                    email: signupData.email,
-                    password: signupData.password,
-                });
-                alert('Account created successfully! Please log in.');
-                setAuth(true);
-            } catch (error) {
-                console.error('Error signing up to NinjaNest:', error);
-            }
+          const toastId = toast.loading('Creating account...');
+          try {
+            const response = await axios.post(`${SERVER_URL}/auth/register`, {
+              name: signupData.fullName,
+              username: signupData.username,
+              email: signupData.email,
+              password: signupData.password,
+            });
+      
+            toast.success('Account created! Please log in.', { id: toastId });
+            setAuth(true);
+          } catch (error) {
+            toast.error('Signup failed! Try again.', { id: toastId });
+            console.error('Error signing up to NinjaNest:', error);
+          }
         }
-    };
+      };
 
     return (
         <div className="min-h-screen flex justify-center items-center bg-main-bg px-4">

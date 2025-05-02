@@ -5,6 +5,7 @@ import Step1BasicInfo from './steps/Step1BasicInfo';
 import Step2Pricing from './steps/Step2Pricing';
 import Step3Features from './steps/Step3Features';
 import Step4MediaLocation from './steps/Step4MediaLocation';
+import { toast } from 'react-hot-toast';
 
 const AddProperty = () => {
   const [step, setStep] = useState(0);
@@ -36,12 +37,11 @@ const AddProperty = () => {
   const prevStep = () => setStep((prev) => prev - 1);
   const handleSubmit = async (data) => {
     try {
-
       const token = localStorage.getItem('token');
       const userState = localStorage.getItem('userState');
       const parsedState = JSON.parse(userState);
       const name = parsedState.user.user.name;
-      // Convert fields that should be numbers
+  
       const preparedData = {
         ...data,
         rent: Number(data.rent),
@@ -51,8 +51,11 @@ const AddProperty = () => {
           beds: Number(data.roomDetails.beds),
           occupiedBeds: Number(data.roomDetails.occupiedBeds),
         },
-        landlord_name: name, // Add landlord name to the data
+        landlord_name: name,
       };
+  
+      const loadingToast = toast.loading('Listing property...');
+  
       const response = await fetch('http://localhost:3000/api/property/', {
         method: 'POST',
         headers: {
@@ -61,21 +64,21 @@ const AddProperty = () => {
         },
         body: JSON.stringify(preparedData),
       });
-
+  
+      toast.dismiss(loadingToast);
+  
       if (response.ok) {
-        alert('Property listed successfully!');
+        toast.success('Property listed successfully!');
       } else {
         const errorData = await response.json();
         console.error('Error response:', errorData);
-        alert('Failed to list the property. Please try again.');
+        toast.error('Failed to list the property. Please try again.');
       }
     } catch (error) {
       console.error('Error submitting form:', error);
-      alert('An error occurred. Please check the console for details.');
+      toast.error('An error occurred. Please check the console.');
     }
   };
-
-
 
   // Check if current step is completed
   const isStepCompleted = () => {

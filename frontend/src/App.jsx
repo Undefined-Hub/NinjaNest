@@ -4,12 +4,13 @@ import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import Explore from './pages/Explore'
+import ExplorePage from './pages/ExplorePage'
 import './App.css'
 import Dashboard from './pages/Dashboard';
 import DetailsPage from './pages/DetailsPage';
 import AddProperty from './pages/AddProperty';
 import CurrentPropertyDashboard from './pages/CurrentPropertyDashboard';
+import { Toaster } from 'react-hot-toast';
 function App() {
   return (
     <>
@@ -20,12 +21,13 @@ function App() {
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/explore/property/:propertyId" element={<DetailsPage />} />
-          <Route path="/explore" element={<Explore/>} />
+          <Route path="/explore" element={<ExplorePage/>} />
           <Route path="/add-property" element={<AddProperty />} />
-          <Route path="/dashboard" element={<CurrentPropertyDashboard />} />
+          <Route path="/currentpropertydashboard" element={<CurrentPropertyDashboard />} />
         </Routes>
         <Footer />
       </Router>
+      <Toaster position="top-center" reverseOrder={false} />
     </>
   )
 }

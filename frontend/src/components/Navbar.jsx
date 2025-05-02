@@ -6,6 +6,8 @@ import { FiLogOut } from "react-icons/fi";
 import { useDispatch } from 'react-redux';
 import { logoutUser } from '../features/User/userSlice';
 import pfp from '../assets/pfp.png'
+import { toast } from 'react-hot-toast';
+
 const Navbar = () => {
     const navigate = useNavigate();
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -69,9 +71,9 @@ const Navbar = () => {
 
     const handleLogout = () => {
         dispatch(logoutUser());
-        alert('Logged out successfully!');
-        navigate('/'); // or navigate to login page
-    };
+        toast.success('Logged out successfully!');
+        navigate('/'); // or navigate('/login') based on your routing logic
+      };
 
     return (
         <header className="bg-main-bg border-b border-secondary-text/30 flex justify-between items-center text-primary-text p-3 md:px-16 relative z-50">
