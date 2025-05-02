@@ -12,13 +12,15 @@ import blob from "../assets/blob.svg";
 import blob2 from "../assets/blob2.svg";
 import Squares from "../blocks/Backgrounds/Squares/Squares";
 useSelector;
+import { useAuth } from "../CustomHook/useAuth";
 const LandingPage = () => {
-
+  const { isLoggedIn, user } = useAuth();
+  
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  const user = useSelector((state) => state.user.user);
+  // const user = useSelector((state) => state.user.user);
   const features = [
     {
       title: "AI-Powered Recommendation",
@@ -82,7 +84,7 @@ const LandingPage = () => {
             </div>
             <button
               className="text-[#fbfbfb] p-2 px-6 bg-gradient-to-r from-[#7c3bf1] to-[#2761e9] rounded-lg font-bold button-click  "
-              onClick={() => navigate("/properties")}
+              onClick={() => navigate("/explore")}
             >
               Search
             </button>
@@ -104,6 +106,7 @@ const LandingPage = () => {
             <div className="flex flex-col md:flex-row justify-between gap-5">
               {features.map((feature) => (
                 <FeatureCard
+                  key={feature.title}
                   title={feature.title}
                   desc={feature.desc}
                   icon={feature.icon}
@@ -124,8 +127,8 @@ const LandingPage = () => {
             <button
               className="my-5 text-[#fbfbfb] py-4 px-6 bg-gradient-to-r from-[#7c3bf1] to-[#2761e9] rounded-lg font-bold button-click  "
               onClick={() => {
-                if (user) {
-                  navigate("/properties");
+                if (isLoggedIn) {
+                  navigate("/explore");
                 } else {
                   navigate("/auth");
                 }

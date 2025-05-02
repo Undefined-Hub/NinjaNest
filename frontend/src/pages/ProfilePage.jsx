@@ -13,7 +13,8 @@ import { FiSettings } from "react-icons/fi";
 import { FiLogOut } from "react-icons/fi";
 import { AiOutlinePlus } from "react-icons/ai";
 import { AiOutlineBell } from "react-icons/ai";
-
+import { useDispatch } from 'react-redux';
+import { logoutUser } from '../features/User/userSlice';
 import axios from 'axios'
 import { MdManageAccounts } from "react-icons/md";
 
@@ -27,10 +28,17 @@ const menuItems = [
 ];
 
 const ProfilePage = () => {
-
+    const dispatch = useDispatch();
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
+
+
+    const handleLogout = () => {
+        dispatch(logoutUser());
+        alert('Logged out successfully!')
+        navigate('/'); // or navigate to login page
+    };
 
     let navigate = useNavigate()
     const { user, loading, error } = useSelector((state) => state.user);
@@ -78,7 +86,9 @@ const ProfilePage = () => {
 
                             {/* Logout Button */}
                             <div className='mt-auto'>
-                                <button className='w-full flex items-center justify-start space-x-2 bg-logout-red text-logout-text font-semibold p-2 rounded-lg hover:bg-[#6b2e2e] transition-all duration-300'>
+                                <button 
+                                onClick={handleLogout}
+                                className='w-full flex items-center justify-start space-x-2 bg-logout-red text-logout-text font-semibold p-2 rounded-lg hover:bg-[#6b2e2e] transition-all duration-300'>
                                     <FiLogOut className='text-lg' />
                                     <span>Logout</span>
                                 </button>
@@ -126,7 +136,7 @@ const ProfilePage = () => {
                                         <p className='text-white text-lg font-bold'>Current Property</p>
                                         <p className='text-tertiary-text text-base font-semibold hover:cursor-pointer hover:underline'
                                             // TODO: Change this to navigate to the property details page of active property
-                                            onClick={() => navigate('/properties/property/68132ad859d60fe9cba7ef05')}>View Details</p>
+                                            onClick={() => navigate('/explore/property/68132ad859d60fe9cba7ef05')}>View Details</p>
                                     </div>
                                     <div className='flex flex-col md:flex-row gap-3 mt-3'>
                                         <img src={house1} alt='property' className='w-full md:w-1/2 h-44 object-cover rounded-xl' />
@@ -491,7 +501,7 @@ const MyProperties = () => {
                             <p className='text-white text-lg font-bold'>{property.title}</p>
                             <p
                                 className='text-tertiary-text text-base font-semibold hover:cursor-pointer hover:underline'
-                                onClick={() => navigate(`/properties/property/${property._id}`)}
+                                onClick={() => navigate(`/explore/property/${property._id}`)}
                             >
                                 View Details
                             </p>

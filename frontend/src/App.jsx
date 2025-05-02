@@ -18,8 +18,8 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/properties/property/:propertyId" element={<DetailsPage />} />
-          <Route path="/properties" element={<Properties />} />
+          <Route path="/explore/property/:propertyId" element={<DetailsPage />} />
+          <Route path="/explore" element={<Properties/>} />
           <Route path="/add-property" element={<AddProperty />} />
         </Routes>
         <Footer />

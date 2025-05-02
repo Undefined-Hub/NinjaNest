@@ -19,7 +19,6 @@ const AuthPage = () => {
         window.scrollTo(0, 0);
     }, []);
 
-
     const handleSignupChange = (e) => {
         setSignupData({ ...signupData, [e.target.name]: e.target.value });
     };
@@ -28,38 +27,21 @@ const AuthPage = () => {
         setLoginData({ ...loginData, [e.target.name]: e.target.value });
     };
 
-    // const demo = async (data) => {
-    //     console.log('Demo function called with data:', data);
-    //     dispatch(fetchUser(data));
-    // }
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (auth) {
-            console.log('Login Data:', loginData);
             try {
-                const response = await axios.post(`${SERVER_URL}/auth/login`, {
-                    email: loginData.email,
-                    password: loginData.password,
-                });
-                console.log('Login Response:', response.data);
+                const response = await axios.post(`${SERVER_URL}/auth/login`, loginData);
                 alert('Logged in successfully');
                 localStorage.setItem('token', response.data.accessToken);
-                if (error) {
-                    console.log('Error fetching user details :- ' + error);
-                }
-                // console.log(`User Details (AuthPage): `, response.data.user);
-                // console.log('Calling Fetch User...');
+                if (error) console.log('Error fetching user details :- ' + error);
                 dispatch(fetchUser(response.data.user.username));
-                // await demo(response.data.user.username);
-                // console.log('Fetch User called...');
                 navigate('/profile');
             } catch (error) {
                 alert('Error logging in NinjaNest!... Please try again!');
                 console.error('Error logging in NinjaNest:', error);
             }
         } else {
-            console.log('Signup Data:', signupData);
             try {
                 const response = await axios.post(`${SERVER_URL}/auth/register`, {
                     name: signupData.fullName,
@@ -67,62 +49,59 @@ const AuthPage = () => {
                     email: signupData.email,
                     password: signupData.password,
                 });
-                console.log('Signup Response:', response.data);
+                alert('Account created successfully! Please log in.');
+                setAuth(true);
             } catch (error) {
-                console.error('Error signing in NinjaNest:', error);
+                console.error('Error signing up to NinjaNest:', error);
             }
         }
     };
 
     return (
-        <>
-            <div className="bg-gray-100 h-screen flex justify-center items-center space-x-2 px-5 md:px-0 ">
-                <div className="flex place-content-evenly border border-gray-300 bg-white rounded-xl shadow-md w-full max-w-2xl min-h-[500px] p-8">
-                    {!auth && (
-                        <div className="flex flex-col justify-center items-center w-full md:w-1/2">
-                            <form className="flex flex-col space-y-5 w-full" onSubmit={handleSubmit}>
-                                <p className="text-2xl font-bold text-center">Sign Up</p>
-                                <div className="flex items-center justify-center w-full border-2 rounded-full p-2 hover:shadow-lg transition-all duration-200 delay-100 cursor-pointer">
-                                    <img src={google} alt="Google" className="w-6 h-6 mr-2" />
-                                    <span className="text-sm font-semibold">Sign up with Google</span>
-                                </div>
-                                <p className="font-light text-sm text-center cursor-default">or create your account</p>
-                                <input type="text" name="fullName" value={signupData.fullName} onChange={handleSignupChange} className="p-3 bg-[#eee] rounded-lg w-full focus:outline-none" placeholder="Full Name" required />
-                                <input type="text" name="username" value={signupData.username} onChange={handleSignupChange} className="p-3 bg-[#eee] rounded-lg w-full focus:outline-none" placeholder="Username" />
-                                <input type="email" name="email" value={signupData.email} onChange={handleSignupChange} className="p-3 bg-[#eee] rounded-lg w-full focus:outline-none" placeholder="Email" required />
-                                <input type="password" name="password" value={signupData.password} onChange={handleSignupChange} className="p-3 bg-[#eee] rounded-lg w-full focus:outline-none" placeholder="Password" required />
-                                <p className="text-sm text-center cursor-pointer" onClick={() => setAuth(!auth)}>Already have an account?</p>
-                                <div className="flex justify-center items-center">
-                                    <button type="submit" className="bg-blue-500 hover:bg-blue-700 transition duration-300 text-white py-2 px-8 rounded-full uppercase font-semibold w-1/2 active:scale-90 ease-in-out">Sign Up</button>
-                                </div>
-                            </form>
+        <div className="min-h-screen flex justify-center items-center bg-main-bg px-4">
+            <div className="flex flex-col md:flex-row border border-gray-600 bg-sub-bg rounded-xl shadow-xl w-full max-w-3xl min-h-[500px] overflow-hidden">
+                <div className="w-full md:w-1/2 p-8 flex flex-col justify-center">
+                    <form className="flex flex-col space-y-5" onSubmit={handleSubmit}>
+                        <p className="text-2xl font-bold text-primary-text text-center">{auth ? 'Log In' : 'Sign Up'}</p>
+                        <div className="flex items-center justify-center w-full border border-gray-500 bg-cards-bg rounded-full p-2 hover:shadow-lg transition duration-200 cursor-pointer">
+                            <img src={google} alt="Google" className="w-6 h-6 mr-2" />
+                            <span className="text-sm font-semibold text-primary-text">{auth ? 'Log in with Google' : 'Sign up with Google'}</span>
                         </div>
-                    )}
-                    {auth && (
-                        <div className="flex flex-col justify-center items-center w-full md:w-1/2">
-                            <form className="flex flex-col space-y-5 w-full" onSubmit={handleSubmit}>
-                                <p className="text-2xl font-bold text-center">Log In</p>
-                                <div className="flex items-center justify-center w-full border-2 rounded-full p-2 hover:shadow-lg transition-all duration-200 delay-100 cursor-pointer">
-                                    <img src={google} alt="Google" className="w-6 h-6 mr-2" />
-                                    <span className="text-sm font-semibold">Log in with Google</span>
-                                </div>
-                                <p className="font-light text-sm text-center cursor-default">or use your email</p>
-                                <input type="email" name="email" value={loginData.email} onChange={handleLoginChange} className="p-3 bg-[#eee] rounded-lg w-full focus:outline-none" placeholder="Email" required />
-                                <input type="password" name="password" value={loginData.password} onChange={handleLoginChange} className="p-3 bg-[#eee] rounded-lg w-full focus:outline-none" placeholder="Password" required />
-                                <p className="text-sm text-center cursor-pointer" onClick={() => setAuth(!auth)}>Don't have an account?</p>
-                                <div className="flex justify-center items-center">
-                                    <button type="submit" className="bg-blue-500 hover:bg-blue-700 transition duration-300 text-white py-2 px-8 rounded-full uppercase font-semibold w-1/2 active:scale-90 ease-in-out">Log In</button>
-                                </div>
-                            </form>
-                        </div>
-                    )}
-                    <div className="hidden md:flex flex-col justify-center items-center w-1/2 bg-white-100 p-8 rounded-md">
-                        <p className="text-2xl font-bold text-center">Welcome to NinjaNest!</p>
-                        <p className="text-sm text-center mt-4">Find your perfect student rental home today.</p>
-                    </div>
+                        <p className="text-secondary-text text-sm text-center">or use your email</p>
+
+                        {!auth ? (
+                            <>
+                                <input type="text" name="fullName" value={signupData.fullName} onChange={handleSignupChange} className="p-3 bg-cards-bg text-primary-text rounded-lg w-full focus:outline-none" placeholder="Full Name" required />
+                                <input type="text" name="username" value={signupData.username} onChange={handleSignupChange} className="p-3 bg-cards-bg text-primary-text rounded-lg w-full focus:outline-none" placeholder="Username" required />
+                                <input type="email" name="email" value={signupData.email} onChange={handleSignupChange} className="p-3 bg-cards-bg text-primary-text rounded-lg w-full focus:outline-none" placeholder="Email" required />
+                                <input type="password" name="password" value={signupData.password} onChange={handleSignupChange} className="p-3 bg-cards-bg text-primary-text rounded-lg w-full focus:outline-none" placeholder="Password" required />
+                            </>
+                        ) : (
+                            <>
+                                <input type="email" name="email" value={loginData.email} onChange={handleLoginChange} className="p-3 bg-cards-bg text-primary-text rounded-lg w-full focus:outline-none" placeholder="Email" required />
+                                <input type="password" name="password" value={loginData.password} onChange={handleLoginChange} className="p-3 bg-cards-bg text-primary-text rounded-lg w-full focus:outline-none" placeholder="Password" required />
+                            </>
+                        )}
+
+                        <p className="text-sm text-tertiary-text text-center cursor-pointer hover:underline" onClick={() => setAuth(!auth)}>
+                            {auth ? "Don't have an account?" : "Already have an account?"}
+                        </p>
+
+                        <button
+                            type="submit"
+                            className="bg-main-purple hover:bg-main-purple/90 transition duration-300 text-white py-2 px-8 rounded-full uppercase font-semibold w-full active:scale-95"
+                        >
+                            {auth ? 'Log In' : 'Sign Up'}
+                        </button>
+                    </form>
+                </div>
+
+                <div className="hidden md:flex flex-col justify-center items-center w-1/2 bg-cards-bg p-8 text-center">
+                    <p className="text-3xl font-bold text-primary-text">Welcome to NinjaNest!</p>
+                    <p className="text-secondary-text text-sm mt-4">Find your perfect student rental home today.</p>
                 </div>
             </div>
-        </>
+        </div>
     );
 };
 

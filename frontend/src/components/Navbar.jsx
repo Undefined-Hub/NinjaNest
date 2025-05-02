@@ -8,18 +8,30 @@ const Navbar = () => {
         setIsMenuOpen(!isMenuOpen);
     };
 
-    return (
-        <header className="bg-[#111827] flex justify-between items-center text-white p-3 md:px-16">
-            <div className="text-2xl bg-gradient-to-r from-[#7c3bf1] to-[#2761e9] bg-clip-text text-transparent font-bold hover:cursor-pointer" onClick={() => navigate("/")}>
-                NinjaNest
-            </div>
+    const excludedRoutes = ["/", "/add-property"];
+    const currentPath = window.location.pathname;
+
+    const renderMenu = () => {
+        if (excludedRoutes.includes(currentPath)) {
+            return null;
+        }
+        return (
             <nav className="hidden md:flex space-x-8 text-[#727986] font-bold">
-                {["Home", "Search", "Features", "Contact"].map((item) => (
+                {["Home", "Explore", "Why NinjaNest?", "Support"].map((item) => (
                     <li key={item} className="list-none hover:cursor-pointer hover:text-tertiary-text">
                         {item}
                     </li>
                 ))}
             </nav>
+        );
+    };
+
+    return (
+        <header className="bg-[#111827] flex justify-between items-center text-white p-3 md:px-16">
+            <div className="text-2xl bg-gradient-to-r from-[#7c3bf1] to-[#2761e9] bg-clip-text text-transparent font-bold hover:cursor-pointer" onClick={() => navigate("/")}>
+                NinjaNest
+            </div>
+            {renderMenu()}
             <div className="flex gap-4 text-md">
                 <button className="text-[#fbfbfb] p-2 px-4 bg-[#18212f] rounded-lg font-bold button-click" onClick={() => navigate("/auth")}>
                     Sign In
