@@ -9,6 +9,7 @@ import './App.css'
 import Dashboard from './pages/Dashboard';
 import DetailsPage from './pages/DetailsPage';
 import AddProperty from './pages/AddProperty';
+import CurrentPropertyDashboard from './pages/CurrentPropertyDashboard';
 function App() {
   return (
     <>
@@ -21,6 +22,7 @@ function App() {
           <Route path="/explore/property/:propertyId" element={<DetailsPage />} />
           <Route path="/explore" element={<Explore/>} />
           <Route path="/add-property" element={<AddProperty />} />
+          <Route path="/dashboard" element={<CurrentPropertyDashboard />} />
         </Routes>
         <Footer />
       </Router>

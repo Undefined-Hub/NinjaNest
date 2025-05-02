@@ -137,7 +137,7 @@ const Dashboard = () => {
                                         <p className='text-white text-lg font-bold'>Current Property</p>
                                         <p className='text-tertiary-text text-base font-semibold hover:cursor-pointer hover:underline'
                                             // TODO: Change this to navigate to the property details page of active property
-                                            onClick={() => navigate('/explore/property/68132ad859d60fe9cba7ef05')}>View Details</p>
+                                            onClick={() => navigate('/dashboard')}>View Details</p>
                                     </div>
                                     <div className='flex flex-col md:flex-row gap-3 mt-3'>
                                         <img src={house1} alt='property' className='w-full md:w-1/2 h-44 object-cover rounded-xl' />
