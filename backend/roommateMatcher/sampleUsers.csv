@@ -1,0 +1,11 @@
+userId,name,course,year,smoking,sleepSchedule,cleanliness,guests,noiseTolerance,budget,college
+u001,John Doe,CS,2,no,early,high,never,low,5000,DYPCET
+u002,Harsh Patil,CS,3,yes,late,medium,often,high,6000,DYPCET
+u003,Shivani Rao,IT,2,no,early,high,never,low,15000,WCE
+u004,Alok Singh,Mechanical,2,yes,late,medium,rarely,medium,4000,KIT
+u005,Neha Sharma,CS,2,no,early,high,never,low,5500,DYPCET
+u006,Raj Malhotra,Electrical,1,yes,late,low,often,high,7000,IIT
+u007,Amit Gupta,BBA,2,no,early,medium,rarely,medium,3500,KIT
+u008,Anjali Verma,CS,3,no,early,high,never,low,15000,DYPCET
+u009,Sara Khan,IT,2,yes,late,medium,often,high,6500,WCE
+u010,Prashant Yadav,Mechanical,1,no,early,high,rarely,low,4000,KIT
