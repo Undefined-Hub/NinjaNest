@@ -166,8 +166,8 @@ const ProfilePage = () => {
                         {activeTab === 'My Properties' &&
                             <MyProperties /> // Call the MyProperties component here
                         }
-                        {activeTab === 'Notifications' && 
-                        <Notifications/>
+                        {activeTab === 'Notifications' &&
+                            <Notifications />
 
                         }
                     </div>
@@ -185,9 +185,9 @@ const Notifications = () => {
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [showModal, setShowModal] = useState(false); 
-    const {user} = useSelector((state)=>state.user)
-    const user_id =  user.user;// Assuming userId is stored in localStorage
+    const [showModal, setShowModal] = useState(false);
+    const { user } = useSelector((state) => state.user)
+    const user_id = user.user;// Assuming userId is stored in localStorage
     // console.log(user_id)
     useEffect(() => {
         const fetchNotifications = async () => {
@@ -217,11 +217,11 @@ const Notifications = () => {
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'pending':
+            case 'Pending':
                 return 'text-yellow-500';
-            case 'accepted':
+            case 'Accepted':
                 return 'text-green-500';
-            case 'rejected':
+            case 'Rejected':
                 return 'text-red-500';
             default:
                 return 'text-secondary-text';
@@ -231,9 +231,9 @@ const Notifications = () => {
     const getNotificationMessage = (notification, userId) => {
         if (notification.requestorId._id === userId) {
             switch (notification.status) {
-                case 'accepted':
+                case 'Accepted':
                     return 'Request Accepted by Owner.';
-                case 'rejected':
+                case 'Rejected':
                     return 'Owner Rejected Your Request.';
                 default:
                     return 'Request Sent to Owner is reviewing your request.';
@@ -243,7 +243,7 @@ const Notifications = () => {
         }
     };
     const handleRequestsClick = () => {
-        console.log('Requests button clicked!'+notifications);
+        console.log('Requests button clicked!' + notifications);
         setShowModal(true); // Show the modal when the button is clicked
     };
 
@@ -301,14 +301,14 @@ const Notifications = () => {
                                                         {notification.status}
                                                     </p>
                                                 </div>
-                                                
+
                                                 <p className="text-secondary-text text-sm font-semibold">
                                                     Property ID: {notification.propertyId._id}
                                                 </p>
                                                 <p className="text-secondary-text text-sm font-semibold">
-                                                    Requested Price: ₹{(notification.requestedPrice.min && notification.requestedPrice.max)?notification.requestedPrice.min+" - "+notification.requestedPrice.max:(notification.requestedPrice?.fixed)}
+                                                    Requested Price: ₹{(notification.requestedPrice.min && notification.requestedPrice.max) ? notification.requestedPrice.min + " - " + notification.requestedPrice.max : (notification.requestedPrice?.fixed)}
                                                 </p>
-                                                {notification.status === 'pending' && (
+                                                {notification.status === 'Pending' && (
                                                     <div className="flex space-x-3 mt-2">
                                                         <button
                                                             onClick={async () => {
@@ -316,7 +316,7 @@ const Notifications = () => {
                                                                     // Accept the request
                                                                     await axios.put(
                                                                         `http://localhost:3000/api/request/${notification._id}`,
-                                                                        { status: 'accepted' },
+                                                                        { status: 'Accepted' },
                                                                         {
                                                                             headers: {
                                                                                 Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -368,7 +368,7 @@ const Notifications = () => {
                                                                     setNotifications((prev) =>
                                                                         prev.map((notif) =>
                                                                             notif._id === notification._id
-                                                                                ? { ...notif, status: 'accepted' }
+                                                                                ? { ...notif, status: 'Accepted' }
                                                                                 : notif
                                                                         )
                                                                     );
@@ -385,7 +385,7 @@ const Notifications = () => {
                                                                 try {
                                                                     await axios.put(
                                                                         `http://localhost:3000/api/request/${notification._id}`,
-                                                                        { status: 'rejected' },
+                                                                        { status: 'Rejected' },
                                                                         {
                                                                             headers: {
                                                                                 Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -395,7 +395,7 @@ const Notifications = () => {
                                                                     setNotifications((prev) =>
                                                                         prev.map((notif) =>
                                                                             notif._id === notification._id
-                                                                                ? { ...notif, status: 'rejected' }
+                                                                                ? { ...notif, status: 'Rejected' }
                                                                                 : notif
                                                                         )
                                                                     );
@@ -435,7 +435,7 @@ const Notifications = () => {
                                 Type: {notification.requestorId._id === user_id._id ? 'Sent' : 'Received'}
                             </p>
                             <p className="text-secondary-text text-sm font-semibold">
-                                Requested Price: ₹{(notification.requestedPrice.min && notification.requestedPrice.max)?notification.requestedPrice.min+" - "+notification.requestedPrice.max:(notification.requestedPrice?.fixed)}
+                                Requested Price: ₹{(notification.requestedPrice.min && notification.requestedPrice.max) ? notification.requestedPrice.min + " - " + notification.requestedPrice.max : (notification.requestedPrice?.fixed)}
                             </p>
                         </div>
                         <p
@@ -452,77 +452,77 @@ const Notifications = () => {
     );
 };
 
-   
 
-    const MyProperties = () => {
-        const [properties, setProperties] = useState([]);
-        const navigate = useNavigate();
 
-        useEffect(() => {
-            const fetchProperties = async () => {
-                try {
-                    const response = await axios.get('http://localhost:3000/api/property/');
-                    console.log('Fetched properties:', response.data.properties);
-                    setProperties(response.data.properties);
-                } catch (error) {
-                    console.error('Error fetching properties:', error);
-                }
-            };
+const MyProperties = () => {
+    const [properties, setProperties] = useState([]);
+    const navigate = useNavigate();
 
-            fetchProperties();
-        }, []);
+    useEffect(() => {
+        const fetchProperties = async () => {
+            try {
+                const response = await axios.get('http://localhost:3000/api/property/');
+                console.log('Fetched properties:', response.data.properties);
+                setProperties(response.data.properties);
+            } catch (error) {
+                console.error('Error fetching properties:', error);
+            }
+        };
 
-        return (
-            <div className='flex flex-col w-full space-y-4'>
-                <button
-                    className='flex items-center justify-center space-x-2 w-1/5 bg-main-purple hover:bg-[#6b2bd2] transition-all duration-300 p-3 rounded-lg self-end'
-                    onClick={() => navigate('/add-property')}
-                >
-                    <AiOutlinePlus className='text-white text-base' />
-                    <span className='text-white font-semibold text-sm'>Add Property</span>
-                </button>
+        fetchProperties();
+    }, []);
 
-                <div className='w-full flex flex-col space-y-6 h-[75vh] overflow-y-auto'>
-                    {properties.map((property, index) => (
-                        <div key={index} className='w-full bg-sub-bg rounded-xl p-5'>
-                            <div className='flex justify-between'>
-                                <p className='text-white text-lg font-bold'>{property.title}</p>
-                                <p
-                                    className='text-tertiary-text text-base font-semibold hover:cursor-pointer hover:underline'
-                                    onClick={() => navigate(`/properties/property/${property._id}`)}
-                                >
-                                    View Details
-                                </p>
-                            </div>
-                            <div className='flex flex-col md:flex-row gap-3 mt-3'>
-                                <img
-                                    src={property.mainImage}
-                                    alt={property.title}
-                                    className='w-full md:w-1/2 h-44 object-cover rounded-xl'
-                                />
-                                <div className='flex flex-col space-y-2 w-full md:w-1/2'>
-                                    <p className='text-white text-lg font-semibold'>{property.location}</p>
-                                    <p className='text-secondary-text font-semibold text-base'>{property.address}</p>
-                                    <div className='grid grid-cols-2 gap-3'>
-                                        <div className='flex flex-col bg-cards-bg rounded-xl p-2'>
-                                            <p className='text-secondary-text text-base font-semibold'>Rent</p>
-                                            <p className='text-white text-base font-semibold'>₹{property.rent}</p>
-                                        </div>
-                                        <div className='flex flex-col bg-cards-bg rounded-xl p-2'>
-                                            <p className='text-secondary-text text-base font-semibold'>Deposit</p>
-                                            <p className='text-white text-base font-semibold'>₹{property.deposit}</p>
-                                        </div>
+    return (
+        <div className='flex flex-col w-full space-y-4'>
+            <button
+                className='flex items-center justify-center space-x-2 w-1/5 bg-main-purple hover:bg-[#6b2bd2] transition-all duration-300 p-3 rounded-lg self-end'
+                onClick={() => navigate('/add-property')}
+            >
+                <AiOutlinePlus className='text-white text-base' />
+                <span className='text-white font-semibold text-sm'>Add Property</span>
+            </button>
+
+            <div className='w-full flex flex-col space-y-6 h-[75vh] overflow-y-auto'>
+                {properties.map((property, index) => (
+                    <div key={index} className='w-full bg-sub-bg rounded-xl p-5'>
+                        <div className='flex justify-between'>
+                            <p className='text-white text-lg font-bold'>{property.title}</p>
+                            <p
+                                className='text-tertiary-text text-base font-semibold hover:cursor-pointer hover:underline'
+                                onClick={() => navigate(`/properties/property/${property._id}`)}
+                            >
+                                View Details
+                            </p>
+                        </div>
+                        <div className='flex flex-col md:flex-row gap-3 mt-3'>
+                            <img
+                                src={property.mainImage}
+                                alt={property.title}
+                                className='w-full md:w-1/2 h-44 object-cover rounded-xl'
+                            />
+                            <div className='flex flex-col space-y-2 w-full md:w-1/2'>
+                                <p className='text-white text-lg font-semibold'>{property.location}</p>
+                                <p className='text-secondary-text font-semibold text-base'>{property.address}</p>
+                                <div className='grid grid-cols-2 gap-3'>
+                                    <div className='flex flex-col bg-cards-bg rounded-xl p-2'>
+                                        <p className='text-secondary-text text-base font-semibold'>Rent</p>
+                                        <p className='text-white text-base font-semibold'>₹{property.rent}</p>
                                     </div>
-                                    <p className='text-secondary-text text-sm'>{property.description.slice(0, 100)}...</p>
+                                    <div className='flex flex-col bg-cards-bg rounded-xl p-2'>
+                                        <p className='text-secondary-text text-base font-semibold'>Deposit</p>
+                                        <p className='text-white text-base font-semibold'>₹{property.deposit}</p>
+                                    </div>
                                 </div>
+                                <p className='text-secondary-text text-sm'>{property.description.slice(0, 100)}...</p>
                             </div>
                         </div>
-                    ))}
-                </div>
+                    </div>
+                ))}
             </div>
-        );
-    };
-   
+        </div>
+    );
+};
+
 
 
 

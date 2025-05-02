@@ -36,7 +36,7 @@ const AddProperty = () => {
   const prevStep = () => setStep((prev) => prev - 1);
   const handleSubmit = async (data) => {
     try {
-      
+
       const token = localStorage.getItem('token');
       const userState = localStorage.getItem('userState');
       const parsedState = JSON.parse(userState);
@@ -61,7 +61,7 @@ const AddProperty = () => {
         },
         body: JSON.stringify(preparedData),
       });
-  
+
       if (response.ok) {
         alert('Property listed successfully!');
       } else {
@@ -74,9 +74,9 @@ const AddProperty = () => {
       alert('An error occurred. Please check the console for details.');
     }
   };
-  
-  
-  
+
+
+
   // Check if current step is completed
   const isStepCompleted = () => {
     if (step === 0) {
@@ -192,7 +192,7 @@ const AddProperty = () => {
                   <div className="bg-cards-bg px-6 py-4 rounded shadow focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text">
                     <strong>Amenities:</strong> <span className="text-gray-300">{methods.getValues('amenities').join(', ')}</span>
                   </div>
-                  
+
                   {/* Images Section - Spans full row and larger images */}
                   <div className="bg-cards-bg px-6 py-4 rounded shadow focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text col-span-2">
                     <strong>Images:</strong>

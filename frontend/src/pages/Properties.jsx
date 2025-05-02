@@ -136,25 +136,25 @@ const Filters = ({ filters, setFilters }) => {
       <div className="my-2">
         <h1 className="font-bold">Property Type</h1>
         <div className="flex gap-2 my-2 justify-around">
-        {["Flat", "Room"].map((type) => (
-          <label key={type} className="flex items-center gap-2 my-1">
-            <input
-              type="radio"
-              className="w-4 h-4"
-              checked={filters.propertyType === type}
-              onChange={() =>
-                setFilters((prev) => ({
-                  ...prev,
-                  propertyType: type,
-                  flatType: [],
-                  totalBeds: "",
-                  occupiedBeds: ""
-                }))
-              }
-            />
-            {type}
-          </label>
-        ))}
+          {["Flat", "Room"].map((type) => (
+            <label key={type} className="flex items-center gap-2 my-1">
+              <input
+                type="radio"
+                className="w-4 h-4"
+                checked={filters.propertyType === type}
+                onChange={() =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    propertyType: type,
+                    flatType: [],
+                    totalBeds: "",
+                    occupiedBeds: ""
+                  }))
+                }
+              />
+              {type}
+            </label>
+          ))}
         </div>
       </div>
 
