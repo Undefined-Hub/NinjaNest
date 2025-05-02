@@ -263,7 +263,7 @@ const Notifications = () => {
         <div className="flex flex-col w-full space-y-4">
             <div className='flex justify-between items-center'>
                 <p className="text-white text-lg font-bold">Notifications</p>
-                <button onClick={handleRequestsClick} className="flex items-center justify-center space-x-2 w-1/5 bg-main-purple hover:bg-[#6b2bd2] transition-all duration-300 p-2 rounded-lg self-end">
+                <button onClick={handleRequestsClick} className="flex items-center justify-center space-x-4 w-1/5 bg-main-purple hover:bg-[#6b2bd2] transition-all duration-300 p-2 rounded-lg self-end">
                     <MdManageAccounts className="text-white text-base" />
                     <span className="text-white font-semibold text-sm">Requests</span>
                 </button>
@@ -435,7 +435,9 @@ const Notifications = () => {
                                 Type: {notification.requestorId._id === user_id._id ? 'Sent' : 'Received'}
                             </p>
                             <p className="text-secondary-text text-sm font-semibold">
-                                Requested Price: ₹{(notification.requestedPrice.min && notification.requestedPrice.max) ? notification.requestedPrice.min + " - " + notification.requestedPrice.max : (notification.requestedPrice?.fixed)}
+                                Requested Price: ₹{(notification.requestedPrice.min && notification.requestedPrice.max)
+                                    ? notification.requestedPrice.min.toLocaleString('en-IN') + " - " + notification.requestedPrice.max.toLocaleString('en-IN')
+                                    : (notification.requestedPrice?.fixed?.toLocaleString('en-IN'))}
                             </p>
                         </div>
                         <p
