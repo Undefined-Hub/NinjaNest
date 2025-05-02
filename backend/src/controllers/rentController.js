@@ -20,7 +20,7 @@ const addRent = async (req, res, next) => {
             due_date,
             amount_due,
             amount_paid: 0,
-            payment_status: "pending"
+            payment_status: "Pending"
         });
 
         await newRent.save();

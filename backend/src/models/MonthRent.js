@@ -41,8 +41,8 @@ const MonthRentSchema = new Schema(
     },
     payment_status: {
       type: String,
-      enum: ["pending", "paid", "overdue", "partial"],
-      default: "pending",
+      enum: ["Pending", "paid", "overdue", "partial"],
+      default: "Pending",
     },
     payment_method: {
       type: String,

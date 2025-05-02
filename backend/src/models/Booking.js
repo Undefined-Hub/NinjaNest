@@ -44,13 +44,13 @@ const bookingSchema = new mongoose.Schema({
     },
     paymentStatus: {
         type: String,
-        enum: ['pending', 'completed', 'failed', 'refunded'],
-        default: 'pending'
+        enum: ['Pending', 'completed', 'failed', 'refunded'],
+        default: 'Pending'
     },
     bookingStatus: {
         type: String,
-        enum: ['pending', 'confirmed', 'cancelled', 'completed'],
-        default: 'pending'
+        enum: ['Pending', 'confirmed', 'cancelled', 'completed'],
+        default: 'Pending'
     },
     paymentMethod: {
         type: String,
@@ -67,7 +67,7 @@ const bookingSchema = new mongoose.Schema({
     },
     verificationStatus: {
         type: String,
-        enum: ['not_verified', 'pending', 'verified', 'rejected'],
+        enum: ['not_verified', 'Pending', 'verified', 'rejected'],
         default: 'not_verified'
     },
     cancellationReason: {

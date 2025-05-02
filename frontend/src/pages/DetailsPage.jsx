@@ -42,7 +42,7 @@ const DetailsPage = () => {
             ownerName: propertyData?.landlord_id, // Replace with the actual owner's name
             ownerId: propertyData?.landlord_id,
             requestorId: user.user?._id,
-            status: 'pending',
+            status: 'Pending',
             message: user.user?.name + " is intrested to rent this property"  // Replace with the actual owner's ID
         };
 
