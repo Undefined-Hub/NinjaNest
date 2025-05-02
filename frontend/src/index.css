@@ -1,9 +1,9 @@
+@import "leaflet/dist/leaflet.css";
+/* @import "leaflet-routing-machine/dist/leaflet-routing-machine.css"; */
+/* @import "leaflet-control-geocoder/dist/Control.Geocoder.css"; */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import "leaflet/dist/leaflet.css";
-@import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
-@import "leaflet-control-geocoder/dist/Control.Geocoder.css";
 
 
 .leaflet-control-geosearch form input {
