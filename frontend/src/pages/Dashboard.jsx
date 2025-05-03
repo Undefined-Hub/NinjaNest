@@ -25,7 +25,7 @@ import { toast } from 'react-hot-toast';
 import roommate from '/images/roommate.svg'
 import payment from '/images/payment.svg'
 import profile from '/images/profile.svg'
-
+import CurrentRental from '../components/CurrentRental';
 const menuItems = [
     { label: "Overview", icon: <AiOutlineHome /> },
     { label: "My Properties", icon: <FaRegBuilding /> },
@@ -40,7 +40,7 @@ const Dashboard = () => {
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
- 
+
 
     const handleLogout = () => {
         dispatch(logoutUser());
@@ -94,9 +94,9 @@ const Dashboard = () => {
 
                             {/* Logout Button */}
                             <div className='mt-auto'>
-                                <button 
-                                onClick={handleLogout}
-                                className='w-full flex items-center justify-start space-x-2 bg-logout-red text-logout-text font-semibold p-2 rounded-lg hover:bg-[#6b2e2e] transition-all duration-300'>
+                                <button
+                                    onClick={handleLogout}
+                                    className='w-full flex items-center justify-start space-x-2 bg-logout-red text-logout-text font-semibold p-2 rounded-lg hover:bg-[#6b2e2e] transition-all duration-300'>
                                     <FiLogOut className='text-lg' />
                                     <span>Logout</span>
                                 </button>
@@ -105,89 +105,83 @@ const Dashboard = () => {
                     </div>
 
 
-                    <div className='flex w-full lg:w-3/4 '> {/* Right section */}
-                        {activeTab === 'Overview' &&
-                            <div className='flex flex-col w-full space-y-4'>
-                                <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3'>
-                                    {[{
-                                        title: 'Next Payment',
-                                        value: '₹1,800',
-                                        date: 'Due March 1, 2025',
-                                        icon: pay,
-                                        color: 'bg-green-900'
-                                    }, {
-                                        title: 'Lease Ends',
-                                        value: '250 Days',
-                                        date: 'December 31, 2025',
-                                        icon: calendar,
-                                        color: 'bg-violet-900'
-                                    }, {
-                                        title: 'Roommates',
-                                        value: '3 Active',
-                                        date: 'All verified',
-                                        icon: people,
-                                        color: 'bg-blue-900'
-                                    }].map((card, index) => (
-                                        <div key={index} className='flex flex-col justify-center items-center text-white bg-sub-bg rounded-xl p-5 space-y-2'>
-                                            <div className={`flex justify-center items-center h-10 w-10 ${card.color} rounded-xl`}>
-                                                <img src={card.icon} alt={card.title} className='h-5 w-5' />
-                                            </div>
-                                            <p className='text-secondary-text font-semibold text-base'>{card.title}</p>
-                                            <p className='text-white font-semibold text-xl'>{card.value}</p>
-                                            <p className='text-secondary-text font-semibold text-base'>{card.date}</p>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <div className='w-full bg-sub-bg rounded-xl p-5'>
-                                    <div className='flex justify-between'>
-                                        <p className='text-white text-lg font-bold'>Current Property</p>
-                                        <p className='text-tertiary-text text-base font-semibold hover:cursor-pointer hover:underline'
-                                            // TODO: Change this to navigate to the property details page of active property
-                                            onClick={() => navigate('/currentpropertydashboard')}>View Details</p>
-                                    </div>
-                                    <div className='flex flex-col md:flex-row gap-3 mt-3'>
-                                        <img src={house1} alt='property' className='w-full md:w-1/2 h-44 object-cover rounded-xl' />
-                                        <div className='flex flex-col space-y-2 w-full md:w-1/2'>
-                                            <p className='text-white text-lg font-semibold'>Bhoot Bangla</p>
-                                            <p className='text-secondary-text font-semibold text-base'>1.2 Kilometers away from D. Y. Patil College</p>
-                                            <div className='grid grid-cols-2 gap-3'>
-                                                <div className='flex flex-col bg-cards-bg rounded-xl p-2'>
-                                                    <p className='text-secondary-text text-base font-semibold'>Room Type</p>
-                                                    <p className='text-white text-base font-semibold'>3 BHK</p>
+                    {/* Right section */}
+                                        {activeTab === 'Overview' &&
+                                            <div className='flex flex-col w-full space-y-4'>
+                                                <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3'>
+                                                    {[{
+                                                        title: 'Next Payment',
+                                                        value: '₹1,800',
+                                                        date: 'Due March 1, 2025',
+                                                        icon: pay,
+                                                        color: 'bg-green-900'
+                                                    }, {
+                                                        title: 'Lease Ends',
+                                                        value: '250 Days',
+                                                        date: 'December 31, 2025',
+                                                        icon: calendar,
+                                                        color: 'bg-violet-900'
+                                                    }, {
+                                                        title: 'Roommates',
+                                                        value: '3 Active',
+                                                        date: 'All verified',
+                                                        icon: people,
+                                                        color: 'bg-blue-900'
+                                                    }].map((card, index) => (
+                                                        <div key={index} className='flex flex-col justify-center items-center text-white bg-sub-bg rounded-xl p-5 space-y-2'>
+                                                            <div className={`flex justify-center items-center h-10 w-10 ${card.color} rounded-xl`}>
+                                                                <img src={card.icon} alt={card.title} className='h-5 w-5' />
+                                                            </div>
+                                                            <p className='text-secondary-text font-semibold text-base'>{card.title}</p>
+                                                            <p className='text-white font-semibold text-xl'>{card.value}</p>
+                                                            <p className='text-secondary-text font-semibold text-base'>{card.date}</p>
+                                                        </div>
+                                                    ))}
                                                 </div>
-                                                <div className='flex flex-col bg-cards-bg rounded-xl p-2'>
-                                                    <p className='text-secondary-text text-base font-semibold'>Floor</p>
-                                                    <p className='text-white text-base font-semibold'>5th Floor</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
 
-                                <div className='w-full bg-sub-bg rounded-xl p-5'>
-                                    <p className='text-white text-lg font-bold'>Roommates</p>
-                                    <div className='grid grid-cols-1 md:grid-cols-2 gap-3 mt-3'>
-                                        {[{ name: 'Aryan Patil', course: 'Computer Science & Engg.' }, { name: 'Harshwardhan Patil', course: 'Computer Science & Engg.' }].map((mate, index) => (
-                                            <div key={index} className='flex items-center bg-cards-bg rounded-xl p-2 space-x-3'>
-                                                <img src='https://placehold.co/100' alt={mate.name} className='h-12 w-12 rounded-full' />
-                                                <div className='flex flex-col'>
-                                                    <p className='text-white text-base font-semibold'>{mate.name}</p>
-                                                    <p className='text-secondary-text text-base font-semibold'>{mate.course}</p>
+                                                <div className='w-full bg-sub-bg rounded-xl '>
+                                                {/* <p className='text-white text-lg font-bold mb-2'>Current Property</p> */}
+
+                                                    {user?.user?.currentRental ? (
+                                                        <CurrentRental propertyId={user.user.currentRental} />
+                                                    ) : (
+                                                        <div className='flex justify-center flex-col items-center h-44'>
+                                                             <p className='text-secondary-text p-2 '>You don't have any property, Explore and rent one.</p>
+                                                            <button
+                                                                className='bg-main-purple text-white font-semibold p-3 rounded-lg hover:bg-[#6b2bd2] transition-all duration-300'
+                                                                onClick={() => navigate('/explore')}
+                                                            >
+                                                                Browse Properties 
+                                                            </button>
+                                                           
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                <div className='w-full bg-sub-bg rounded-xl p-5'>
+                                                    <p className='text-white text-lg font-bold'>Roommates</p>
+                                                    <div className='grid grid-cols-1 md:grid-cols-2 gap-3 mt-3'>
+                                                        {[{ name: 'Aryan Patil', course: 'Computer Science & Engg.' }, { name: 'Harshwardhan Patil', course: 'Computer Science & Engg.' }].map((mate, index) => (
+                                                            <div key={index} className='flex items-center bg-cards-bg rounded-xl p-2 space-x-3'>
+                                                                <img src='https://placehold.co/100' alt={mate.name} className='h-12 w-12 rounded-full' />
+                                                                <div className='flex flex-col'>
+                                                                    <p className='text-white text-base font-semibold'>{mate.name}</p>
+                                                                    <p className='text-secondary-text text-base font-semibold'>{mate.course}</p>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                        {activeTab === 'My Properties' &&
-                            <MyProperties /> // Call the MyProperties component here
-                        }
-                        {activeTab === 'Notifications' &&
-                            <Notifications />
+                                        }
 
-                        }
+                                        {activeTab === 'My Properties' &&
+                                            <MyProperties /> // Call the MyProperties component here
+                    }
+                    {activeTab === 'Notifications' &&
+                        <Notifications />
+
+                    }
 
                         {activeTab === 'Roommates' &&
                         <div className='flex flex-col items-center justify-center h-[64vh] space-y-4'>
@@ -230,7 +224,7 @@ const Dashboard = () => {
                             </div>
                         }
 
-                    </div>
+
                 </div>
             </div>
         </>

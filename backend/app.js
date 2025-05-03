@@ -12,7 +12,7 @@ const requestRoutes = require("./src/routes/requestRoutes");
 const rentRoutes = require("./src/routes/monthRentRoutes");
 const reviewRoutes = require("./src/routes/reviewRoutes");
 const bookingRoutes = require("./src/routes/bookingRoutes");
-
+const paymentRoutes = require("./src/routes/paymentRoutes");
 const app = express();
 
 // Middleware
@@ -43,7 +43,7 @@ app.use("/api/property", propertyRoutes);
 app.use("/api/review", reviewRoutes);
 app.use("/api/booking", bookingRoutes);
 app.use("/api/rents", rentRoutes);
-
+app.use("/api/payment", paymentRoutes);
 app.use("/api/request", requestRoutes);
 
 const matcherRoutes = require('./roommateMatcher/matcherRoutes');
