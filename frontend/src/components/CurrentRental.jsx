@@ -34,7 +34,7 @@ const CurrentRental = ({ propertyId }) => {
             // Send a request to the backend to initiate the payment
             const response = await axios.post('http://localhost:3000/api/payment/initiate', {
                 user_id: user.user._id, // Assuming user ID is stored in localStorage
-                price: property.rent , // Rent amount
+                price: property.rent, // Rent amount
                 phone: '9876543210', // Replace with the user's phone number
                 name: property.title, // Property name
                 redirectUrl: 'http://localhost:3000/dashboard', // Redirect back to dashboard after payment
@@ -48,7 +48,7 @@ const CurrentRental = ({ propertyId }) => {
             }
         } catch (error) {
             console.error('Error initiating payment:', error.response?.data || error.message);
-            alert('Failed to initiate payment. Please try again.'); 
+            alert('Failed to initiate payment. Please try again.');
         }
     };
 
@@ -109,13 +109,13 @@ const CurrentRental = ({ propertyId }) => {
                     <p className='text-white text-lg font-bold'>Current Property</p>
                     <p className='text-tertiary-text text-base font-semibold hover:cursor-pointer hover:underline'
                         // TODO: Change this to navigate to the property details page of active property
-                        onClick={() => navigate('/currentpropertydashboard')}>View Details</p>
+                        onClick={() => navigate(`/currentpropertydashboard/${property._id}`)}>View Details</p>
                 </div>
                 <div className='flex flex-col md:flex-row gap-3 mt-3'>
                     <div className='flex flex-col w-full md:w-1/2 gap-4'>
                         <img src={property.mainImage || 'https://placehold.co/300x200'}
                             alt={property.title} className='w-full max-h-[16.6rem]  object-cover rounded-xl' />
-                       
+
                     </div>
                     <div className='flex flex-col space-y-2 w-full md:w-1/2'>
                         <p className='text-white text-lg font-semibold'>{property.title}</p>
@@ -130,9 +130,9 @@ const CurrentRental = ({ propertyId }) => {
                                 <p className='text-white text-base font-semibold'>₹{property.rent}</p>
                             </div>
                             <div>
-                            
+
                             </div>
-                            
+
                         </div>
                         <button
                             onClick={handlePayRent}

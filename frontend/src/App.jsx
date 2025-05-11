@@ -21,9 +21,9 @@ function App() {
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/explore/property/:propertyId" element={<DetailsPage />} />
-          <Route path="/explore" element={<ExplorePage/>} />
+          <Route path="/explore" element={<ExplorePage />} />
           <Route path="/add-property" element={<AddProperty />} />
-          <Route path="/currentpropertydashboard" element={<CurrentPropertyDashboard />} />
+          <Route path="/currentpropertydashboard/:propertyId" element={<CurrentPropertyDashboard />} />
         </Routes>
         <Footer />
       </Router>

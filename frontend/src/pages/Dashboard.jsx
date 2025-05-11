@@ -46,7 +46,7 @@ const Dashboard = () => {
         dispatch(logoutUser());
         toast.success('Logged out successfully!');
         navigate('/'); // or navigate('/login') based on your routing logic
-      };
+    };
 
     let navigate = useNavigate()
     const { user, loading, error } = useSelector((state) => state.user);
@@ -106,84 +106,84 @@ const Dashboard = () => {
 
 
                     {/* Right section */}
-                                        {activeTab === 'Overview' &&
-                                            <div className='flex flex-col w-full space-y-4'>
-                                                <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3'>
-                                                    {[{
-                                                        title: 'Next Payment',
-                                                        value: '₹1,800',
-                                                        date: 'Due March 1, 2025',
-                                                        icon: pay,
-                                                        color: 'bg-green-900'
-                                                    }, {
-                                                        title: 'Lease Ends',
-                                                        value: '250 Days',
-                                                        date: 'December 31, 2025',
-                                                        icon: calendar,
-                                                        color: 'bg-violet-900'
-                                                    }, {
-                                                        title: 'Roommates',
-                                                        value: '3 Active',
-                                                        date: 'All verified',
-                                                        icon: people,
-                                                        color: 'bg-blue-900'
-                                                    }].map((card, index) => (
-                                                        <div key={index} className='flex flex-col justify-center items-center text-white bg-sub-bg rounded-xl p-5 space-y-2'>
-                                                            <div className={`flex justify-center items-center h-10 w-10 ${card.color} rounded-xl`}>
-                                                                <img src={card.icon} alt={card.title} className='h-5 w-5' />
-                                                            </div>
-                                                            <p className='text-secondary-text font-semibold text-base'>{card.title}</p>
-                                                            <p className='text-white font-semibold text-xl'>{card.value}</p>
-                                                            <p className='text-secondary-text font-semibold text-base'>{card.date}</p>
-                                                        </div>
-                                                    ))}
-                                                </div>
+                    {activeTab === 'Overview' &&
+                        <div className='flex flex-col w-full space-y-4'>
+                            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3'>
+                                {[{
+                                    title: 'Next Payment',
+                                    value: '₹1,800',
+                                    date: 'Due March 1, 2025',
+                                    icon: pay,
+                                    color: 'bg-green-900'
+                                }, {
+                                    title: 'Lease Ends',
+                                    value: '250 Days',
+                                    date: 'December 31, 2025',
+                                    icon: calendar,
+                                    color: 'bg-violet-900'
+                                }, {
+                                    title: 'Roommates',
+                                    value: '3 Active',
+                                    date: 'All verified',
+                                    icon: people,
+                                    color: 'bg-blue-900'
+                                }].map((card, index) => (
+                                    <div key={index} className='flex flex-col justify-center items-center text-white bg-sub-bg rounded-xl p-5 space-y-2'>
+                                        <div className={`flex justify-center items-center h-10 w-10 ${card.color} rounded-xl`}>
+                                            <img src={card.icon} alt={card.title} className='h-5 w-5' />
+                                        </div>
+                                        <p className='text-secondary-text font-semibold text-base'>{card.title}</p>
+                                        <p className='text-white font-semibold text-xl'>{card.value}</p>
+                                        <p className='text-secondary-text font-semibold text-base'>{card.date}</p>
+                                    </div>
+                                ))}
+                            </div>
 
-                                                <div className='w-full bg-sub-bg rounded-xl '>
-                                                {/* <p className='text-white text-lg font-bold mb-2'>Current Property</p> */}
+                            <div className='w-full bg-sub-bg rounded-xl '>
+                                {/* <p className='text-white text-lg font-bold mb-2'>Current Property</p> */}
 
-                                                    {user?.user?.currentRental ? (
-                                                        <CurrentRental propertyId={user.user.currentRental} />
-                                                    ) : (
-                                                        <div className='flex justify-center flex-col items-center h-44'>
-                                                             <p className='text-secondary-text p-2 '>You don't have any property, Explore and rent one.</p>
-                                                            <button
-                                                                className='bg-main-purple text-white font-semibold p-3 rounded-lg hover:bg-[#6b2bd2] transition-all duration-300'
-                                                                onClick={() => navigate('/explore')}
-                                                            >
-                                                                Browse Properties 
-                                                            </button>
-                                                           
-                                                        </div>
-                                                    )}
-                                                </div>
+                                {user?.user?.currentRental ? (
+                                    <CurrentRental propertyId={user.user.currentRental} />
+                                ) : (
+                                    <div className='flex justify-center flex-col items-center h-44'>
+                                        <p className='text-secondary-text p-2 '>You don't have any property, Explore and rent one.</p>
+                                        <button
+                                            className='bg-main-purple text-white font-semibold p-3 rounded-lg hover:bg-[#6b2bd2] transition-all duration-300'
+                                            onClick={() => navigate('/explore')}
+                                        >
+                                            Browse Properties
+                                        </button>
 
-                                                <div className='w-full bg-sub-bg rounded-xl p-5'>
-                                                    <p className='text-white text-lg font-bold'>Roommates</p>
-                                                    <div className='grid grid-cols-1 md:grid-cols-2 gap-3 mt-3'>
-                                                        {[{ name: 'Aryan Patil', course: 'Computer Science & Engg.' }, { name: 'Harshwardhan Patil', course: 'Computer Science & Engg.' }].map((mate, index) => (
-                                                            <div key={index} className='flex items-center bg-cards-bg rounded-xl p-2 space-x-3'>
-                                                                <img src='https://placehold.co/100' alt={mate.name} className='h-12 w-12 rounded-full' />
-                                                                <div className='flex flex-col'>
-                                                                    <p className='text-white text-base font-semibold'>{mate.name}</p>
-                                                                    <p className='text-secondary-text text-base font-semibold'>{mate.course}</p>
-                                                                </div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className='w-full bg-sub-bg rounded-xl p-5'>
+                                <p className='text-white text-lg font-bold'>Roommates</p>
+                                <div className='grid grid-cols-1 md:grid-cols-2 gap-3 mt-3'>
+                                    {[{ name: 'Aryan Patil', course: 'Computer Science & Engg.' }, { name: 'Harshwardhan Patil', course: 'Computer Science & Engg.' }].map((mate, index) => (
+                                        <div key={index} className='flex items-center bg-cards-bg rounded-xl p-2 space-x-3'>
+                                            <img src='https://placehold.co/100' alt={mate.name} className='h-12 w-12 rounded-full' />
+                                            <div className='flex flex-col'>
+                                                <p className='text-white text-base font-semibold'>{mate.name}</p>
+                                                <p className='text-secondary-text text-base font-semibold'>{mate.course}</p>
                                             </div>
-                                        }
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    }
 
-                                        {activeTab === 'My Properties' &&
-                                            <MyProperties /> // Call the MyProperties component here
+                    {activeTab === 'My Properties' &&
+                        <MyProperties /> // Call the MyProperties component here
                     }
                     {activeTab === 'Notifications' &&
                         <Notifications />
 
                     }
 
-                        {activeTab === 'Roommates' &&
+                    {activeTab === 'Roommates' &&
                         <div className='flex flex-col items-center justify-center h-[64vh] space-y-4'>
                             <img
                                 src={roommate} // Replace with your illustration URL
@@ -191,13 +191,13 @@ const Dashboard = () => {
                                 className='w-1/2 h-auto'
                             />
                             <p className='text-secondary-text text-lg font-semibold text-center'>
-                                No roommates have joined the room yet. <br/>Stay tuned for updates!
+                                No roommates have joined the room yet. <br />Stay tuned for updates!
                             </p>
                         </div>
-                }
+                    }
 
 
-                      
+
                     {activeTab === 'Payment' &&
                         <div className='flex flex-col items-center justify-center h-[64vh] space-y-4'>
                             <img
@@ -206,23 +206,23 @@ const Dashboard = () => {
                                 className='w-1/2 h-auto'
                             />
                             <p className='text-secondary-text text-lg font-semibold text-center'>
-                                No payment history is available yet. <br/>Stay tuned for updates or make your first payment!
+                                No payment history is available yet. <br />Stay tuned for updates or make your first payment!
                             </p>
                         </div>
                     }
 
                     {activeTab === 'Settings' &&
-                            <div className='flex flex-col items-center justify-center h-[64vh] space-y-4 w-full'>
-                                <img
-                                    src={profile} // Replace with your illustration URL
-                                    alt='Settings Coming Soon'
-                                    className='w-1/3 h-auto'
-                                />
-                                <p className='text-secondary-text text-lg font-semibold text-center'>
-                                    Settings functionality is coming soon. <br/>Stay tuned for updates!
-                                </p>
-                            </div>
-                        }
+                        <div className='flex flex-col items-center justify-center h-[64vh] space-y-4 w-full'>
+                            <img
+                                src={profile} // Replace with your illustration URL
+                                alt='Settings Coming Soon'
+                                className='w-1/3 h-auto'
+                            />
+                            <p className='text-secondary-text text-lg font-semibold text-center'>
+                                Settings functionality is coming soon. <br />Stay tuned for updates!
+                            </p>
+                        </div>
+                    }
 
 
                 </div>
@@ -513,7 +513,7 @@ const Notifications = () => {
                         className="w-1/3 h-auto"
                     />
                     <p className="text-secondary-text text-lg font-semibold text-center">
-                        You have no notifications at the moment. <br/>Stay tuned for updates!
+                        You have no notifications at the moment. <br />Stay tuned for updates!
                     </p>
                 </div>
             )}
@@ -521,7 +521,7 @@ const Notifications = () => {
     );
 };
 
-import not_found from  '/images/not_found.svg'
+import not_found from '/images/not_found.svg'
 
 const MyProperties = () => {
     const [properties, setProperties] = useState([]);
@@ -534,10 +534,10 @@ const MyProperties = () => {
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`,
-                      },
-                    }
+                    },
+                }
                 );
-                
+
                 console.log('Fetched properties:', response.data.properties);
                 setProperties(response.data.properties);
             } catch (error) {
@@ -550,14 +550,14 @@ const MyProperties = () => {
 
     return (
         <div className='flex flex-col w-full space-y-4'>
-           { properties.length > 0 ? (
-            <button
-                className='flex items-center justify-center space-x-2 w-1/5 bg-main-purple hover:bg-[#6b2bd2] transition-all duration-300 p-3 rounded-lg self-end'
-                onClick={() => navigate('/add-property')}
-            >
-                <AiOutlinePlus className='text-white text-base' />
-                <span className='text-white font-semibold text-sm'>Add Property</span>
-            </button>
+            {properties.length > 0 ? (
+                <button
+                    className='flex items-center justify-center space-x-2 w-1/5 bg-main-purple hover:bg-[#6b2bd2] transition-all duration-300 p-3 rounded-lg self-end'
+                    onClick={() => navigate('/add-property')}
+                >
+                    <AiOutlinePlus className='text-white text-base' />
+                    <span className='text-white font-semibold text-sm'>Add Property</span>
+                </button>
 
             ) : (
                 "")}

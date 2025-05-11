@@ -1,9 +1,37 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import agreement_svg from '../assets/agreement_svg.svg'
 import id_proof_svg from '../assets/id_proof_svg.svg'
 import pfp from '../assets/pfp.png'
+import axios from 'axios';
+import { useParams } from 'react-router-dom';
+import { useSelector } from 'react-redux'
 
 const CurrentPropertyDashboard = () => {
+    const [property, setProperty] = useState(null);
+    const { propertyId } = useParams();
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const { user } = useSelector((state) => state.user);
+    useEffect(() => {
+        const fetchProperty = async () => {
+            try {
+                const response = await axios.get(`http://localhost:3000/api/property/${propertyId}`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                });
+                setProperty(response.data.property);
+                console.log(response.data.property);
+                setLoading(false);
+            } catch (err) {
+                console.error('Error fetching property:', err);
+                setError('Failed to load property details.');
+                setLoading(false);
+            }
+        };
+
+        fetchProperty();
+    }, [propertyId]);
     return (
         <div className='items-center bg-main-bg p-4'> {/* Main Container with consistent padding */}
             <div className='w-full h-full max-w-6xl mx-auto my-6 space-y-6 flex flex-col'> {/* Content Area with consistent spacing */}
@@ -14,7 +42,7 @@ const CurrentPropertyDashboard = () => {
                         <img src={pfp} alt="Profile" className='w-12 h-12 rounded-full object-cover' />
                     </div>
                     <div className='flex flex-col'>
-                        <h1 className='text-lg text-white font-bold w-full'>Welcome back, Pawan Malgavi</h1>
+                        <h1 className='text-lg text-white font-bold w-full'>Welcome back, {user?.user?.name || "Guest"}</h1>
                         <p className='text-start text-secondary-text w-full'>Your NinjaNest Dashboard</p>
                     </div>
                 </div>
@@ -24,9 +52,9 @@ const CurrentPropertyDashboard = () => {
                     {/* Title & Description Section */}
                     <div className='flex flex-col sm:flex-row w-full'>
                         <div className='flex flex-col w-full'>
-                            <p className='text-white font-semibold text-lg'>Sunshine Apartments</p>
-                            <p className='text-secondary-text font-semibold'>123, Student Lane, Tech Park Area, Kolhapur - 416 003</p>
-                            <p className='bg-cards-bg text-secondary-text mt-1 rounded-full w-fit px-3 text-center text-sm font-semibold'>3 BHK Apartment</p>
+                            <p className='text-white font-semibold text-lg'>{property?.title || "Unknown Property"}</p>
+                            <p className='text-secondary-text font-semibold'>{property?.address || "Unknown Address"}</p>
+                            <p className='bg-cards-bg text-secondary-text mt-1 rounded-full w-fit px-3 text-center text-sm font-semibold'>{property?.flatType || "Unknown Flat Type"}</p>
                         </div>
                         <div className='flex justify-start sm:justify-end items-center w-full mt-4 sm:mt-0'>
                             <button className='bg-cards-bg text-white font-semibold px-4 py-2 rounded-lg hover:bg-main-purple'>View on Map</button>
@@ -48,19 +76,19 @@ const CurrentPropertyDashboard = () => {
                         <p className='font-semibold text-lg text-tertiary-text'>Rent & Lease Details</p>
                         <div className='mt-4'> {/* Monthly Rent */}
                             <p className='text-secondary-text font-semibold'>Monthly Rent</p>
-                            <p className='text-white font-semibold text-lg'>₹ 15,000</p>
+                            <p className='text-white font-semibold text-lg'>₹ {property?.rent?.toLocaleString('en-IN') || "Unknown"}</p>
                         </div>
                         <div className='mt-4'> {/* Security Deposit */}
                             <p className='text-secondary-text font-semibold'>Security Deposit</p>
-                            <p className='text-white font-semibold text-md'>₹ 45,000</p>
+                            <p className='text-white font-semibold text-md'>₹ {property?.deposit?.toLocaleString('en-IN') || "Unknown"}</p>
                         </div>
                         <div className='mt-4'> {/* Lease Period */}
                             <p className='text-secondary-text font-semibold'>Lease Period</p>
-                            <p className='text-white font-semibold text-md'>Jan 15, 2025 - Jan 14, 2026</p>
+                            <p className='text-white font-semibold text-md'>{property?.leasePeriod || "Unknown"}</p>
                         </div>
                         <div className='mt-4'> {/* Next Payment */}
                             <p className='text-secondary-text font-semibold'>Next Payment</p>
-                            <p className='text-white font-semibold text-md'>May 01, 2025</p>
+                            <p className='text-white font-semibold text-md'>{property?.nextPayment || "Unknown"}</p>
                         </div>
                         <div className='mt-4 flex'> {/* Pay Now */}
                             <button className='bg-white text-black w-full py-2 rounded-xl font-semibold hover:cursor-pointer hover:bg-slate-100'>Pay Now</button>
@@ -68,6 +96,7 @@ const CurrentPropertyDashboard = () => {
                     </div>
 
                     {/* Your Roommates */}
+                    {/* TODO: Implement Roommate List in Property Schema */}
                     <div className='bg-sub-bg w-full text-white rounded-xl p-4 mt-6 lg:mt-0'>
                         <p className='font-semibold text-lg text-tertiary-text'>Your Roomates</p>
                         {/* Roommate List */}
