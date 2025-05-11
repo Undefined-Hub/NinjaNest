@@ -63,13 +63,18 @@ const CurrentPropertyDashboard = () => {
 
                     {/* Property Images Section */}
                     <div className='flex flex-col md:flex-row w-full gap-4'>
-                        <div className='bg-cards-bg w-full h-[200px] rounded-xl flex justify-center items-center text-white'>Property 1</div>
-                        <div className='bg-cards-bg w-full h-[200px] rounded-xl flex justify-center items-center text-white mt-4 md:mt-0'>Property 2</div>
-                        <div className='bg-cards-bg w-full h-[200px] rounded-xl flex justify-center items-center text-white mt-4 md:mt-0'>Property 3</div>
+                        <div className='bg-cards-bg w-full h-[200px] rounded-xl flex justify-center items-center text-white'>
+                            <img src={property?.images[0] || "https://placehold.co/200"} alt="Property" className='w-full h-full object-cover rounded-xl' />
+                        </div>
+                        <div className='bg-cards-bg w-full h-[200px] rounded-xl flex justify-center items-center text-white mt-4 md:mt-0'>
+                            <img src={property?.images[1] || "https://placehold.co/200"} alt="Property" className='w-full h-full object-cover rounded-xl' />
+                        </div>
+                        <div className='bg-cards-bg w-full h-[200px] rounded-xl flex justify-center items-center text-white mt-4 md:mt-0'>
+                            <img src={property?.images[2] || "https://placehold.co/200"} alt="Property" className='w-full h-full object-cover rounded-xl' />
+                        </div>
+
                     </div>
                 </div>
-
-                {/* Rent Details / Your Roommates / Documents */}
                 <div className='w-full flex flex-col lg:flex-row gap-6'> {/* Changed space-x-6 to gap-6 for better responsiveness */}
                     {/* Rent Details */}
                     <div className='flex flex-col bg-sub-bg w-full text-white rounded-xl p-4'>
