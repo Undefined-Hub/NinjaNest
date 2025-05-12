@@ -29,6 +29,7 @@ const Step1BasicInfo = () => {
         <label className="text-sm text-secondary-text">Title</label>
         <input
           {...register('title', { required: 'Title is required' })}
+          placeholder='e.g. "Spacious 2BHK in Pune"'
           className="bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text"
         />
         {errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
@@ -41,7 +42,7 @@ const Step1BasicInfo = () => {
           {...register('location', { required: 'Location is required' })}
           className="bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text"
         >
-          <option value="">Select</option>
+          <option value="" disabled>Select the city</option>
           <option value="Pune">Pune</option>
           <option value="Nagpur">Nagpur</option>
           <option value="Mumbai">Mumbai</option>
@@ -54,6 +55,7 @@ const Step1BasicInfo = () => {
         <label className="text-sm text-secondary-text">Address</label>
         <input
           {...register('address', { required: 'Address is required' })}
+          placeholder="e.g. '123 Main St, Pune'"
           className="bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text"
         />
         {errors.address && <p className="text-red-500 text-sm">{errors.address.message}</p>}
@@ -66,7 +68,7 @@ const Step1BasicInfo = () => {
           {...register('propertyType', { required: 'Room Type is required' })}
           className="bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text"
         >
-          <option value="">Select</option>
+          <option value="" disabled>Select</option>
           <option value="Room">Room</option>
           <option value="Flat">Flat</option>
         </select>
@@ -86,6 +88,8 @@ const Step1BasicInfo = () => {
                 required: 'Total beds is required',
                 min: { value: 1, message: 'At least 1 bed is required' },
               })}
+              min={1}
+              placeholder="e.g. 3"
               className="bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text"
             />
             {errors.roomDetails?.beds && (
@@ -101,6 +105,10 @@ const Step1BasicInfo = () => {
                 required: 'Occupied beds is required',
                 min: { value: 0, message: 'Cannot be negative' },
               })}
+              placeholder="e.g. 1"
+              min={0}
+              max={watch('roomDetails.beds')}
+              disabled={!watch('roomDetails.beds')}
               className="bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text"
             />
             {errors.roomDetails?.occupiedBeds && (
@@ -141,6 +149,8 @@ const Step1BasicInfo = () => {
           {...register('description', { required: 'Description is required' })}
           className="bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text"
           rows={4}
+          placeholder="e.g. 'This is a spacious 2BHK flat with all amenities.'"
+          maxLength={500}
         />
         {errors.description && (
           <p className="text-red-500 text-sm">{errors.description.message}</p>

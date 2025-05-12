@@ -19,7 +19,7 @@ import axios from 'axios'
 import { MdManageAccounts } from "react-icons/md";
 import { useAuth } from "../CustomHook/useAuth";
 import { toast } from 'react-hot-toast';
-
+import { useLocation } from 'react-router-dom';
 
 
 import roommate from '/images/roommate.svg'
@@ -36,6 +36,7 @@ const menuItems = [
 ];
 
 const Dashboard = () => {
+      const location = useLocation();
     const dispatch = useDispatch();
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -48,10 +49,16 @@ const Dashboard = () => {
         navigate('/'); // or navigate('/login') based on your routing logic
     };
 
+    const [activeTab, setActiveTab] = useState('Overview') // State to hold the active tab
+     useEffect(() => {
+    if (location.state?.activeTab) {
+      setActiveTab(location.state.activeTab);
+    }
+  }, [location.state?.activeTab]);
+
     let navigate = useNavigate()
     const { user, loading, error } = useSelector((state) => state.user);
     // user.user && console.log(`User Details: (ProfilePage) `, user);
-    const [activeTab, setActiveTab] = useState('Overview') // State to hold the active tab
     return (
         <>
             <div className='flex justify-center items-center bg-main-bg p-3'> {/* Main container for profile page */}

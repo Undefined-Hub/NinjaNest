@@ -6,9 +6,11 @@ import Step2Pricing from './steps/Step2Pricing';
 import Step3Features from './steps/Step3Features';
 import Step4MediaLocation from './steps/Step4MediaLocation';
 import { toast } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 const AddProperty = () => {
   const [step, setStep] = useState(0);
+  const navigate = useNavigate();
   const methods = useForm({
     defaultValues: {
       landlord_name: '',
@@ -69,6 +71,7 @@ const AddProperty = () => {
   
       if (response.ok) {
         toast.success('Property listed successfully!');
+        navigate('/dashboard', { state: { activeTab: 'My Properties' } });
       } else {
         const errorData = await response.json();
         console.error('Error response:', errorData);
@@ -171,7 +174,7 @@ const AddProperty = () => {
             {step === 0 && <Step1BasicInfo />}
             {step === 1 && <Step2Pricing />}
             {step === 2 && <Step3Features />}
-            {step === 3 && <Step4MediaLocation />}
+            {step === 3 && <Step4MediaLocation formType={"add"} />}
             {step === 4 && (
               <div className="flex flex-col gap-6">
                 <h2 className="text-2xl font-semibold mb-4">Review Your Details</h2>

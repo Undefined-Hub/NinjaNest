@@ -62,7 +62,7 @@ const Step3Features = () => {
         <label className="text-sm text-secondary-text mx-2">Area (e.g. 220 sq. ft)</label>
         <input
           type="text"
-          placeholder="220 sq. ft"
+          placeholder="eg. 220 sq. ft"
           {...register('area', { required: 'Area is required' })}
           className="bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text mt-1"
         />
@@ -72,7 +72,7 @@ const Step3Features = () => {
       </div>
 
       {/* Average Rating (optional or required) */}
-      <div>
+      {/* <div>
         <label className="text-sm text-secondary-text">Average Rating (1 to 5)</label>
         <input
           type="number"
@@ -90,7 +90,7 @@ const Step3Features = () => {
         {errors.averageRating && (
           <span className="text-red-500 text-xs">{errors.averageRating.message}</span>
         )}
-      </div>
+      </div> */}
     </div>
   );
 };

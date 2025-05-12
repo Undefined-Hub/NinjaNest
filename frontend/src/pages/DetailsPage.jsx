@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import house from '../assets/house.jpg';
@@ -11,14 +12,16 @@ import garden_svg from '../assets/garden.svg';
 import review_star_full from '../assets/review_star_full.svg';
 import robot from '../assets/robot.svg';
 import { useSelector } from 'react-redux';
+import { FiEdit3 } from 'react-icons/fi';
+import { BsBarChartLine } from 'react-icons/bs'
 const DetailsPage = () => {
     const { user } = useSelector((state) => state.user);
-    console.log("User Details:", user.user.name);
+    console.log("User Details:", user.user);
 
-
+    const navigate = useNavigate();
 
     const { propertyId } = useParams();
-    console.log("Property ID:", propertyId);
+    // console.log("Property ID:", propertyId);
 
     const [propertyData, setPropertyData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -89,6 +92,16 @@ const DetailsPage = () => {
 
         fetchProperty();
     }, [propertyId]);
+
+    const [isLandlord, setIsLandlord] = useState(false);
+    useEffect(() => {
+        if (user.user?._id === propertyData?.landlord_id) {
+            setIsLandlord(true);
+        } else {
+            setIsLandlord(false);
+        }
+    }, [user, propertyData]);
+   
 
     console.log("Property Data:", propertyData);
 
@@ -277,8 +290,8 @@ const DetailsPage = () => {
                             </div>
                         </div>
                     </div>
-
-                    <div className='bg-sub-bg w-full lg:w-1/3 p-5 rounded-xl flex flex-col space-y-6 self-start'> {/* Right Section - Contact Info */}
+                    <div className='flex flex-col w-full lg:w-1/3 rounded-xl gap-5'> {/* Right Section - Contact Info */}            
+                    <div className='bg-sub-bg w-full  p-5 rounded-xl flex flex-col space-y-6 self-start'> {/* Right Section - Contact Info */}
                         <div className='flex flex-col w-full rounded-lg p-4 bg-menu-active-bg space-y-4'> {/* AI Price Analysis Card*/}
                             <div className='flex items-center space-x-3'> {/* Centering both icon and text */}
                                 <img src={robot} alt='' className='w-6 h-6 object-contain' />
@@ -296,7 +309,7 @@ const DetailsPage = () => {
                                     <img src='https://placehold.co/200x200' alt='Profile' className='w-14 h-14 object-cover rounded-full' />
                                 </div>
                                 <div className='flex flex-col justify-center'> {/* Name Section */}
-                                    <p className='text-white font-semibold text-base'>Raja Babu</p>
+                                    <p className='text-white font-semibold text-base'>{propertyData?.landlord_name}</p>
                                     <div className='flex w-full items-center space-x-2'> {/* Rating Section */}
                                         {/* <img src={review_star_full} alt='Rating' className='w-4 h-4 object-contain' /> */}
                                         <p className='text-slate-400 font-semibold text-base'><span className='text-yellow-400'>★ 4.2</span>  • <span className='text-tertiary-text'>Verified Landlord</span></p>
@@ -394,6 +407,34 @@ const DetailsPage = () => {
                                 <p className='text-white font-bold text-base'>Contact Landlord</p>
                             </button>
                         </div>
+             
+                    </div>
+                    {isLandlord && (
+                        <div className="bg-sub-bg w-full p-5 rounded-xl self-start">
+                            <div className="mb-4">
+                                <h2 className="text-xl font-bold text-tertiary-text">Welcome back, Landlord!</h2>
+                                <p className="text-sm text-gray-300 mt-1">
+                                This is how your property appears to tenants. You can update details or view performance anytime.
+                                </p>
+                            </div>
+                            <div className="flex space-x-2">
+                                <button
+                                onClick={() => navigate(`/edit-property/${propertyId}`)}
+                                className="text-white font-bold text-base flex w-1/2 bg-main-purple rounded-lg justify-center gap-2  items-center hover:bg-violet-700"
+                                >
+                                <FiEdit3 className="text-lg" />
+                                Edit Property
+                                </button>
+                                <button
+                                onClick={() => navigate(`/property-stats/${propertyId}`)}
+                                className="bg-white text-black w-1/2 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 hover:cursor-pointer hover:bg-slate-100"
+                                >
+                                <BsBarChartLine className="text-lg" />
+                                View Stats
+                                </button>
+                            </div>
+                        </div>
+                    )}
                     </div>
                 </div>
             </div>

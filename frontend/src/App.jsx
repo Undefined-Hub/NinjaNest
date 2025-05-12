@@ -11,6 +11,7 @@ import DetailsPage from './pages/DetailsPage';
 import AddProperty from './pages/AddProperty';
 import CurrentPropertyDashboard from './pages/CurrentPropertyDashboard';
 import { Toaster } from 'react-hot-toast';
+import EditProperty from './pages/EditProperty';
 function App() {
   return (
     <>
@@ -23,6 +24,7 @@ function App() {
           <Route path="/explore/property/:propertyId" element={<DetailsPage />} />
           <Route path="/explore" element={<ExplorePage />} />
           <Route path="/add-property" element={<AddProperty />} />
+          <Route path="/edit-property/:propertyId" element={<EditProperty />} />
           <Route path="/currentpropertydashboard/:propertyId" element={<CurrentPropertyDashboard />} />
         </Routes>
         <Footer />
