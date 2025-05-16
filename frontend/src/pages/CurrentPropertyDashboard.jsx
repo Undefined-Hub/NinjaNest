@@ -45,7 +45,7 @@ const CurrentPropertyDashboard = () => {
         console.log('Submitting review with data:', {
             user_id: user?.user?._id,
             property_id: propertyId,
-            landlord_id: property?.landlord_id,
+            landlord_id: property?.landlord_id?._id,
             comment: propertyComment,
             rating: propertyRating,
         });
@@ -54,7 +54,7 @@ const CurrentPropertyDashboard = () => {
             const response = await axios.post(`http://localhost:3000/api/review/${propertyId}/review`, {
                 user_id: user?.user?._id,
                 property_id: propertyId,
-                landlord_id: property?.landlord_id,
+                landlord_id: property?.landlord_id?._id,
                 comment: propertyComment,
                 rating: propertyRating,
             }, {
@@ -74,7 +74,7 @@ const CurrentPropertyDashboard = () => {
         console.log('Submitting review with data:', {
             user_id: user?.user?._id,
             property_id: propertyId,
-            landlord_id: property?.landlord_id,
+            landlord_id: property?.landlord_id?._id,
             trustScore: landlordRating,
         });
 
@@ -82,7 +82,7 @@ const CurrentPropertyDashboard = () => {
             const response = await axios.post(`http://localhost:3000/api/review/${propertyId}/landlord-rating`, {
                 user_id: user?.user?._id,
                 property_id: propertyId,
-                landlord_id: property?.landlord_id,
+                landlord_id: property?.landlord_id?._id,
                 trustScore: landlordRating,
             }, {
                 headers: {

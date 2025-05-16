@@ -12,7 +12,7 @@ const {
 } = require("../controllers/reviewController");
 
 // ✅ Get all reviews for a property
-router.get("/reviews/:id", authMiddleware(), getReviews);
+router.get("/:id", authMiddleware(), getReviews);
 
 // ! ✅ Submit property review
 router.post("/:propertyId/review", authMiddleware(), submitPropertyReview);

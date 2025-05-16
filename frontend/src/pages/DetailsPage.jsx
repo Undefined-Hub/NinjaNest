@@ -16,60 +16,58 @@ import { FiEdit3 } from 'react-icons/fi';
 import { BsBarChartLine } from 'react-icons/bs'
 const DetailsPage = () => {
     const { user } = useSelector((state) => state.user);
-    console.log("User Details:", user.user);
-
+    // console.log("User Details:", user.user);
     const navigate = useNavigate();
-
     const { propertyId } = useParams();
-    // console.log("Property ID:", propertyId);
-
     const [propertyData, setPropertyData] = useState(null);
+    // const [reviews, setReviewsData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [selectedOption, setSelectedOption] = useState('ownerPrice');
     const [minPrice, setMinPrice] = useState('');
     const [maxPrice, setMaxPrice] = useState('');
+
     const handleSendRentRequest = () => {
         if (selectedOption === 'customRange' && (!minPrice || !maxPrice)) {
-          toast.error('Please enter a valid price range.');
-          return;
+            toast.error('Please enter a valid price range.');
+            return;
         }
-      
+
         const requestData = {
-          propertyId,
-          requestedPrice: selectedOption === 'customRange'
-            ? { min: parseFloat(minPrice), max: parseFloat(maxPrice) }
-            : { fixed: propertyData?.rent },
-          requestorName: user.user?.name,
-          ownerName: propertyData?.landlord_id,
-          ownerId: propertyData?.landlord_id,
-          requestorId: user.user?._id,
-          status: 'Pending',
-          message: `${user.user?.name} is interested to rent this property`,
+            propertyId,
+            requestedPrice: selectedOption === 'customRange'
+                ? { min: parseFloat(minPrice), max: parseFloat(maxPrice) }
+                : { fixed: propertyData?.rent },
+            requestorName: user.user?.name,
+            ownerName: propertyData?.landlord_id,
+            ownerId: propertyData?.landlord_id,
+            requestorId: user.user?._id,
+            status: 'Pending',
+            message: `${user.user?.name} is interested to rent this property`,
         };
-      
-        console.log('Sending Rent Request:', requestData);
-      
+
+        // console.log('Sending Rent Request:', requestData);
+
         const loadingToast = toast.loading('Sending rent request...');
-      
+
         axios.post('http://localhost:3000/api/request', requestData, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
         })
-          .then((response) => {
-            toast.dismiss(loadingToast);
-            toast.success('Rent request sent successfully!');
-            console.log('Rent request response:', response.data);
-            setShowModal(false);
-          })
-          .catch((error) => {
-            toast.dismiss(loadingToast);
-            toast.error('Failed to send rent request. Please try again.');
-            console.error('Error sending rent request:', error);
-          });
-      };
+            .then((response) => {
+                toast.dismiss(loadingToast);
+                toast.success('Rent request sent successfully!');
+                // console.log('Rent request response:', response.data);
+                setShowModal(false);
+            })
+            .catch((error) => {
+                toast.dismiss(loadingToast);
+                toast.error('Failed to send rent request. Please try again.');
+                console.error('Error sending rent request:', error);
+            });
+    };
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -90,6 +88,31 @@ const DetailsPage = () => {
             }
         };
 
+        // const fetchReviews = async () => {
+        //     try {
+        //         const response = await axios.get(`http://localhost:3000/api/review/${propertyId}`, {
+        //             headers: {
+        //                 Authorization: `Bearer ${localStorage.getItem('token')}`
+        //             }
+        //         });
+
+        //         // Transform the reviews to match your expected structure
+        //         const formattedReviews = response.data.reviews.map(review => ({
+        //             name: review.user_id?.name || "Anonymous",
+        //             rating: review.rating,
+        //             feedback: review.comment
+        //         }));
+
+        //         setReviewsData(formattedReviews);
+        //         console.log("Fetched Reviews:", formattedReviews);
+        //         console.log("Type of Reviews:", Array.isArray(formattedReviews));
+        //     } catch (err) {
+        //         console.error('Error fetching reviews:', err);
+        //         setError('Failed to load reviews');
+        //     }
+        // };
+
+        // fetchReviews();
         fetchProperty();
     }, [propertyId]);
 
@@ -101,9 +124,9 @@ const DetailsPage = () => {
             setIsLandlord(false);
         }
     }, [user, propertyData]);
-   
 
-    console.log("Property Data:", propertyData);
+
+    // console.log("Property Data:", propertyData);
 
     const [zoomedIndex, setZoomedIndex] = useState(null);
 
@@ -274,167 +297,170 @@ const DetailsPage = () => {
                                     <p className='text-white text-xl font-semibold'>Reviews & Feedback</p>
                                 </div>
                                 <div className='flex flex-col space-y-3'>
-                                    {[
-                                        { name: 'Amit Sharma', rating: '4.5', feedback: 'Great place, well maintained, and peaceful environment.' },
-                                        { name: 'Priya Desai', rating: '4.0', feedback: 'Good amenities, but a bit far from main market.' }
-                                    ].map((review, index) => (
-                                        <div key={index} className='bg-cards-bg p-3 rounded-lg'>
-                                            <div className='flex justify-between items-center'>
-                                                <p className='text-white font-semibold'>{review.name}</p>
-                                                <p className='text-yellow-400 font-semibold'>{review.rating} ★</p>
+                                    {propertyData?.reviews && propertyData.reviews.length > 0 ? (
+                                        propertyData.reviews.map((review, index) => (
+                                            <div key={index} className='bg-cards-bg p-3 rounded-lg'>
+                                                <div className='flex justify-between items-center'>
+                                                    <p className='text-white font-semibold'>{review.user_id.name}</p>
+                                                    <p className='text-yellow-400 font-semibold'>★ {review.rating}</p>
+                                                </div>
+                                                <p className='text-slate-300 mt-2 font-medium'>{review.comment}</p>
                                             </div>
-                                            <p className='text-slate-300 mt-2 font-medium'>{review.feedback}</p>
+                                        ))
+                                    ) : (
+                                        <div className='bg-cards-bg p-3 rounded-lg text-center'>
+                                            <p className='text-slate-300 font-medium'>No reviews yet. Be the first to leave feedback!</p>
                                         </div>
-                                    ))}
+                                    )}
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div className='flex flex-col w-full lg:w-1/3 rounded-xl gap-5'> {/* Right Section - Contact Info */}            
-                    <div className='bg-sub-bg w-full  p-5 rounded-xl flex flex-col space-y-6 self-start'> {/* Right Section - Contact Info */}
-                        <div className='flex flex-col w-full rounded-lg p-4 bg-menu-active-bg space-y-4'> {/* AI Price Analysis Card*/}
-                            <div className='flex items-center space-x-3'> {/* Centering both icon and text */}
-                                <img src={robot} alt='' className='w-6 h-6 object-contain' />
-                                <p className='text-white text-lg font-semibold flex items-center h-full'>AI Price Analysis</p>
-                            </div>
-                            <div className='flex w-full space-x-3 justify-between'> {/* AI Price Analysis Content */}
-                                <p className='text-green-400 font-semibold text-base'>• Fair Price</p>
-                                <p className='text-slate-300 text-base font-medium'>Market Avg.: ₹15,500</p>
-                            </div>
-                        </div>
-                        {/* Contact details here */}
-                        <div className='flex flex-col w-full rounded-lg space-y-3'> {/* Contact Card */}
-                            <div className='flex items-center w-full space-x-3 border-b border-secondary-text pb-4'> {/* Contain profile picture and name of landlord */}
-                                <div className='w-14 h-14 flex items-center justify-center'> {/* Profile Picture */}
-                                    <img src='https://placehold.co/200x200' alt='Profile' className='w-14 h-14 object-cover rounded-full' />
+                    <div className='flex flex-col w-full lg:w-1/3 rounded-xl gap-5'> {/* Right Section - Contact Info */}
+                        <div className='bg-sub-bg w-full  p-5 rounded-xl flex flex-col space-y-6 self-start'> {/* Right Section - Contact Info */}
+                            <div className='flex flex-col w-full rounded-lg p-4 bg-menu-active-bg space-y-4'> {/* AI Price Analysis Card*/}
+                                <div className='flex items-center space-x-3'> {/* Centering both icon and text */}
+                                    <img src={robot} alt='' className='w-6 h-6 object-contain' />
+                                    <p className='text-white text-lg font-semibold flex items-center h-full'>AI Price Analysis</p>
                                 </div>
-                                <div className='flex flex-col justify-center'> {/* Name Section */}
-                                    <p className='text-white font-semibold text-base'>{propertyData?.landlord_name}</p>
-                                    <div className='flex w-full items-center space-x-2'> {/* Rating Section */}
-                                        {/* <img src={review_star_full} alt='Rating' className='w-4 h-4 object-contain' /> */}
-                                        <p className='text-slate-400 font-semibold text-base'><span className='text-yellow-400'>★ 4.2</span>  • <span className='text-tertiary-text'>Verified Landlord</span></p>
+                                <div className='flex w-full space-x-3 justify-between'> {/* AI Price Analysis Content */}
+                                    <p className='text-green-400 font-semibold text-base'>• Fair Price</p>
+                                    <p className='text-slate-300 text-base font-medium'>Market Avg.: ₹15,500</p>
+                                </div>
+                            </div>
+                            {/* Contact details here */}
+                            <div className='flex flex-col w-full rounded-lg space-y-3'> {/* Contact Card */}
+                                <div className='flex items-center w-full space-x-3 border-b border-secondary-text pb-4'> {/* Contain profile picture and name of landlord */}
+                                    <div className='w-14 h-14 flex items-center justify-center'> {/* Profile Picture */}
+                                        <img src='https://placehold.co/200x200' alt='Profile' className='w-14 h-14 object-cover rounded-full' />
+                                    </div>
+                                    <div className='flex flex-col justify-center'> {/* Name Section */}
+                                        <p className='text-white font-semibold text-base'>{propertyData?.landlord_id?.name}</p>
+                                        <div className='flex w-full items-center space-x-2'> {/* Rating Section */}
+                                            {/* <img src={review_star_full} alt='Rating' className='w-4 h-4 object-contain' /> */}
+                                            <p className='text-slate-400 font-semibold text-base'><span className='text-yellow-400'>★ {propertyData?.landlord_id?.trustScore}</span>  • <span className='text-tertiary-text'>Verified Landlord</span></p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div className='flex flex-col w-full space-y-3'> {/* Availability details */}
-                            <div className='flex w-full justify-between'> {/* Availability */}
-                                <p className='text-base text-secondary-text font-semibold'>Available from</p>
-                                <p className='text-base text-white font-semibold'>March 1, 2025</p>
+                            <div className='flex flex-col w-full space-y-3'> {/* Availability details */}
+                                <div className='flex w-full justify-between'> {/* Availability */}
+                                    <p className='text-base text-secondary-text font-semibold'>Available from</p>
+                                    <p className='text-base text-white font-semibold'>March 1, 2025</p>
+                                </div>
+                                <div className='flex w-full justify-between'> {/* Minimum Stay */}
+                                    <p className='text-base text-secondary-text font-semibold'>Minimum Stay</p>
+                                    <p className='text-base text-white font-semibold'>12 Months</p>
+                                </div>
                             </div>
-                            <div className='flex w-full justify-between'> {/* Minimum Stay */}
-                                <p className='text-base text-secondary-text font-semibold'>Minimum Stay</p>
-                                <p className='text-base text-white font-semibold'>12 Months</p>
-                            </div>
-                        </div>
-                        <div className='flex flex-col space-y-3'> {/* Contact Button */}
-                            <button
-                                className='flex w-full bg-main-purple p-3 rounded-lg justify-center items-center hover:bg-violet-700'
-                                onClick={() => setShowModal(true)}
-                            >
-                                <p className='text-white font-bold text-base'>Book Now</p>
-                            </button>
+                            <div className='flex flex-col space-y-3'> {/* Contact Button */}
+                                <button
+                                    className='flex w-full bg-main-purple p-3 rounded-lg justify-center items-center hover:bg-violet-700'
+                                    onClick={() => setShowModal(true)}
+                                >
+                                    <p className='text-white font-bold text-base'>Book Now</p>
+                                </button>
 
-                            {/* Modal */}
-                            {showModal && (
-                                <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50">
-                                    <div className="bg-sub-bg p-6 rounded-lg w-11/12 max-w-md">
-                                        <h2 className="text-white text-lg font-semibold mb-4">Send Rent Request</h2>
-                                        <div className="flex flex-col space-y-3">
-                                            <div>
-                                                <p className="text-white font-medium mb-2">Choose Rent Option:</p>
-                                                <div className="flex flex-col space-y-2">
-                                                    <label className="flex items-center space-x-2">
-                                                        <input
-                                                            type="radio"
-                                                            name="rentOption"
-                                                            value="ownerPrice"
-                                                            onChange={() => setSelectedOption('ownerPrice')}
-                                                            className="form-radio text-main-purple"
-                                                        />
-                                                        <span className="text-white">Owner's Rent Price: ₹{propertyData?.rent?.toLocaleString('en-IN')}</span>
-                                                    </label>
-                                                    <label className="flex items-center space-x-2">
-                                                        <input
-                                                            type="radio"
-                                                            name="rentOption"
-                                                            value="customRange"
-                                                            onChange={() => setSelectedOption('customRange')}
-                                                            className="form-radio text-main-purple"
-                                                        />
-                                                        <span className="text-white">Custom Price Range</span>
-                                                    </label>
-                                                </div>
-                                            </div>
-                                            {selectedOption === 'customRange' && (
+                                {/* Modal */}
+                                {showModal && (
+                                    <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50">
+                                        <div className="bg-sub-bg p-6 rounded-lg w-11/12 max-w-md">
+                                            <h2 className="text-white text-lg font-semibold mb-4">Send Rent Request</h2>
+                                            <div className="flex flex-col space-y-3">
                                                 <div>
-                                                    <p className="text-white font-medium mb-2">Enter Your Price Range:</p>
-                                                    <input
-                                                        type="number"
-                                                        placeholder="Min Price"
-                                                        value={minPrice}
-                                                        onChange={(e) => setMinPrice(e.target.value)}
-                                                        className="w-full p-2 rounded-lg bg-cards-bg text-white mb-2"
-                                                    />
-                                                    <input
-                                                        type="number"
-                                                        placeholder="Max Price"
-                                                        value={maxPrice}
-                                                        onChange={(e) => setMaxPrice(e.target.value)}
-                                                        className="w-full p-2 rounded-lg bg-cards-bg text-white"
-                                                    />
+                                                    <p className="text-white font-medium mb-2">Choose Rent Option:</p>
+                                                    <div className="flex flex-col space-y-2">
+                                                        <label className="flex items-center space-x-2">
+                                                            <input
+                                                                type="radio"
+                                                                name="rentOption"
+                                                                value="ownerPrice"
+                                                                onChange={() => setSelectedOption('ownerPrice')}
+                                                                className="form-radio text-main-purple"
+                                                            />
+                                                            <span className="text-white">Owner's Rent Price: ₹{propertyData?.rent?.toLocaleString('en-IN')}</span>
+                                                        </label>
+                                                        <label className="flex items-center space-x-2">
+                                                            <input
+                                                                type="radio"
+                                                                name="rentOption"
+                                                                value="customRange"
+                                                                onChange={() => setSelectedOption('customRange')}
+                                                                className="form-radio text-main-purple"
+                                                            />
+                                                            <span className="text-white">Custom Price Range</span>
+                                                        </label>
+                                                    </div>
                                                 </div>
-                                            )}
-                                        </div>
-                                        <div className="flex justify-end space-x-3 mt-4">
-                                            <button
-                                                className="bg-slate-600 px-4 py-2 rounded-lg text-white hover:bg-slate-700"
-                                                onClick={() => setShowModal(false)}
-                                            >
-                                                Cancel
-                                            </button>
-                                            <button
-                                                className="bg-main-purple px-4 py-2 rounded-lg text-white hover:bg-violet-700"
-                                                onClick={handleSendRentRequest}
-                                            >
-                                                Send Rent Request
-                                            </button>
+                                                {selectedOption === 'customRange' && (
+                                                    <div>
+                                                        <p className="text-white font-medium mb-2">Enter Your Price Range:</p>
+                                                        <input
+                                                            type="number"
+                                                            placeholder="Min Price"
+                                                            value={minPrice}
+                                                            onChange={(e) => setMinPrice(e.target.value)}
+                                                            className="w-full p-2 rounded-lg bg-cards-bg text-white mb-2"
+                                                        />
+                                                        <input
+                                                            type="number"
+                                                            placeholder="Max Price"
+                                                            value={maxPrice}
+                                                            onChange={(e) => setMaxPrice(e.target.value)}
+                                                            className="w-full p-2 rounded-lg bg-cards-bg text-white"
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="flex justify-end space-x-3 mt-4">
+                                                <button
+                                                    className="bg-slate-600 px-4 py-2 rounded-lg text-white hover:bg-slate-700"
+                                                    onClick={() => setShowModal(false)}
+                                                >
+                                                    Cancel
+                                                </button>
+                                                <button
+                                                    className="bg-main-purple px-4 py-2 rounded-lg text-white hover:bg-violet-700"
+                                                    onClick={handleSendRentRequest}
+                                                >
+                                                    Send Rent Request
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
+                                )}
+                                <button className='flex w-full bg-slate-600 p-3 rounded-lg justify-center items-center hover:bg-slate-700'> {/* Contact Button */}
+                                    <p className='text-white font-bold text-base'>Contact Landlord</p>
+                                </button>
+                            </div>
+
+                        </div>
+                        {isLandlord && (
+                            <div className="bg-sub-bg w-full p-5 rounded-xl self-start">
+                                <div className="mb-4">
+                                    <h2 className="text-xl font-bold text-tertiary-text">Welcome back, Landlord!</h2>
+                                    <p className="text-sm text-gray-300 mt-1">
+                                        This is how your property appears to tenants. You can update details or view performance anytime.
+                                    </p>
                                 </div>
-                            )}
-                            <button className='flex w-full bg-slate-600 p-3 rounded-lg justify-center items-center hover:bg-slate-700'> {/* Contact Button */}
-                                <p className='text-white font-bold text-base'>Contact Landlord</p>
-                            </button>
-                        </div>
-             
-                    </div>
-                    {isLandlord && (
-                        <div className="bg-sub-bg w-full p-5 rounded-xl self-start">
-                            <div className="mb-4">
-                                <h2 className="text-xl font-bold text-tertiary-text">Welcome back, Landlord!</h2>
-                                <p className="text-sm text-gray-300 mt-1">
-                                This is how your property appears to tenants. You can update details or view performance anytime.
-                                </p>
+                                <div className="flex space-x-2">
+                                    <button
+                                        onClick={() => navigate(`/edit-property/${propertyId}`)}
+                                        className="text-white font-bold text-base flex w-1/2 bg-main-purple rounded-lg justify-center gap-2  items-center hover:bg-violet-700"
+                                    >
+                                        <FiEdit3 className="text-lg" />
+                                        Edit Property
+                                    </button>
+                                    <button
+                                        onClick={() => navigate(`/property-stats/${propertyId}`)}
+                                        className="bg-white text-black w-1/2 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 hover:cursor-pointer hover:bg-slate-100"
+                                    >
+                                        <BsBarChartLine className="text-lg" />
+                                        View Stats
+                                    </button>
+                                </div>
                             </div>
-                            <div className="flex space-x-2">
-                                <button
-                                onClick={() => navigate(`/edit-property/${propertyId}`)}
-                                className="text-white font-bold text-base flex w-1/2 bg-main-purple rounded-lg justify-center gap-2  items-center hover:bg-violet-700"
-                                >
-                                <FiEdit3 className="text-lg" />
-                                Edit Property
-                                </button>
-                                <button
-                                onClick={() => navigate(`/property-stats/${propertyId}`)}
-                                className="bg-white text-black w-1/2 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 hover:cursor-pointer hover:bg-slate-100"
-                                >
-                                <BsBarChartLine className="text-lg" />
-                                View Stats
-                                </button>
-                            </div>
-                        </div>
-                    )}
+                        )}
                     </div>
                 </div>
             </div>

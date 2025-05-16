@@ -22,16 +22,18 @@ const getReviews = async (req, res) => {
 
     if (review_id) {
       const review = await Review.findOne({ _id: review_id, property_id })
-        .populate("user_id", "name")
-        .populate("landlord_id", "name");
+        .select("-_id")
+        .populate("user_id", "name -_id")
+        .populate("landlord_id", "name -_id");
 
       if (!review) return res.status(404).json({ message: "Review not found" });
       return res.status(200).json({ review });
     }
 
     const reviews = await Review.find({ property_id })
-      .populate("user_id", "name")
-      .populate("landlord_id", "name");
+      .select("-_id")
+      .populate("user_id", "name -_id")
+      .populate("landlord_id", "name -_id");
 
     if (!reviews.length)
       return res
@@ -241,28 +243,29 @@ const submitLandlordRating = async (req, res) => {
   try {
     let existingReview = await Review.findOne({ user_id, property_id });
 
-    if (existingReview && existingReview.trustScore !== 0) {
-      return res
-        .status(400)
-        .json({ message: "You've already rated the landlord." });
-    }
+    const isNew = !existingReview;
 
-    // Update existing review or create a new one
     if (!existingReview) {
       existingReview = new Review({ user_id, property_id, landlord_id });
     }
 
+    const oldScore = existingReview.trustScore || 0;
     existingReview.trustScore = trustScore;
 
-    // Update landlord average
     const landlord = await User.findById(landlord_id);
     if (landlord) {
-      const oldAvg = landlord.trustScore || 0;
       const count = landlord.numberOfTrustScoresReceived || 0;
-      const newAvg = (oldAvg * count + trustScore) / (count + 1);
+      const oldAvg = landlord.trustScore || 0;
+
+      let newAvg;
+      if (isNew || oldScore === 0) {
+        newAvg = (oldAvg * count + trustScore) / (count + 1);
+        landlord.numberOfTrustScoresReceived = count + 1;
+      } else {
+        newAvg = (oldAvg * count - oldScore + trustScore) / count;
+      }
 
       landlord.trustScore = newAvg;
-      landlord.numberOfTrustScoresReceived = count + 1;
 
       if (!landlord.trustScoreHistory) landlord.trustScoreHistory = new Map();
       landlord.trustScoreHistory.set(user_id.toString(), trustScore);
@@ -271,14 +274,18 @@ const submitLandlordRating = async (req, res) => {
     }
 
     await existingReview.save();
-    return res
-      .status(200)
-      .json({ message: "Landlord rated successfully", review: existingReview });
+    return res.status(200).json({
+      message: isNew
+        ? "Landlord rated successfully"
+        : "Landlord rating updated",
+      review: existingReview,
+    });
   } catch (err) {
     console.error(err);
-    res
-      .status(500)
-      .json({ message: "Failed to rate landlord", error: err.message });
+    res.status(500).json({
+      message: "Failed to rate landlord",
+      error: err.message,
+    });
   }
 };
 
@@ -304,33 +311,31 @@ const submitPropertyReview = async (req, res) => {
 
   try {
     let existingReview = await Review.findOne({ user_id, property_id });
+    const isNew = !existingReview;
 
-    if (
-      existingReview &&
-      existingReview.rating !== undefined &&
-      existingReview.comment
-    ) {
-      return res
-        .status(400)
-        .json({ message: "You’ve already reviewed this property." });
-    }
-
-    // Update existing or create new
     if (!existingReview) {
       existingReview = new Review({ user_id, property_id, landlord_id });
     }
+
+    const oldRating = existingReview.rating || 0;
 
     existingReview.rating = rating;
     existingReview.comment = comment;
 
     const property = await Property.findById(property_id);
     if (property) {
-      const oldAvg = property.averageRating || 0;
       const count = property.numberOfRatingsReceived || 0;
-      const newAvg = (oldAvg * count + rating) / (count + 1);
+      const oldAvg = property.averageRating || 0;
+
+      let newAvg;
+      if (isNew || oldRating === 0) {
+        newAvg = (oldAvg * count + rating) / (count + 1);
+        property.numberOfRatingsReceived = count + 1;
+      } else {
+        newAvg = (oldAvg * count - oldRating + rating) / count;
+      }
 
       property.averageRating = newAvg;
-      property.numberOfRatingsReceived = count + 1;
 
       if (!property.ratingHistory) property.ratingHistory = new Map();
       property.ratingHistory.set(user_id.toString(), rating);
@@ -339,17 +344,18 @@ const submitPropertyReview = async (req, res) => {
     }
 
     await existingReview.save();
-    return res
-      .status(200)
-      .json({
-        message: "Property reviewed successfully",
-        review: existingReview,
-      });
+    return res.status(200).json({
+      message: isNew
+        ? "Property reviewed successfully"
+        : "Property review updated",
+      review: existingReview,
+    });
   } catch (err) {
     console.error(err);
-    res
-      .status(500)
-      .json({ message: "Failed to review property", error: err.message });
+    res.status(500).json({
+      message: "Failed to review property",
+      error: err.message,
+    });
   }
 };
 
