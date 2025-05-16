@@ -40,8 +40,8 @@ const DetailsPage = () => {
                 ? { min: parseFloat(minPrice), max: parseFloat(maxPrice) }
                 : { fixed: propertyData?.rent },
             requestorName: user.user?.name,
-            ownerName: propertyData?.landlord_id,
-            ownerId: propertyData?.landlord_id,
+            ownerName: propertyData?.landlord_id.name,
+            ownerId: propertyData?.landlord_id._id,
             requestorId: user.user?._id,
             status: 'Pending',
             message: `${user.user?.name} is interested to rent this property`,
@@ -118,7 +118,9 @@ const DetailsPage = () => {
 
     const [isLandlord, setIsLandlord] = useState(false);
     useEffect(() => {
-        if (user.user?._id === propertyData?.landlord_id) {
+        console.log("User ID:", user.user?._id);
+        console.log("Landlord ID:", propertyData?.landlord_id._id);
+        if (user.user?._id === propertyData?.landlord_id._id) {
             setIsLandlord(true);
         } else {
             setIsLandlord(false);

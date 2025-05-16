@@ -18,6 +18,7 @@ const fetchUser = async (req, res) => {
   }
 };
 
+
 // ! Update user details
 const updateUser = async (req, res) => {
   const id = req.params.id;
@@ -25,7 +26,7 @@ const updateUser = async (req, res) => {
   try {
     // ! Prevent users from updating email & username
     const { email, username, ...updateData } = req.body;
-
+    
     const user = await User.findOneAndUpdate(
       { _id: id },
       updateData, // ! Only update allowed fields

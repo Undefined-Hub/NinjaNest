@@ -20,8 +20,9 @@ import { MdManageAccounts } from "react-icons/md";
 import { useAuth } from "../CustomHook/useAuth";
 import { toast } from 'react-hot-toast';
 import { useLocation } from 'react-router-dom';
-
-
+import { FiCamera } from "react-icons/fi";
+import { FiEdit } from "react-icons/fi";
+import { FiUser } from "react-icons/fi";
 import roommate from '/images/roommate.svg'
 import payment from '/images/payment.svg'
 import profile from '/images/profile.svg'
@@ -32,7 +33,8 @@ const menuItems = [
     { label: "Notifications", icon: <AiOutlineBell /> },
     { label: "Roommates", icon: <FaUserFriends /> },
     { label: "Payment", icon: <BiCreditCard /> },
-    { label: "Settings", icon: <FiSettings /> },
+    {label: "Profile" , icon: <FiUser />},
+    // { label: "Settings", icon: <FiSettings /> },
 ];
 
 const Dashboard = () => {
@@ -114,7 +116,7 @@ const Dashboard = () => {
 
                     {/* Right section */}
                     {activeTab === 'Overview' &&
-                        <div className='flex flex-col w-full space-y-4'>
+                        <div className='flex flex-col space-y-4 w-4/5'>
                             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3'>
                                 {[{
                                     title: 'Next Payment',
@@ -191,7 +193,7 @@ const Dashboard = () => {
                     }
 
                     {activeTab === 'Roommates' &&
-                        <div className='flex flex-col items-center justify-center h-[64vh] space-y-4'>
+                        <div className='flex flex-col items-center justify-center h-[64vh] space-y-4 w-4/5'>
                             <img
                                 src={roommate} // Replace with your illustration URL
                                 alt='No Roommates'
@@ -206,7 +208,7 @@ const Dashboard = () => {
 
 
                     {activeTab === 'Payment' &&
-                        <div className='flex flex-col items-center justify-center h-[64vh] space-y-4'>
+                        <div className='flex flex-col items-center justify-center h-[64vh] space-y-4 w-4/5'>
                             <img
                                 src={payment} // Replace with your illustration URL
                                 alt='No Payment History'
@@ -218,17 +220,18 @@ const Dashboard = () => {
                         </div>
                     }
 
-                    {activeTab === 'Settings' &&
-                        <div className='flex flex-col items-center justify-center h-[64vh] space-y-4 w-full'>
-                            <img
-                                src={profile} // Replace with your illustration URL
-                                alt='Settings Coming Soon'
-                                className='w-1/3 h-auto'
-                            />
-                            <p className='text-secondary-text text-lg font-semibold text-center'>
-                                Settings functionality is coming soon. <br />Stay tuned for updates!
-                            </p>
-                        </div>
+                    {activeTab === 'Profile' &&
+                        // <div className='flex flex-col items-center justify-center h-[64vh] space-y-4 w-4/5'>
+                        //     <img
+                        //         src={profile} // Replace with your illustration URL
+                        //         alt='Settings Coming Soon'
+                        //         className='w-1/3 h-auto'
+                        //     />
+                        //     <p className='text-secondary-text text-lg font-semibold text-center'>
+                        //         Settings functionality is coming soon. <br />Stay tuned for updates!
+                        //     </p>
+                        // </div>
+                        <Profile/>
                     }
 
 
@@ -321,7 +324,7 @@ const Notifications = () => {
     }
 
     return (
-        <div className="flex flex-col w-full space-y-4">
+        <div className="flex flex-col  space-y-4 w-4/5">
             <div className='flex justify-between items-center'>
                 <p className="text-white text-lg font-bold">Notifications</p>
                 <button onClick={handleRequestsClick} className="flex items-center justify-center space-x-4 w-1/5 bg-main-purple hover:bg-[#6b2bd2] transition-all duration-300 p-2 rounded-lg self-end">
@@ -513,7 +516,7 @@ const Notifications = () => {
                     ))}
                 </div>
             ) : (
-                <div className="flex flex-col items-center justify-center h-[64vh] space-y-4">
+                <div className="flex flex-col items-center justify-center h-[64vh] space-y-4 w-4/5">
                     <img
                         src={notification} // Replace with your illustration URL
                         alt="No Notifications"
@@ -529,6 +532,7 @@ const Notifications = () => {
 };
 
 import not_found from '/images/not_found.svg'
+import { useForm, FormProvider } from "react-hook-form";
 
 const MyProperties = () => {
     const [properties, setProperties] = useState([]);
@@ -556,7 +560,7 @@ const MyProperties = () => {
     }, []);
 
     return (
-        <div className='flex flex-col w-full space-y-4'>
+        <div className='flex flex-col w-4/5 space-y-4'>
             {properties.length > 0 ? (
                 <button
                     className='flex items-center justify-center space-x-2 w-1/5 bg-main-purple hover:bg-[#6b2bd2] transition-all duration-300 p-3 rounded-lg self-end'
@@ -629,7 +633,607 @@ const MyProperties = () => {
     );
 };
 
+const Profile = () => {
+    const methods = useForm({
+        defaultValues: {
+            name: "",
+            email: "",
+            phone: "",
+            dob: "",
+            college: "",
+            course: "",
+        },
+    });
+    const { register, formState: { errors }, handleSubmit } = methods;
+    const { user } = useSelector((state) => state.user);
+    const [showPasswordFields, setShowPasswordFields] = useState(false);
+    const [currentPassword, setCurrentPassword] = useState("");
+    const [passwordError, setPasswordError] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [showDelete, setShowDelete] = useState(false);
+    const [passwordSuccess, setPasswordSuccess] = useState("");
+    const [isEditing, setIsEditing] = useState(false);
+    const [profilePic, setProfilePic] = useState(pfp);
 
+    // const handleProfilePicChange = (e) => {
+    //     const file = e.target.files[0];
+    //     if (file) {
+    //         const reader = new FileReader();
+    //         reader.onloadend = () => {
+    //             setProfilePic(reader.result);
+    //         };
+    //         reader.readAsDataURL(file);
+    //     }
+    // };
+    useEffect(() => {
+        const fetchUserDetails = async () => {
+             const username =  user?.user?.username;
+            try {
+                const response = await axios.get(`http://localhost:3000/api/user/getUser/${username}`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                });
+                const userData = response.data.user;
+                methods.reset({
+                    name: userData.name || "",
+                    email: userData.email || "",
+                    phone: userData.phone || "",
+                    dob: userData.dob ? userData.dob.slice(0, 10) : "",
+                    college: userData.college || "",
+                    course: userData.course || "",
+                    username: userData.username || "",
+                });
+                // If profilePicture exists, update profilePic state
+                if (userData.profilePicture) {
+                    setProfilePic(userData.profilePicture);
+                }
+            } catch (error) {
+                // Optionally handle error
+            }
+        };
+        fetchUserDetails();
+        // eslint-disable-next-line
+    }, []);
+    const handleCurrentPasswordCheck = () => {
+        console.log(user?.user);
+        if (currentPassword === "yourCurrentPassword") {
+            setShowPasswordFields(true);
+            setPasswordError("");
+        } else {
+            setPasswordError("Current password is incorrect.");
+            setShowPasswordFields(false);
+        }
+    };
+
+    const handleSetNewPassword = () => {
+        if (!newPassword || !confirmPassword) {
+            setPasswordError("Please fill both password fields.");
+            setPasswordSuccess("");
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            setPasswordError("Passwords do not match.");
+            setPasswordSuccess("");
+            return;
+        }
+        setPasswordSuccess("Password updated successfully!");
+        setPasswordError("");
+        setShowPasswordFields(false);
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+    };
+
+    const handleDeleteAccount = () => {
+        alert("Account deleted (dummy)");
+    };
+
+    const onSubmit = async (data, e) => {
+        try {
+            const userId = user?.user?._id;
+            if (!userId) {
+                throw new Error("User ID not found");
+            }
+            console.log(data);
+            const response = await axios.put(
+                `http://localhost:3000/api/user/updateUser/${userId}`,
+                data,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+            console.log("Saved changes:", response.data);
+            setIsEditing(false);
+            // Remove focus from all input fields
+            if (e && e.target) {
+                e.target.blur();
+                // Remove focus from all inputs in the form
+                const form = e.target.closest('form');
+                if (form) {
+                    const inputs = form.querySelectorAll('input, select, textarea, button');
+                    inputs.forEach(input => input.blur());
+                }
+            }
+        } catch (error) {
+            console.error("Error updating user:", error);
+        }
+    };
+
+    // Modal for profile picture preview and upload
+    const [showPicModal, setShowPicModal] = useState(false);
+    const [selectedPic, setSelectedPic] = useState(null);
+    const [previewPic, setPreviewPic] = useState(null);
+    const [uploading, setUploading] = useState(false);
+
+    // Open modal and show current profile pic
+    const handleOpenPicModal = () => {
+        setPreviewPic(profilePic);
+        setSelectedPic(null);
+        setShowPicModal(true);
+    };
+
+    // Handle file selection in modal
+    const handleModalPicChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setSelectedPic(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPreviewPic(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    // Upload to Cloudinary and update backend
+    const handleSetProfilePic = async () => {
+        if (!selectedPic) return;
+        setUploading(true);
+        try {
+            // 1. Upload to Cloudinary
+            const formData = new FormData();
+            formData.append("file", selectedPic);
+            formData.append("upload_preset", import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET); // from env
+            const cloudinaryRes = await axios.post(
+                `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`, // from env
+                formData
+            );
+            const imageUrl = cloudinaryRes.data.secure_url;
+
+            // 2. Update backend user profile
+            const userId = user?.user?._id;
+            await axios.put(
+                `http://localhost:3000/api/user/updateUser/${userId}`,
+                { profilePicture: imageUrl },
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+            setProfilePic(imageUrl);
+            setShowPicModal(false);
+            setUploading(false);
+            toast.success("Profile picture updated successfully!");
+        } catch (err) {
+            setUploading(false);
+            alert("Failed to upload image. Please try again.");
+        }
+    };
+
+    // Password visibility toggles
+    const [showOldPassword, setShowOldPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+    return (
+        <div className='flex flex-col items-center overflow-scroll h-[85vh] space-y-4 w-4/5'>
+            {/* Profile Picture Section */}
+            <div className='w-full h-60 bg-sub-bg rounded-xl p-5 flex items-center justify-center'>
+                <div className='relative'>
+                    <img
+                        src={profilePic}
+                        alt="Profile"
+                        className="w-24 h-24 rounded-full object-cover cursor-pointer"
+                        onClick={handleOpenPicModal}
+                    />
+                    <label
+                        htmlFor="profile-pic-upload"
+                        className="absolute bottom-0 right-0 bg-main-purple p-1 rounded-full cursor-pointer"
+                        onClick={handleOpenPicModal}
+                    >
+                        <FiCamera className="text-white" />
+                    </label>
+                </div>
+            </div>
+
+            {/* Profile Picture Modal */}
+            {showPicModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+                    <div className="bg-sub-bg rounded-xl p-6 flex flex-col items-center w-[90vw] max-w-md relative">
+                        <button
+                            className="absolute top-2 right-3 text-white text-2xl"
+                            onClick={() => setShowPicModal(false)}
+                        >
+                            &times;
+                        </button>
+                        <img
+                            src={previewPic}
+                            alt="Preview"
+                            className="w-60 h-60 rounded-full object-cover border-4 border-main-purple mb-4"
+                        />
+                        <div className="flex flex-col items-center space-y-3 w-full">
+                            <label
+                                htmlFor="modal-profile-pic-upload"
+                                className="bg-main-purple text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-[#6b2bd2] transition-all"
+                            >
+                                {selectedPic ? "Choose Another Image" : "Change Profile"}
+                            </label>
+                            <input
+                                type="file"
+                                id="modal-profile-pic-upload"
+                                className="hidden"
+                                accept="image/*"
+                                onChange={handleModalPicChange}
+                            />
+                            {selectedPic && (
+                                <button
+                                    className="bg-main-purple text-white px-4 py-2 rounded-lg hover:bg-[#6b2bd2] transition-all"
+                                    onClick={handleSetProfilePic}
+                                    disabled={uploading}
+                                >
+                                    {uploading ? "Uploading..." : "Set as Profile Picture"}
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Rest of the profile form */}
+            <div className='w-full bg-sub-bg rounded-xl p-5'>
+                <div className='flex items-center justify-between'>
+                    <p className='text-white text-lg font-semibold'>Personal Information</p>
+                    {!isEditing && (
+                        <button
+                            onClick={() => setIsEditing(true)}
+                            className="bg-main-purple text-white px-4 py-2 rounded-lg hover:bg-[#6b2bd2] transition-all"
+                        >
+                            <FiEdit className="inline mr-2" /> Edit Info
+                        </button>
+                    )}
+                </div>
+                <FormProvider {...methods}>
+                    <form className="grid grid-cols-2 gap-3 mt-3" onSubmit={handleSubmit(onSubmit)}>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm text-secondary-text">Full Name</label>
+                            <input
+                                {...register("name", { required: "Full Name is required" })}
+                                placeholder="Enter your full name"
+                                className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text ${!isEditing ? 'cursor-not-allowed' : ''}`}
+                                defaultValue={user?.user?.name || ""}
+                                disabled={!isEditing}
+                            />
+                            {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm text-secondary-text">Username</label>
+                            <input
+                                {...register("username", { required: "Full Name is required" })}
+                                placeholder="Enter your full name"
+                                className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-secondary-text ${!isEditing ? 'cursor-not-allowed' : 'cursor-not-allowed'}`}
+                                defaultValue={user?.user?.username || ""}
+                                disabled
+                            />
+                            {errors.username && <p className="text-red-500 text-sm">{errors.username.message}</p>}
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm text-secondary-text">Email</label>
+                            <input
+                                {...register("email")}
+                                placeholder="Enter your email"
+                                className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-secondary-text ${!isEditing ? 'cursor-not-allowed' : 'cursor-not-allowed'}`}
+                                defaultValue={user?.user?.email || ""}
+                                disabled
+                            />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm text-secondary-text">Phone Number</label>
+                            <input
+                                {...register("phone", { required: "Phone number is required" })}
+                                placeholder="Enter your phone number"
+                                className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text ${!isEditing ? 'cursor-not-allowed' : ''}`}
+                                defaultValue={user?.user?.phone || ""}
+                                disabled={!isEditing}
+                            />
+                            {errors.phone && <p className="text-red-500 text-sm">{errors.phone.message}</p>}
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm text-secondary-text">Date of Birth</label>
+                            <input
+                                {...register("dob", { required: "Date of Birth is required" })}
+                                type="date"
+                                className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text ${!isEditing ? 'cursor-not-allowed' : ''}`}
+                                defaultValue={user?.user?.dob || ""}
+                                disabled={!isEditing}
+                            />
+                            {errors.dob && <p className="text-red-500 text-sm">{errors.dob.message}</p>}
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm text-secondary-text">College Name</label>
+                            <input
+                                {...register("college", { required: "College name is required" })}
+                                placeholder="Enter your college name"
+                                className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text ${!isEditing ? 'cursor-not-allowed' : ''}`}
+                                defaultValue={user?.user?.college || ""}
+                                disabled={!isEditing}
+                            />
+                            {errors.college && <p className="text-red-500 text-sm">{errors.college.message}</p>}
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm text-secondary-text">Course Name</label>
+                            <input
+                                {...register("course", { required: "Course name is required" })}
+                                placeholder="Enter your course name"
+                                className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text ${!isEditing ? 'cursor-not-allowed' : ''}`}
+                                defaultValue={user?.user?.course || ""}
+                                disabled={!isEditing}
+                            />
+                            {errors.course && <p className="text-red-500 text-sm">{errors.course.message}</p>}
+                        </div>
+                        {isEditing && (
+                            <div className="col-span-2 flex justify-end gap-3 mt-4">
+                                <button
+                                    type="submit"
+                                    className="bg-main-purple text-white px-4 py-2 rounded-lg hover:bg-[#6b2bd2] transition-all"
+                                >
+                                    Save Changes
+                                </button>
+                                <button
+                                    type="button"
+                                    className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-all"
+                                    onClick={() => {
+                                        setIsEditing(false);
+                                        // Reset form to original user data
+                                        const userData = user?.user;
+                                        methods.reset({
+                                            name: userData?.name || "",
+                                            email: userData?.email || "",
+                                            phone: userData?.phone || "",
+                                            dob: userData?.dob ? userData.dob.slice(0, 10) : "",
+                                            college: userData?.college || "",
+                                            course: userData?.course || "",
+                                            username: userData?.username || "",
+                                        });
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        )}
+                    </form>
+                </FormProvider>
+            </div>
+
+            {/* Change Password Section */}
+            <div className='w-full bg-sub-bg rounded-xl p-5'>
+                <p className='text-white text-lg font-semibold'>Change Password</p>
+                <div className="flex flex-col space-y-4 mt-3">
+                    <form
+                        className="flex flex-col space-y-3"
+                        onSubmit={async (e) => {
+                            e.preventDefault();
+                            setPasswordError("");
+                            setPasswordSuccess("");
+                            const oldPassword = e.target.oldPassword.value;
+                            const newPasswordVal = e.target.newPassword.value;
+                            const confirmPasswordVal = e.target.confirmPassword.value;
+                            if (!oldPassword || !newPasswordVal || !confirmPasswordVal) {
+                                setPasswordError("Please fill all password fields.");
+                                return;
+                            }
+                            if (newPasswordVal !== confirmPasswordVal) {
+                                setPasswordError("Passwords do not match.");
+                                return;
+                            }
+                            try {
+                                await axios.post(
+                                    "http://localhost:3000/api/auth/change-password",
+                                    {
+                                        email: user?.user?.email,
+                                        oldPassword,
+                                        newPassword: newPasswordVal,
+                                        purpose: "change"
+                                    },
+                                    {
+                                        headers: {
+                                            Authorization: `Bearer ${localStorage.getItem('token')}`,
+                                            'Content-Type': 'application/json',
+                                        }
+                                    }
+                                );
+                                setPasswordSuccess("Password updated successfully!");
+                                setPasswordError("");
+                                setCurrentPassword("");
+                                setNewPassword("");
+                                setConfirmPassword("");
+                                toast.success("Password updated successfully!");
+                                e.target.reset();
+                            } catch (err) {
+                                setPasswordError(
+                                    err?.response?.data?.message ||
+                                    "Failed to update password. Please try again."
+                                );
+                                toast.error(
+                                    err?.response?.data?.message ||
+                                    "Failed to update password. Please try again."
+                                );
+                            }
+                        }}
+                    >
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div className="flex flex-col gap-1 relative">
+                                <label className="text-sm text-secondary-text">Current Password</label>
+                                <input
+                                    type={showOldPassword ? "text" : "password"}
+                                    name="oldPassword"
+                                    className="bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text pr-10"
+                                    placeholder="Current Password"
+                                />
+                                <span
+                                    className="absolute right-3 top-8 cursor-pointer text-secondary-text"
+                                    onClick={() => setShowOldPassword((prev) => !prev)}
+                                    style={{ top: '38px' }}
+                                >
+                                    {showOldPassword ? (
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-.274.832-.64 1.627-1.09 2.372M15.362 17.362A9.953 9.953 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.956 9.956 0 012.293-3.95M9.88 9.88a3 3 0 104.24 4.24" />
+                                        </svg>
+                                    ) : (
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.956 9.956 0 012.293-3.95M6.228 6.228A9.956 9.956 0 0112 5c4.478 0 8.268 2.943 9.542 7a9.956 9.956 0 01-4.21 5.293M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3l18 18" />
+                                        </svg>
+                                    )}
+                                </span>
+                            </div>
+                            <div className="flex flex-col gap-1 relative">
+                                <label className="text-sm text-secondary-text">New Password</label>
+                                <input
+                                    type={showNewPassword ? "text" : "password"}
+                                    name="newPassword"
+                                    className="bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text pr-10"
+                                    placeholder="New Password"
+                                />
+                                <span
+                                    className="absolute right-3 top-8 cursor-pointer text-secondary-text"
+                                    onClick={() => setShowNewPassword((prev) => !prev)}
+                                    style={{ top: '38px' }}
+                                >
+                                    {showNewPassword ? (
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-.274.832-.64 1.627-1.09 2.372M15.362 17.362A9.953 9.953 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.956 9.956 0 012.293-3.95M9.88 9.88a3 3 0 104.24 4.24" />
+                                        </svg>
+                                    ) : (
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.956 9.956 0 012.293-3.95M6.228 6.228A9.956 9.956 0 0112 5c4.478 0 8.268 2.943 9.542 7a9.956 9.956 0 01-4.21 5.293M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3l18 18" />
+                                        </svg>
+                                    )}
+                                </span>
+                            </div>
+                            <div className="flex flex-col gap-1 relative">
+                                <label className="text-sm text-secondary-text">Confirm New Password</label>
+                                <input
+                                    type={showConfirmPassword ? "text" : "password"}
+                                    name="confirmPassword"
+                                    className="bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text pr-10"
+                                    placeholder="Confirm New Password"
+                                />
+                                <span
+                                    className="absolute right-3 top-8 cursor-pointer text-secondary-text"
+                                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+                                    style={{ top: '38px' }}
+                                >
+                                    {showConfirmPassword ? (
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-.274.832-.64 1.627-1.09 2.372M15.362 17.362A9.953 9.953 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.956 9.956 0 012.293-3.95M9.88 9.88a3 3 0 104.24 4.24" />
+                                        </svg>
+                                    ) : (
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.956 9.956 0 012.293-3.95M6.228 6.228A9.956 9.956 0 0112 5c4.478 0 8.268 2.943 9.542 7a9.956 9.956 0 01-4.21 5.293M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3l18 18" />
+                                        </svg>
+                                    )}
+                                </span>
+                            </div>
+                        </div>
+                        {/* Hide error/success after a few seconds */}
+                        {(passwordError || passwordSuccess) && (
+                            <AutoHideMessage
+                                passwordError={passwordError}
+                                passwordSuccess={passwordSuccess}
+                                setPasswordError={setPasswordError}
+                                setPasswordSuccess={setPasswordSuccess}
+                            />
+                        )}
+                        <div className='flex justify-end'>
+                            <button
+                                type="submit"
+                                className="w-full md:w-1/4 bg-main-purple text-white font-semibold py-2 rounded-lg hover:bg-[#6b2bd2] transition-all duration-300 cursor-pointer"
+                            >
+                                Set New Password
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div className="w-full bg-sub-bg rounded-xl p-5">
+                <p className="text-white text-lg font-semibold mb-2">Delete Your Account</p>
+                <p className="text-gray-400 text-sm mb-4">
+                    Deleting your account is a permanent action and cannot be undone. All your data will be lost.
+                </p>
+                {!showDelete ? (
+                    <button
+                        className="bg-logout-red text-logout-text font-semibold px-4 py-2 rounded-lg hover:bg-[#6b2e2e] transition-all"
+                        onClick={() => setShowDelete(true)}
+                    >
+                        Delete Account
+                    </button>
+                ) : (
+                    <div className="space-y-4">
+                        <p className="text-red-400 text-sm font-semibold">
+                            Are you absolutely sure you want to delete your account? This action cannot be undone.
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <button
+                                className="w-full sm:w-1/2 bg-logout-red text-logout-text font-semibold py-2 rounded-lg hover:bg-[#6b2e2e] transition-all duration-300"
+                                onClick={handleDeleteAccount}
+                            >
+                                Confirm Delete
+                            </button>
+                            <button
+                                className="w-full sm:w-1/2 bg-gray-700 text-white font-semibold py-2 rounded-lg hover:bg-gray-600 transition-all duration-300"
+                                onClick={() => setShowDelete(false)}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    )
+
+// Helper component to auto-hide error/success messages
+function AutoHideMessage({ passwordError, passwordSuccess, setPasswordError, setPasswordSuccess }) {
+    useEffect(() => {
+        if (passwordError || passwordSuccess) {
+            const timer = setTimeout(() => {
+                setPasswordError("");
+                setPasswordSuccess("");
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [passwordError, passwordSuccess, setPasswordError, setPasswordSuccess]);
+    return (
+        <>
+            {passwordError && <p className="text-red-500 text-sm">{passwordError}</p>}
+            {passwordSuccess && <p className="text-green-500 text-sm">{passwordSuccess}</p>}
+        </>
+    );
+}
+};
 
 
 export default Dashboard

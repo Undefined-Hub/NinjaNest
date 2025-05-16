@@ -27,8 +27,8 @@ L.Icon.Default.mergeOptions({
 
 const { BaseLayer } = LayersControl;
 
-const CLOUD_NAME = 'dan454ywo';
-const UPLOAD_PRESET = 'NinjaNest';
+const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
 // Cloudinary upload function
 const handleImageUpload = async (event, setValue, watch, mainImage) => {

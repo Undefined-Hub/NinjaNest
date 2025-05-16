@@ -17,11 +17,18 @@ const UserSchema = new Schema(
       required: true,
       unique: true,
     },
+    dob:{
+      type: Date,
+    },
     password: {
       type: String,
       required: true,
     },
     college: {
+      type: String,
+      default: "",
+    },
+    course: {
       type: String,
       default: "",
     },

@@ -353,8 +353,10 @@ export default function EditProperty() {
   const { handleSubmit } = methods;
 const onSubmit = (data) => {
     // Convert roomDetails, rent, and deposit to numbers
+    console.log('Form data before formatting:', data);
     const formattedData = {
         ...data,
+        landlord_name: data.landlord_id?.name,
         roomDetails: {
             beds: Number(data.roomDetails.beds),
             occupiedBeds: Number(data.roomDetails.occupiedBeds),
