@@ -41,7 +41,7 @@ const initiatePayment = async (req, res) => {
                 type: "PG_CHECKOUT",
                 message: "Payment message used for collect requests",
                 merchantUrls: {
-                    redirectUrl: "",
+                    redirectUrl: "http://localhost:5173/dashboard",
                 },
             },
         };
