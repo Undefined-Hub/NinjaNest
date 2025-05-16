@@ -44,7 +44,7 @@ const LandingPage = () => {
   let navigate = useNavigate();
   return (
     <>
-      <div className="flex flex-col justify-center items-center bg-main-bg relative min-h-[110vh] py-28">
+      <div className="flex flex-col justify-center items-center bg-main-bg relative min-h-[100vh] py-28">
         <div className="absolute top-0 left-0 w-full h-full ">
           <Squares
             speed={0.5}

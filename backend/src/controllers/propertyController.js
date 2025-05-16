@@ -57,7 +57,8 @@ const createProperty = async (req, res, next) => {
 // ! Fetch all properties
 const getProperties = async (req, res, next) => {
   try {
-    const properties = await Property.find();
+    const properties = await Property.find()
+      .populate("landlord_id", "name -_id profilePicture trustScore");
     if (properties.length === 0) {
       return res.status(404).json({ message: "No properties found" });
     }
@@ -74,7 +75,7 @@ const Review = require("../models/Review"); // Add this import at the top with o
 const getProperty = async (req, res, next) => {
   try {
     const property = await Property.findById(req.params.id)
-      .populate("landlord_id", "name email trustScore") // populate with desired fields only
+      .populate("landlord_id", "name email profilePicture trustScore") // populate with desired fields only
       .select("-__v"); // optional: remove __v if not needed
 
     if (!property) {
@@ -83,8 +84,8 @@ const getProperty = async (req, res, next) => {
 
     // Fetch reviews for this property
     const reviews = await Review.find({ property_id: req.params.id })
-      .populate("user_id", "name -_id")
-      .populate("landlord_id", "name -_id")
+      .populate("user_id", "name -_id profilePicture")
+      .populate("landlord_id", "name -_id ")
       .select("-__v");
     // Optional: remove redundant `landlord_name` from response if using populated data
     const propertyObj = property.toObject();

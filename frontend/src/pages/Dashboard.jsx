@@ -22,11 +22,13 @@ import { toast } from 'react-hot-toast';
 import { useLocation } from 'react-router-dom';
 import { FiCamera } from "react-icons/fi";
 import { FiEdit } from "react-icons/fi";
-import { FiUser } from "react-icons/fi";
+import { FiUser,FiSave,FiRefreshCw } from "react-icons/fi";
+
 import roommate from '/images/roommate.svg'
 import payment from '/images/payment.svg'
 import profile from '/images/profile.svg'
-import CurrentRental from '../components/CurrentRental';
+import CurrentRental from '../components/CurrentRental'
+
 const menuItems = [
     { label: "Overview", icon: <AiOutlineHome /> },
     { label: "My Properties", icon: <FaRegBuilding /> },
@@ -71,7 +73,7 @@ const Dashboard = () => {
                             <div className='flex items-start space-x-3 w-full'>
                                 <div className='flex-shrink-0'>
                                     <img
-                                        src={pfp}
+                                        src={user?.user?.profilePicture||pfp}
                                         alt='profile'
                                         className='h-14 w-14 rounded-full object-cover'
                                     />
@@ -823,7 +825,7 @@ const Profile = () => {
             toast.success("Profile picture updated successfully!");
         } catch (err) {
             setUploading(false);
-            alert("Failed to upload image. Please try again.");
+                  toast.error("Failed to upload image. Please try again.");
         }
     };
 
@@ -835,170 +837,129 @@ const Profile = () => {
     return (
         <div className='flex flex-col items-center overflow-scroll h-[85vh] space-y-4 w-4/5'>
             {/* Profile Picture Section */}
-            <div className='w-full h-60 bg-sub-bg rounded-xl p-5 flex items-center justify-center'>
-                <div className='relative'>
-                    <img
-                        src={profilePic}
-                        alt="Profile"
-                        className="w-24 h-24 rounded-full object-cover cursor-pointer"
-                        onClick={handleOpenPicModal}
-                    />
-                    <label
-                        htmlFor="profile-pic-upload"
-                        className="absolute bottom-0 right-0 bg-main-purple p-1 rounded-full cursor-pointer"
-                        onClick={handleOpenPicModal}
-                    >
-                        <FiCamera className="text-white" />
-                    </label>
-                </div>
-            </div>
-
-            {/* Profile Picture Modal */}
-            {showPicModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
-                    <div className="bg-sub-bg rounded-xl p-6 flex flex-col items-center w-[90vw] max-w-md relative">
-                        <button
-                            className="absolute top-2 right-3 text-white text-2xl"
-                            onClick={() => setShowPicModal(false)}
-                        >
-                            &times;
-                        </button>
-                        <img
-                            src={previewPic}
-                            alt="Preview"
-                            className="w-60 h-60 rounded-full object-cover border-4 border-main-purple mb-4"
-                        />
-                        <div className="flex flex-col items-center space-y-3 w-full">
-                            <label
-                                htmlFor="modal-profile-pic-upload"
-                                className="bg-main-purple text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-[#6b2bd2] transition-all"
-                            >
-                                {selectedPic ? "Choose Another Image" : "Change Profile"}
-                            </label>
-                            <input
-                                type="file"
-                                id="modal-profile-pic-upload"
-                                className="hidden"
-                                accept="image/*"
-                                onChange={handleModalPicChange}
-                            />
-                            {selectedPic && (
-                                <button
-                                    className="bg-main-purple text-white px-4 py-2 rounded-lg hover:bg-[#6b2bd2] transition-all"
-                                    onClick={handleSetProfilePic}
-                                    disabled={uploading}
+                        <div className='w-full h-60 bg-sub-bg rounded-xl p-5 flex items-center justify-center'>
+                            <div className='relative'>
+                                <img
+                                    src={profilePic}
+                                    alt="Profile"
+                                    className="w-24 h-24 rounded-full object-cover cursor-pointer"
+                                    onClick={handleOpenPicModal}
+                                />
+                                <label
+                                    htmlFor="profile-pic-upload"
+                                    className="absolute bottom-0 right-0 bg-main-purple p-1 rounded-full cursor-pointer"
+                                    onClick={handleOpenPicModal}
                                 >
-                                    {uploading ? "Uploading..." : "Set as Profile Picture"}
-                                </button>
-                            )}
+                                    <FiCamera className="text-white" />
+                                </label>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            )}
 
-            {/* Rest of the profile form */}
-            <div className='w-full bg-sub-bg rounded-xl p-5'>
-                <div className='flex items-center justify-between'>
-                    <p className='text-white text-lg font-semibold'>Personal Information</p>
-                    {!isEditing && (
-                        <button
-                            onClick={() => setIsEditing(true)}
-                            className="bg-main-purple text-white px-4 py-2 rounded-lg hover:bg-[#6b2bd2] transition-all"
-                        >
-                            <FiEdit className="inline mr-2" /> Edit Info
-                        </button>
-                    )}
-                </div>
-                <FormProvider {...methods}>
-                    <form className="grid grid-cols-2 gap-3 mt-3" onSubmit={handleSubmit(onSubmit)}>
-                        <div className="flex flex-col gap-1">
-                            <label className="text-sm text-secondary-text">Full Name</label>
-                            <input
-                                {...register("name", { required: "Full Name is required" })}
-                                placeholder="Enter your full name"
-                                className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text ${!isEditing ? 'cursor-not-allowed' : ''}`}
-                                defaultValue={user?.user?.name || ""}
-                                disabled={!isEditing}
-                            />
-                            {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
-                        </div>
-                        <div className="flex flex-col gap-1">
-                            <label className="text-sm text-secondary-text">Username</label>
-                            <input
-                                {...register("username", { required: "Full Name is required" })}
-                                placeholder="Enter your full name"
-                                className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-secondary-text ${!isEditing ? 'cursor-not-allowed' : 'cursor-not-allowed'}`}
-                                defaultValue={user?.user?.username || ""}
-                                disabled
-                            />
-                            {errors.username && <p className="text-red-500 text-sm">{errors.username.message}</p>}
-                        </div>
-                        <div className="flex flex-col gap-1">
-                            <label className="text-sm text-secondary-text">Email</label>
-                            <input
-                                {...register("email")}
-                                placeholder="Enter your email"
-                                className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-secondary-text ${!isEditing ? 'cursor-not-allowed' : 'cursor-not-allowed'}`}
-                                defaultValue={user?.user?.email || ""}
-                                disabled
-                            />
-                        </div>
-                        <div className="flex flex-col gap-1">
-                            <label className="text-sm text-secondary-text">Phone Number</label>
-                            <input
-                                {...register("phone", { required: "Phone number is required" })}
-                                placeholder="Enter your phone number"
-                                className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text ${!isEditing ? 'cursor-not-allowed' : ''}`}
-                                defaultValue={user?.user?.phone || ""}
-                                disabled={!isEditing}
-                            />
-                            {errors.phone && <p className="text-red-500 text-sm">{errors.phone.message}</p>}
-                        </div>
-                        <div className="flex flex-col gap-1">
-                            <label className="text-sm text-secondary-text">Date of Birth</label>
-                            <input
-                                {...register("dob", { required: "Date of Birth is required" })}
-                                type="date"
-                                className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text ${!isEditing ? 'cursor-not-allowed' : ''}`}
-                                defaultValue={user?.user?.dob || ""}
-                                disabled={!isEditing}
-                            />
-                            {errors.dob && <p className="text-red-500 text-sm">{errors.dob.message}</p>}
-                        </div>
-                        <div className="flex flex-col gap-1">
-                            <label className="text-sm text-secondary-text">College Name</label>
-                            <input
-                                {...register("college", { required: "College name is required" })}
-                                placeholder="Enter your college name"
-                                className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text ${!isEditing ? 'cursor-not-allowed' : ''}`}
-                                defaultValue={user?.user?.college || ""}
-                                disabled={!isEditing}
-                            />
-                            {errors.college && <p className="text-red-500 text-sm">{errors.college.message}</p>}
-                        </div>
-                        <div className="flex flex-col gap-1">
-                            <label className="text-sm text-secondary-text">Course Name</label>
-                            <input
-                                {...register("course", { required: "Course name is required" })}
-                                placeholder="Enter your course name"
-                                className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text ${!isEditing ? 'cursor-not-allowed' : ''}`}
-                                defaultValue={user?.user?.course || ""}
-                                disabled={!isEditing}
-                            />
-                            {errors.course && <p className="text-red-500 text-sm">{errors.course.message}</p>}
-                        </div>
-                        {isEditing && (
-                            <div className="col-span-2 flex justify-end gap-3 mt-4">
-                                <button
-                                    type="submit"
-                                    className="bg-main-purple text-white px-4 py-2 rounded-lg hover:bg-[#6b2bd2] transition-all"
-                                >
-                                    Save Changes
-                                </button>
-                                <button
-                                    type="button"
-                                    className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-all"
-                                    onClick={() => {
+                       {/* Profile Picture Modal */}
+                       
+                        {/* Rest of the profile form */}
+                        <div className='w-full bg-sub-bg rounded-xl p-5'>
+                            <div className='flex items-center justify-between'>
+                                <p className='text-white text-lg font-semibold'>Personal Information</p>
+                                {!isEditing && (
+                                    <button
+                                        onClick={() => setIsEditing(true)}
+                                        className="bg-main-purple text-white px-4 py-2 rounded-lg hover:bg-[#6b2bd2] transition-all"
+                                    >
+                                        <FiEdit className="inline mr-2" /> Edit Info
+                                    </button>
+                                )}
+                            </div>
+                            <FormProvider {...methods}>
+                                <form className="grid grid-cols-2 gap-3 mt-3" onSubmit={handleSubmit(onSubmit)}>
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-sm text-secondary-text">Full Name</label>
+                                        <input
+                                            {...register("name", { required: "Full Name is required" })}
+                                            placeholder="Enter your full name"
+                                            className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text ${!isEditing ? 'cursor-not-allowed' : ''}`}
+                                            defaultValue={user?.user?.name || ""}
+                                            disabled={!isEditing}
+                                        />
+                                        {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-sm text-secondary-text">Username</label>
+                                        <input
+                                            {...register("username", { required: "Full Name is required" })}
+                                            placeholder="Enter your full name"
+                                            className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-secondary-text ${!isEditing ? 'cursor-not-allowed' : 'cursor-not-allowed'}`}
+                                            defaultValue={user?.user?.username || ""}
+                                            disabled
+                                        />
+                                        {errors.username && <p className="text-red-500 text-sm">{errors.username.message}</p>}
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-sm text-secondary-text">Email</label>
+                                        <input
+                                            {...register("email")}
+                                            placeholder="Enter your email"
+                                            className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-secondary-text ${!isEditing ? 'cursor-not-allowed' : 'cursor-not-allowed'}`}
+                                            defaultValue={user?.user?.email || ""}
+                                            disabled
+                                        />
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-sm text-secondary-text">Phone Number</label>
+                                        <input
+                                            {...register("phone", { required: "Phone number is required" })}
+                                            placeholder="Enter your phone number"
+                                            className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text ${!isEditing ? 'cursor-not-allowed' : ''}`}
+                                            defaultValue={user?.user?.phone || ""}
+                                            disabled={!isEditing}
+                                        />
+                                        {errors.phone && <p className="text-red-500 text-sm">{errors.phone.message}</p>}
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-sm text-secondary-text">Date of Birth</label>
+                                        <input
+                                            {...register("dob", { required: "Date of Birth is required" })}
+                                            type="date"
+                                            className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text ${!isEditing ? 'cursor-not-allowed' : ''}`}
+                                            defaultValue={user?.user?.dob || ""}
+                                            disabled={!isEditing}
+                                        />
+                                        {errors.dob && <p className="text-red-500 text-sm">{errors.dob.message}</p>}
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-sm text-secondary-text">College Name</label>
+                                        <input
+                                            {...register("college", { required: "College name is required" })}
+                                            placeholder="Enter your college name"
+                                            className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text ${!isEditing ? 'cursor-not-allowed' : ''}`}
+                                            defaultValue={user?.user?.college || ""}
+                                            disabled={!isEditing}
+                                        />
+                                        {errors.college && <p className="text-red-500 text-sm">{errors.college.message}</p>}
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-sm text-secondary-text">Course Name</label>
+                                        <input
+                                            {...register("course", { required: "Course name is required" })}
+                                            placeholder="Enter your course name"
+                                            className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text ${!isEditing ? 'cursor-not-allowed' : ''}`}
+                                            defaultValue={user?.user?.course || ""}
+                                            disabled={!isEditing}
+                                        />
+                                        {errors.course && <p className="text-red-500 text-sm">{errors.course.message}</p>}
+                                    </div>
+                                    {isEditing && (
+                                        <div className="col-span-2 flex justify-end gap-3 mt-4">
+                                            <button
+                                                type="submit"
+                                                className="bg-main-purple text-white px-4 py-2 rounded-lg hover:bg-[#6b2bd2] transition-all"
+                                            >
+                                                Save Changes
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-all"
+                                                onClick={() => {
                                         setIsEditing(false);
                                         // Reset form to original user data
                                         const userData = user?.user;
@@ -1015,6 +976,67 @@ const Profile = () => {
                                 >
                                     Cancel
                                 </button>
+                            </div>
+                        )}
+                         {showPicModal && (
+                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+                                <div className="bg-sub-bg rounded-xl p-6 flex flex-col items-center w-[90vw] max-w-md relative">
+                                    <button
+                                        className="absolute top-2 right-3 text-white text-2xl"
+                                        onClick={() => setShowPicModal(false)}
+                                        aria-label="Close"
+                                    >
+                                        &times;
+                                    </button>
+                                    <img
+                                        src={previewPic}
+                                        alt="Preview"
+                                        className="w-60 h-60 rounded-full object-cover border-4 border-main-purple mb-4"
+                                    />
+                                    <div className="flex flex-col items-center space-y-3 w-full">
+                                        {!selectedPic ? (
+                                            <label
+                                                htmlFor="modal-profile-pic-upload"
+                                                className="bg-main-purple text-white w-full py-2 rounded-lg font-semibold flex items-center justify-center gap-2 hover:cursor-pointer hover:bg-[#6b2bd2] transition-all"
+                                            >
+                                                <FiCamera className="inline h-5 w-5" />
+                                                <span>Change Image</span>
+                                                <input
+                                                    type="file"
+                                                    id="modal-profile-pic-upload"
+                                                    className="hidden"
+                                                    accept="image/*"
+                                                    onChange={handleModalPicChange}
+                                                />
+                                            </label>
+                                        ) : (
+                                            <div className="flex w-full gap-3 mt-2">
+                                                <label
+                                                    htmlFor="modal-profile-pic-upload"
+                                                    className="bg-white text-black w-1/2 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 hover:cursor-pointer hover:bg-slate-100"
+                                                >
+                                                    <FiRefreshCw className="inline h-5 w-5" />
+                                                    <span>Reupload</span>
+                                                    <input
+                                                        type="file"
+                                                        id="modal-profile-pic-upload"
+                                                        className="hidden"
+                                                        accept="image/*"
+                                                        onChange={handleModalPicChange}
+                                                    />
+                                                </label>
+                                                <button
+                                                    className="flex-1 flex items-center justify-center bg-main-purple text-white px-4 py-2 rounded-lg hover:bg-[#6b2bd2] transition-all space-x-2"
+                                                    onClick={handleSetProfilePic}
+                                                    disabled={uploading}
+                                                >
+                                                    <FiSave className="inline h-5 w-5" />
+                                                    <span>{uploading ? "Uploading..." : "Save"}</span>
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </form>

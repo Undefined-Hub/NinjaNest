@@ -91,7 +91,7 @@ const Navbar = () => {
             {isLoggedIn ? (
                 <div className="relative">
                     <img
-                        src={user.profilePicture || pfp}
+                           src={user?.user?.profilePicture||pfp}
                         alt="Profile"
                         className="w-12 h-12 rounded-full cursor-pointer object-cover"
                         onClick={handleMenuToggle}
@@ -100,7 +100,7 @@ const Navbar = () => {
                         <div className="absolute right-0 mt-2 w-72 pb-3 bg-sub-bg text-primary-text rounded-lg shadow-lg z-50">
                             <div className="flex items-center justify-start p-4 border-b border-gray-700">
                             <img
-                                src={user.profilePicture || pfp}
+                                  src={user?.user?.profilePicture||pfp}
                                 alt="Profile"
                                 className="w-12 h-12 rounded-full object-cover"
                             />

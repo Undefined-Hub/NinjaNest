@@ -3,6 +3,7 @@ import { FaLocationDot } from "react-icons/fa6";
 import { IoShieldCheckmark } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 const PropertyCard = ({ property }) => {
+  // const dispatch = useDispatch();
   const navigate = useNavigate();
   return (
     <div
@@ -52,10 +53,10 @@ const PropertyCard = ({ property }) => {
 
         <div className="flex justify-between text-white py-2">
           <div className="flex flex-row p-2 items-center gap-2">
-            <div className="w-10">
+            <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center">
               <img
-                src="https://placehold.co/100"
-                className="object-cover rounded-full"
+                src={property?.landlord_id?.profilePicture||"https://placehold.co/1000"}
+                className="object-cover w-full h-full"
                 alt="Landlord"
               />
             </div>

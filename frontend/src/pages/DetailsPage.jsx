@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -14,6 +14,20 @@ import robot from '../assets/robot.svg';
 import { useSelector } from 'react-redux';
 import { FiEdit3 } from 'react-icons/fi';
 import { BsBarChartLine } from 'react-icons/bs'
+import { MapContainer, TileLayer, Marker, Popup, LayersControl } from 'react-leaflet';
+
+const { BaseLayer } = LayersControl;
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Fix default icon issue
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png',
+});
+
 const DetailsPage = () => {
     const { user } = useSelector((state) => state.user);
     // console.log("User Details:", user.user);
@@ -79,7 +93,9 @@ const DetailsPage = () => {
                     }
                 });
                 console.log("Response Data:", response.data);
+                
                 setPropertyData(response.data?.property);
+                // console.log(propertyData?.property?.landlord_id?.profilePicture);
             } catch (err) {
                 console.error('Error fetching property:', err);
                 setError('Failed to load property');
@@ -299,22 +315,34 @@ const DetailsPage = () => {
                                     <p className='text-white text-xl font-semibold'>Reviews & Feedback</p>
                                 </div>
                                 <div className='flex flex-col space-y-3'>
-                                    {propertyData?.reviews && propertyData.reviews.length > 0 ? (
-                                        propertyData.reviews.map((review, index) => (
-                                            <div key={index} className='bg-cards-bg p-3 rounded-lg'>
-                                                <div className='flex justify-between items-center'>
-                                                    <p className='text-white font-semibold'>{review.user_id.name}</p>
-                                                    <p className='text-yellow-400 font-semibold'>★ {review.rating}</p>
+                                            {propertyData?.reviews && propertyData.reviews.length > 0 ? (
+                                                propertyData.reviews.map((review, index) => (
+                                                    <div key={index} className='bg-cards-bg p-4 rounded-lg flex items-start gap-4 shadow hover:shadow-lg transition-shadow duration-200'>
+                                                        <div className="flex-shrink-0">
+                                                            <img
+                                                                src={review.user_id?.profilePicture || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(review.user_id?.name || 'User')}
+                                                                alt={review.user_id?.name}
+                                                                className="w-12 h-12 rounded-full object-cover border-2 border-main-purple"
+                                                            />
+                                                        </div>
+                                                        <div className="flex flex-col flex-grow">
+                                                            <div className="flex items-center justify-between">
+                                                                <p className='text-primary-text text-base font-semibold'>{review.user_id?.name || 'Anonymous'}</p>
+                                                                <span className='flex items-center gap-1 text-yellow-400 font-bold text-base'>
+                                                                  ★
+                                                                    {review.rating}.0
+                                                                </span>
+                                                            </div>
+                                                            <p className='text-secondary-text text-sm mt-1 font-medium'>{review.comment}</p>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className='bg-cards-bg p-4 rounded-lg text-center'>
+                                                    <p className='text-slate-300 font-medium'>No reviews yet. Be the first to leave feedback!</p>
                                                 </div>
-                                                <p className='text-slate-300 mt-2 font-medium'>{review.comment}</p>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <div className='bg-cards-bg p-3 rounded-lg text-center'>
-                                            <p className='text-slate-300 font-medium'>No reviews yet. Be the first to leave feedback!</p>
+                                            )}
                                         </div>
-                                    )}
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -334,7 +362,7 @@ const DetailsPage = () => {
                             <div className='flex flex-col w-full rounded-lg space-y-3'> {/* Contact Card */}
                                 <div className='flex items-center w-full space-x-3 border-b border-secondary-text pb-4'> {/* Contain profile picture and name of landlord */}
                                     <div className='w-14 h-14 flex items-center justify-center'> {/* Profile Picture */}
-                                        <img src='https://placehold.co/200x200' alt='Profile' className='w-14 h-14 object-cover rounded-full' />
+                                        <img src={ propertyData?.landlord_id?.profilePicture} alt='Profile' className='w-14 h-14 object-cover rounded-full' />
                                     </div>
                                     <div className='flex flex-col justify-center'> {/* Name Section */}
                                         <p className='text-white font-semibold text-base'>{propertyData?.landlord_id?.name}</p>
@@ -463,11 +491,69 @@ const DetailsPage = () => {
                                 </div>
                             </div>
                         )}
+
+                        {/* custom map */}
+                   <PropertyMap
+                        latitude={propertyData?.latitude}
+                        longitude={propertyData?.longitude}
+                        propertyName={propertyData?.title}
+                        
+                        />
+
+                        {/* google map */}
+                {/* <div className="relative w-full h-[80vh] rounded-lg overflow-hidden">
+                    <iframe
+                        width="100%"
+                        height="100%"
+                        frameBorder="0"
+                        style={{ border: 0 }}
+                        src={`https://maps.google.com/maps?q=${propertyData.latitude},${propertyData.longitude}&z=15&output=embed`}
+                        allowFullScreen
+                    ></iframe>
+                    <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-sm px-3 py-1 rounded shadow">
+                        🏠 Listed Property
+                    </div>
+                    </div> */}
+
+
                     </div>
                 </div>
             </div>
         </>
     )
 }
+
+
+const PropertyMap = ({ latitude, longitude, propertyName }) => {
+  if (!latitude || !longitude) return null;
+
+  return (
+    <div className="w-full h-[80vh] rounded-lg overflow-hidden">
+      <MapContainer center={[latitude, longitude]} zoom={16} scrollWheelZoom={false} className="w-full h-full z-0">
+        <LayersControl position="topright">
+          {/* Default OSM Layer */}
+          <BaseLayer checked name="Street View">
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+          </BaseLayer>
+
+          {/* Satellite Layer (Esri) */}
+          <BaseLayer name="Satellite View">
+            <TileLayer
+              attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, etc.'
+              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+            />
+          </BaseLayer>
+        </LayersControl>
+
+        <Marker position={[latitude, longitude]}>
+          <Popup>{propertyName || "This property is located here!"}</Popup>
+        </Marker>
+      </MapContainer>
+    </div>
+  );
+};
 
 export default DetailsPage

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+
 import agreement_svg from '../assets/agreement_svg.svg'
 import id_proof_svg from '../assets/id_proof_svg.svg'
 import pfp from '../assets/pfp.png'
@@ -6,8 +7,24 @@ import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux'
 import { Star } from 'lucide-react'
+import { MapContainer, TileLayer, Marker, Popup, LayersControl } from 'react-leaflet';
+import { useRef } from 'react';
 
+// Inside your component
+
+const { BaseLayer } = LayersControl;
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Fix default icon issue
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon-2x.png',
+    iconUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png',
+    shadowUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png',
+});
 const CurrentPropertyDashboard = () => {
+    const mapSectionRef = useRef(null);
     const [property, setProperty] = useState(null);
     const { propertyId } = useParams();
     const [loading, setLoading] = useState(true);
@@ -120,9 +137,18 @@ const CurrentPropertyDashboard = () => {
                             <p className='text-secondary-text font-semibold'>{property?.address || "Unknown Address"}</p>
                             <p className='bg-cards-bg text-secondary-text mt-1 rounded-full w-fit px-3 text-center text-sm font-semibold'>{property?.flatType || "Unknown Flat Type"}</p>
                         </div>
-                        <div className='flex justify-start sm:justify-end items-center w-full mt-4 sm:mt-0'>
-                            <button className='bg-cards-bg text-white font-semibold px-4 py-2 rounded-lg hover:bg-main-purple'>View on Map</button>
+                      <div className='flex justify-start sm:justify-end items-center w-full mt-4 sm:mt-0'>
+                        <button
+                            className='bg-cards-bg text-white font-semibold px-4 py-2 rounded-lg hover:bg-main-purple'
+                            onClick={() => {
+                                console.log(mapSectionRef.current); // Should log a DOM element
+                                mapSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+                                }}
+                        >
+                            View on Map
+                        </button>
                         </div>
+
                     </div>
 
                     {/* Property Images Section */}
@@ -139,6 +165,7 @@ const CurrentPropertyDashboard = () => {
 
                     </div>
                 </div>
+                     
                 <div className='w-full flex flex-col lg:flex-row gap-6'> {/* Changed space-x-6 to gap-6 for better responsiveness */}
                     {/* Rent Details */}
                     <div className='flex flex-col bg-sub-bg w-full text-white rounded-xl p-4'>
@@ -197,7 +224,6 @@ const CurrentPropertyDashboard = () => {
                         </div>
                     </div>
                 </div>
-
                 {/* Maintenance Requests */}
                 <div className='w-full flex flex-col bg-sub-bg space-y-4 p-4 rounded-xl'>
                     <div className='flex flex-wrap items-center justify-between w-full'> {/* Flex container for title and button */}
@@ -234,7 +260,17 @@ const CurrentPropertyDashboard = () => {
                         </div>
                     ))}
                 </div>
-
+             <div
+                ref={mapSectionRef}
+                className='w-full flex flex-col bg-sub-bg p-4 rounded-xl'
+                >
+                <p className='font-semibold text-lg text-tertiary-text mb-4'>Location</p>
+                <PropertyMap
+                    latitude={property?.latitude}
+                    longitude={property?.longitude}
+                    propertyName={property?.title}
+                />
+                </div>
                 {/* Reviews Section - IMPROVED */}
                 <div className='w-full flex flex-col bg-sub-bg p-4 rounded-xl'>
                     <p className='font-semibold text-lg text-tertiary-text mb-4'>Reviews</p>
@@ -276,7 +312,7 @@ const CurrentPropertyDashboard = () => {
                             </div>
                         </div>
                     </div>
-
+             
                     {/* Property Review */}
                     <div className='flex flex-col bg-cards-bg rounded-xl p-4'>
                         <p className='text-white font-semibold text-base mb-3'>Rate & Review Property</p>
@@ -335,3 +371,36 @@ const CurrentPropertyDashboard = () => {
 }
 
 export default CurrentPropertyDashboard
+
+
+const PropertyMap = ({ latitude, longitude, propertyName }) => {
+  if (!latitude || !longitude) return null;
+
+  return (
+    <div className="w-full h-[50vh] rounded-lg overflow-hidden">
+      <MapContainer center={[latitude, longitude]} zoom={16} scrollWheelZoom={false} className="w-full h-full z-0">
+        <LayersControl position="topright">
+          {/* Default OSM Layer */}
+          <BaseLayer checked name="Street View">
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+          </BaseLayer>
+
+          {/* Satellite Layer (Esri) */}
+          <BaseLayer name="Satellite View">
+            <TileLayer
+              attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, etc.'
+              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+            />
+          </BaseLayer>
+        </LayersControl>
+
+        <Marker position={[latitude, longitude]}>
+          <Popup>{propertyName || "This property is located here!"}</Popup>
+        </Marker>
+      </MapContainer>
+    </div>
+  );
+};
