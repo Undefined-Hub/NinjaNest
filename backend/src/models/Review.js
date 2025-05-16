@@ -5,7 +5,6 @@ const ReviewSchema = new Schema(
   {
     property_id: {
       type: Schema.Types.ObjectId,
-      
       required: true,
       ref: "Property",
     },
@@ -28,14 +27,14 @@ const ReviewSchema = new Schema(
     trustScore: {
       type: Number,
       required: true,
-      default: 3,
-      min: 1,
+      default: 0,
+      min: 0,
       max: 5,
     },
     rating: {
       type: Number,
       required: true,
-      default: 2.5,
+      default: 0,
       min: 0,
       max: 5,
     }

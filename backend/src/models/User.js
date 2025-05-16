@@ -59,6 +59,16 @@ const UserSchema = new Schema(
       type: Number,
       default: 0,
     },
+    numberOfTrustScoresReceived: {
+      type: Number,
+      default: 0,
+    },
+    trustScoreHistory: {
+      type: Map,
+      of: Number, // key: user_id, value: trustScore
+      default: {},
+    },
+
     refreshToken: {
       type: String,
       default: "",

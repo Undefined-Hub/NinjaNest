@@ -115,17 +115,30 @@ const PropertySchema = new Schema(
       required: true,
       default: false,
     },
+
     averageRating: {
       type: Number,
       required: true,
-      default: 2.5,
+      default: 0,
       min: 0,
       max: 5,
     },
+
+    numberOfRatingsReceived: {
+      type: Number,
+      default: 0,
+    },
+
+    ratingHistory: {
+      type: Map,
+      of: Number, // key: user_id, value: rating
+      default: {},
+    },
+
     averageTrustScore: {
       type: Number,
       required: true,
-      default: 2.5,
+      default: 0,
       min: 0,
       max: 5,
     },

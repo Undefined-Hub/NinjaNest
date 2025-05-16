@@ -4,20 +4,29 @@ const authMiddleware = require("../middlewares/authMiddleware");
 
 const {
   getReviews,
-  addReview,
-  getReviewByID,
+  submitPropertyReview,
+  submitLandlordRating,
+  // getReviewByID,
   deleteReview,
   updateReview,
 } = require("../controllers/reviewController");
 
-router.get("/reviews/:id", authMiddleware(), getReviews); // Get all reviews for a property
+// ✅ Get all reviews for a property
+router.get("/reviews/:id", authMiddleware(), getReviews);
 
-router.post("/reviews", authMiddleware(), addReview); // Add new review
+// ! ✅ Submit property review
+router.post("/:propertyId/review", authMiddleware(), submitPropertyReview);
 
-router.delete("/reviews/:id", authMiddleware(), deleteReview); // Delete review
+// ! ✅ Submit landlord rating
+router.post("/:propertyId/landlord-rating", authMiddleware(), submitLandlordRating);
 
-router.put("/reviews/:id", authMiddleware(), updateReview); // Update review
+// ✅ Get a single review by ID
+// router.get("/review/:id", authMiddleware(), getReviewByID);
 
-router.get("/reviews/landlord/:id", authMiddleware(), updateReview); // Get review by ID
+// ✅ Update a review
+router.put("/review/:id", authMiddleware(), updateReview);
+
+// ✅ Delete a review
+router.delete("/review/:id", authMiddleware(), deleteReview);
 
 module.exports = router;
