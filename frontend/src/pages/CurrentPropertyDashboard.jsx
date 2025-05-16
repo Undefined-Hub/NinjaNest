@@ -5,6 +5,7 @@ import pfp from '../assets/pfp.png'
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux'
+import { Star } from 'lucide-react'
 
 const CurrentPropertyDashboard = () => {
     const [property, setProperty] = useState(null);
@@ -12,6 +13,13 @@ const CurrentPropertyDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const { user } = useSelector((state) => state.user);
+
+    const [landlordRating, setLandlordRating] = React.useState(0);
+    const [propertyRating, setPropertyRating] = React.useState(0);
+    const [propertyComment, setPropertyComment] = React.useState('');
+    const [landlordHover, setLandlordHover] = React.useState(0);
+    const [propertyHover, setPropertyHover] = React.useState(0);
+
     useEffect(() => {
         const fetchProperty = async () => {
             try {
@@ -32,6 +40,62 @@ const CurrentPropertyDashboard = () => {
 
         fetchProperty();
     }, [propertyId]);
+
+    const handleSubmitReview = async () => {
+        console.log('Submitting review with data:', {
+            user_id: user?.user?._id,
+            property_id: propertyId,
+            landlord_id: property?.landlord_id,
+            comment: propertyComment,
+            rating: propertyRating,
+        });
+
+        try {
+            const response = await axios.post(`http://localhost:3000/api/review/${propertyId}/review`, {
+                user_id: user?.user?._id,
+                property_id: propertyId,
+                landlord_id: property?.landlord_id,
+                comment: propertyComment,
+                rating: propertyRating,
+            }, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+            console.log('Review submitted successfully:', response.data);
+        } catch (err) {
+            console.error('Error submitting review:', err);
+        }
+
+
+    };
+
+    const handleSubmitRating = async () => {
+        console.log('Submitting review with data:', {
+            user_id: user?.user?._id,
+            property_id: propertyId,
+            landlord_id: property?.landlord_id,
+            trustScore: landlordRating,
+        });
+
+        try {
+            const response = await axios.post(`http://localhost:3000/api/review/${propertyId}/landlord-rating`, {
+                user_id: user?.user?._id,
+                property_id: propertyId,
+                landlord_id: property?.landlord_id,
+                trustScore: landlordRating,
+            }, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+            console.log('Landlord rating submitted successfully:', response.data);
+        } catch (err) {
+            console.error('Error submitting landlord rating:', err);
+        }
+    };
+
+
     return (
         <div className='items-center bg-main-bg p-4'> {/* Main Container with consistent padding */}
             <div className='w-full h-full max-w-6xl mx-auto my-6 space-y-6 flex flex-col'> {/* Content Area with consistent spacing */}
@@ -170,6 +234,101 @@ const CurrentPropertyDashboard = () => {
                         </div>
                     ))}
                 </div>
+
+                {/* Reviews Section - IMPROVED */}
+                <div className='w-full flex flex-col bg-sub-bg p-4 rounded-xl'>
+                    <p className='font-semibold text-lg text-tertiary-text mb-4'>Reviews</p>
+
+                    {/* Landlord Review */}
+                    <p className='text-white font-semibold text-base mb-3'>Rate your Landlord</p>
+                    <div className='flex flex-col bg-cards-bg rounded-xl p-4 mb-4'>
+                        <div className="flex justify-between items-center"> {/* Added items-center */}
+                            {/* Star Rating for Landlord */}
+                            <div className='flex items-center'> {/* Removed mb-4 */}
+                                <div className="flex items-center justify-center">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <button
+                                            key={star}
+                                            type="button"
+                                            onClick={() => setLandlordRating(star)}
+                                            onMouseEnter={() => setLandlordHover(star)}
+                                            onMouseLeave={() => setLandlordHover(0)}
+                                            className='mr-1 p-1 transition-transform hover:scale-110'
+                                        >
+                                            <Star
+                                                size={28}
+                                                fill={(landlordHover || landlordRating) >= star ? '#8561FF' : 'transparent'}
+                                                color={(landlordHover || landlordRating) >= star ? '#8561FF' : '#6B7280'}
+                                                strokeWidth={1.5}
+                                            />
+                                        </button>
+                                    ))}
+                                </div>
+                                <span className='ml-3 text-white font-medium bg-cards-bg px-2 py-1 rounded-md'>
+                                    {landlordRating > 0 ? `${landlordRating}/5` : 'Not rated'}
+                                </span>
+                            </div>
+
+                            <div className="flex justify-end">
+                                <button onClick={handleSubmitRating} className='bg-main-purple text-white py-2 px-6 rounded-lg font-semibold hover:bg-purple-700 transition-colors'>
+                                    Submit Rating
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Property Review */}
+                    <div className='flex flex-col bg-cards-bg rounded-xl p-4'>
+                        <p className='text-white font-semibold text-base mb-3'>Rate & Review Property</p>
+
+                        {/* Star Rating for Property */}
+                        <div className='flex items-center mb-4'>
+                            <div className="flex">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <button
+                                        key={star}
+                                        type="button"
+                                        onClick={() => setPropertyRating(star)}
+                                        onMouseEnter={() => setPropertyHover(star)}
+                                        onMouseLeave={() => setPropertyHover(0)}
+                                        className='mr-1 p-1 transition-transform hover:scale-110'
+                                    >
+                                        <Star
+                                            size={28}
+                                            fill={(propertyHover || propertyRating) >= star ? '#8561FF' : 'transparent'}
+                                            color={(propertyHover || propertyRating) >= star ? '#8561FF' : '#6B7280'}
+                                            strokeWidth={1.5}
+                                        />
+                                    </button>
+                                ))}
+                            </div>
+                            <span className='ml-3 text-white font-medium bg-cards-bg px-2 py-1 rounded-md'>
+                                {propertyRating > 0 ? `${propertyRating}/5` : 'Not rated'}
+                            </span>
+                        </div>
+
+                        {/* Comment Input */}
+                        <div className="relative">
+                            <textarea
+                                className='w-full bg-sub-bg text-white p-4 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-main-purple transition-all'
+                                rows='4'
+                                placeholder='Share your experience with this property...'
+                                value={propertyComment}
+                                onChange={(e) => setPropertyComment(e.target.value)}
+                            ></textarea>
+                            <div className="absolute bottom-2 right-2 text-secondary-text text-xs">
+                                {propertyComment.length}/500
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end mt-4">
+                            <button onClick={handleSubmitReview} className='bg-main-purple text-white py-2 px-6 rounded-lg font-semibold hover:bg-purple-700 transition-colors'>
+                                Submit Review
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     )
