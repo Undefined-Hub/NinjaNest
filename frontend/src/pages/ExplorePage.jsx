@@ -19,11 +19,51 @@ function ExplorePage() {
   });
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/property/")
+    // Build query parameters based on filters that are actually set
+    const queryParams = new URLSearchParams();
+
+    // Add pagination parameters
+    queryParams.append('page', 1);  // You can make this state-based if needed
+    queryParams.append('limit', 20); // Adjust as needed for your UI
+
+    // Only add filters that have values
+    if (filters.location) queryParams.append('location', filters.location);
+
+    if (filters.amenities.length > 0) queryParams.append('amenities', filters.amenities.join(','));
+
+    if (filters.minRent) queryParams.append('minRent', filters.minRent);
+    if (filters.maxRent) queryParams.append('maxRent', filters.maxRent);
+
+    if (filters.propertyType) queryParams.append('propertyType', filters.propertyType);
+
+    if (filters.propertyType === 'Flat' && filters.flatType.length > 0) {
+      queryParams.append('flatType', filters.flatType.join(','));
+    }
+
+    if (filters.propertyType === 'Room' && filters.totalBeds) {
+      queryParams.append('totalBeds', filters.totalBeds);
+    }
+
+    if (filters.propertyType === 'Room' && filters.occupiedBeds) {
+      queryParams.append('occupiedBeds', filters.occupiedBeds);
+    }
+
+    if (filters.isVerified !== null) queryParams.append('isVerified', filters.isVerified);
+    if (filters.isAvailable !== null) queryParams.append('isAvailable', filters.isAvailable);
+
+    if (filters.minRating) queryParams.append('minRating', filters.minRating);
+    if (filters.minTrustScore) queryParams.append('minTrustScore', filters.minTrustScore);
+
+    // Construct the URL with query parameters
+    const url = `http://localhost:3000/api/property/?${queryParams.toString()}`;
+
+    // Fetch data with the constructed URL
+    fetch(url)
       .then((res) => res.json())
       .then((data) => {
         let filtered = data.properties;
 
+        // Keep existing client-side filtering logic
         filtered = filtered.filter((p) => {
           const {
             location,

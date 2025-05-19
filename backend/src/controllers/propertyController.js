@@ -54,8 +54,8 @@ const createProperty = async (req, res, next) => {
   }
 };
 
-// ! Fetch all properties
 // ! Fetch all properties with pagination
+// ! Fetch all properties with pagination and filters
 const getProperties = async (req, res, next) => {
   try {
     // Get pagination parameters from query string
@@ -65,15 +65,90 @@ const getProperties = async (req, res, next) => {
     // Calculate skip value (how many documents to skip)
     const skip = (page - 1) * limit;
 
-    // Get total count for pagination metadata
-    const totalCount = await Property.countDocuments();
+    // Build filter object
+    const filter = {};
 
-    if (totalCount === 0) {
-      return res.status(404).json({ message: "No properties found" });
+    // Location filter (case-insensitive partial match)
+    if (req.query.location && req.query.location.trim() !== "") {
+      filter.location = { $regex: new RegExp(req.query.location, "i") };
     }
 
-    // Fetch properties with pagination
-    const properties = await Property.find()
+    // Amenities filter (matches if property has ALL selected amenities)
+    if (req.query.amenities) {
+      const amenitiesArray = Array.isArray(req.query.amenities)
+        ? req.query.amenities
+        : req.query.amenities.split(",").map((item) => item.trim());
+
+      if (amenitiesArray.length > 0) {
+        filter.amenities = { $all: amenitiesArray };
+      }
+    }
+
+    // Rent range filter
+    if (req.query.minRent || req.query.maxRent) {
+      filter.rent = {};
+      if (req.query.minRent) filter.rent.$gte = parseInt(req.query.minRent);
+      if (req.query.maxRent) filter.rent.$lte = parseInt(req.query.maxRent);
+    }
+
+    // Property type filter
+    if (req.query.propertyType && req.query.propertyType.trim() !== "") {
+      filter.propertyType = req.query.propertyType;
+    }
+
+    // Flat type filter
+    if (req.query.flatType) {
+      const flatTypeArray = Array.isArray(req.query.flatType)
+        ? req.query.flatType
+        : req.query.flatType.split(",").map((item) => item.trim());
+
+      if (flatTypeArray.length > 0) {
+        filter.flatType = { $in: flatTypeArray };
+      }
+    }
+
+    // Verification status filter
+    if (req.query.isVerified !== undefined && req.query.isVerified !== null) {
+      filter.isVerified = req.query.isVerified === "true";
+    }
+
+    // Availability status filter
+    if (req.query.isAvailable !== undefined && req.query.isAvailable !== null) {
+      filter.isAvailable = req.query.isAvailable === "true";
+    }
+
+    // Minimum rating filter
+    if (req.query.minRating && req.query.minRating.trim() !== "") {
+      filter.averageRating = { $gte: parseFloat(req.query.minRating) };
+    }
+
+    // Minimum trust score filter
+    if (req.query.minTrustScore && req.query.minTrustScore.trim() !== "") {
+      filter.averageTrustScore = { $gte: parseFloat(req.query.minTrustScore) };
+    }
+
+    // Beds filters
+    if (req.query.totalBeds && req.query.totalBeds.trim() !== "") {
+      filter["roomDetails.beds"] = parseInt(req.query.totalBeds);
+    }
+
+    if (req.query.occupiedBeds && req.query.occupiedBeds.trim() !== "") {
+      filter["roomDetails.occupiedBeds"] = parseInt(req.query.occupiedBeds);
+    }
+
+    // Get total count based on filters for pagination metadata
+    const totalCount = await Property.countDocuments(filter);
+
+    if (totalCount === 0) {
+      return res.status(404).json({
+        message: "No properties found matching the specified filters",
+        filters: req.query,
+      });
+    }
+
+    // Fetch properties with filters and pagination
+    const properties = await Property.find(filter)
+      .populate("landlord_id", "name -_id profilePicture trustScore")
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 }); // Sort by newest first
@@ -91,6 +166,8 @@ const getProperties = async (req, res, next) => {
         hasNextPage: page < totalPages,
         hasPrevPage: page > 1,
       },
+      appliedFilters:
+        Object.keys(filter).length > 0 ? filter : "No filters applied",
     });
   } catch (error) {
     next(error);

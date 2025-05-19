@@ -14,6 +14,13 @@ const registerSchema = z.object({
   password: z.string().min(6),
 });
 
+// ! Change Password schema
+const changePasswordSchema = z.object({
+  email: z.string().email(),
+  oldPassword: z.string().min(6),
+  newPassword: z.string().min(6),
+});
+
 // ! Login schema
 const loginSchema = z.object({
   email: z.string().email(),
@@ -129,7 +136,10 @@ const refreshAccessToken = async (req, res, next) => {
 const changePassword = async (req, res, next) => {
   const { purpose } = req.body;
   if (purpose === "change") {
-    const { email, oldPassword, newPassword } = req.body;
+    const { email, oldPassword, newPassword } = validateInput(
+      changePasswordSchema,
+      req.body
+    );
     try {
       // ! Check if user exists
       const user = await User.findOne({ email }).select("+password");
