@@ -635,6 +635,8 @@ const MyProperties = () => {
     );
 };
 
+
+
 const Profile = () => {
     const methods = useForm({
         defaultValues: {
@@ -646,7 +648,9 @@ const Profile = () => {
             course: "",
         },
     });
-    const { register, formState: { errors }, handleSubmit } = methods;
+
+    
+    const { register, formState: { errors }, handleSubmit ,reset} = methods;
     const { user } = useSelector((state) => state.user);
     const [showPasswordFields, setShowPasswordFields] = useState(false);
     const [currentPassword, setCurrentPassword] = useState("");

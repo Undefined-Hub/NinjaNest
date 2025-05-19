@@ -101,19 +101,20 @@ function ExplorePage() {
       .catch((err) => console.error("Fetch error:", err));
   }, [filters]);
 
-  return (
-    <div className="w-screen bg-[#111827] p-10 md:py-4 md:px-6 md:gap-6 flex flex-col md:flex-row md:justify-center">
+  return (<>
+    <div className="w-screen bg-[#111827] p-10 md:py-4 md:px-5 md:gap-3 flex flex-col items-start md:flex-row md:justify-center">
 
-      <div className="bg-[#18212f] md:w-1/6 h-fit rounded-2xl text-white p-4 my-4">
+      <div className="bg-[#18212f] md:w-1/6 h-auto rounded-2xl text-white p-4 my-4">
         <Filters filters={filters} setFilters={setFilters} />
       </div>
 
-      <div className="w-5/6 flex flex-wrap gap-4 md:p-4 h-[110vh] overflow-y-auto" id="propertiesContainer">
+      <div className="w-5/6 flex flex-wrap gap-5 items-start justify-start md:p-4 max-h-[110vh] overflow-y-auto" id="propertiesContainer">
         {properties.map((property) => (
           <PropertyCard key={property._id} property={property} />
         ))}
       </div>
     </div>
+        </>
   );
 }
 

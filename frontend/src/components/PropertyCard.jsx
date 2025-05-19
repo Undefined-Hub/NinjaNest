@@ -12,7 +12,7 @@ const PropertyCard = ({ property }) => {
         {/* Image Div */}
       <div className="w-[21rem] md:w-full h-40 relative">
         <img
-          src={property.images[0] || "https://placehold.co/1000"}
+          src={property.mainImage || "https://placehold.co/1000"}
           className="object-cover w-full h-full"
           alt={property.title}
         />
