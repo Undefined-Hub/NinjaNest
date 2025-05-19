@@ -10,14 +10,14 @@ const fetchUser = async (req, res) => {
       return res.status(400).json({ message: "User doesn't exist" });
     }
     // ! Remove password field before sending the response
-    const { password, createdAt, updatedAt, __v, ...userWithoutPassword } = userExists.toObject();
-    res.status(200).json({ user: userWithoutPassword});
+    const { password, createdAt, updatedAt, __v, ...userWithoutPassword } =
+      userExists.toObject();
+    res.status(200).json({ user: userWithoutPassword });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 
 // ! Update user details
 const updateUser = async (req, res) => {
@@ -26,7 +26,7 @@ const updateUser = async (req, res) => {
   try {
     // ! Prevent users from updating email & username
     const { email, username, ...updateData } = req.body;
-    
+
     const user = await User.findOneAndUpdate(
       { _id: id },
       updateData, // ! Only update allowed fields
@@ -36,7 +36,7 @@ const updateUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    
+
     // ! Password hash should not be sent in response
     user.password = undefined;
 

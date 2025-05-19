@@ -55,14 +55,43 @@ const createProperty = async (req, res, next) => {
 };
 
 // ! Fetch all properties
+// ! Fetch all properties with pagination
 const getProperties = async (req, res, next) => {
   try {
-    const properties = await Property.find()
-      .populate("landlord_id", "name -_id profilePicture trustScore");
-    if (properties.length === 0) {
+    // Get pagination parameters from query string
+    const page = parseInt(req.query.page) || 1; // Current page (default: 1)
+    const limit = parseInt(req.query.limit) || 10; // Items per page (default: 10)
+
+    // Calculate skip value (how many documents to skip)
+    const skip = (page - 1) * limit;
+
+    // Get total count for pagination metadata
+    const totalCount = await Property.countDocuments();
+
+    if (totalCount === 0) {
       return res.status(404).json({ message: "No properties found" });
     }
-    res.status(200).json({ properties });
+
+    // Fetch properties with pagination
+    const properties = await Property.find()
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 }); // Sort by newest first
+
+    // Calculate pagination metadata
+    const totalPages = Math.ceil(totalCount / limit);
+
+    res.status(200).json({
+      properties,
+      pagination: {
+        totalCount,
+        totalPages,
+        currentPage: page,
+        limit,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    });
   } catch (error) {
     next(error);
   }

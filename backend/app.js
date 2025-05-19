@@ -46,9 +46,8 @@ app.use("/api/rents", rentRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/request", requestRoutes);
 
-const matcherRoutes = require('./roommateMatcher/matcherRoutes');
-app.use('/api/roommates', matcherRoutes);
-
+const matcherRoutes = require("./roommateMatcher/matcherRoutes");
+app.use("/api/roommates", matcherRoutes);
 
 // Error handling middleware
 const { errorHandler } = require("./src/middlewares/errorHandler");

@@ -1,93 +1,111 @@
-const Request = require('../models/Requests');
+const Request = require("../models/Requests");
 
 // Create a new request
 exports.createRequest = async (req, res) => {
-    try {
-        const request = new Request(req.body);
+  try {
+    const request = new Request(req.body);
 
-        // Validate requestedPrice structure if provided
-        if (req.body.requestedPrice) {
-            const { min, max, fixed } = req.body.requestedPrice;
-            if (
-                (min != null && max != null && fixed == null) || // Range
-                (fixed != null && min == null && max == null) || // Fixed
-                (min == null && max == null && fixed == null)    // None
-            ) {
-                // Valid structure
-            } else {
-                return res.status(400).json({ error: 'Invalid requestedPrice: Provide either a range (min and max) or a fixed price.' });
-            }
-        }
-
-        const savedRequest = await request.save();
-        res.status(201).json(savedRequest);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+    // Validate requestedPrice structure if provided
+    if (req.body.requestedPrice) {
+      const { min, max, fixed } = req.body.requestedPrice;
+      if (
+        (min != null && max != null && fixed == null) || // Range
+        (fixed != null && min == null && max == null) || // Fixed
+        (min == null && max == null && fixed == null) // None
+      ) {
+        // Valid structure
+      } else {
+        return res
+          .status(400)
+          .json({
+            error:
+              "Invalid requestedPrice: Provide either a range (min and max) or a fixed price.",
+          });
+      }
     }
+
+    const savedRequest = await request.save();
+    res.status(201).json(savedRequest);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
 // Get all requests
 exports.getAllRequests = async (req, res) => {
-    try {
-        const requests = await Request.find().populate('requestorId ownerId propertyId');
-        res.status(200).json(requests);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+  try {
+    const requests = await Request.find().populate(
+      "requestorId ownerId propertyId"
+    );
+    res.status(200).json(requests);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
 // Get a single request by ID
 exports.getRequestById = async (req, res) => {
-    try {
-        const request = await Request.findById(req.params.id).populate('requestorId ownerId propertyId');
-        if (!request) {
-            return res.status(404).json({ error: 'Request not found' });
-        }
-        res.status(200).json(request);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+  try {
+    const request = await Request.findById(req.params.id).populate(
+      "requestorId ownerId propertyId"
+    );
+    if (!request) {
+      return res.status(404).json({ error: "Request not found" });
     }
+    res.status(200).json(request);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
 // Update a request by ID
 exports.updateRequest = async (req, res) => {
-    try {
-        // Validate requestedPrice structure if provided
-        if (req.body.requestedPrice) {
-            const { min, max, fixed } = req.body.requestedPrice;
-            if (
-                (min != null && max != null && fixed == null) || // Range
-                (fixed != null && min == null && max == null) || // Fixed
-                (min == null && max == null && fixed == null)    // None
-            ) {
-                // Valid structure
-            } else {
-                return res.status(400).json({ error: 'Invalid requestedPrice: Provide either a range (min and max) or a fixed price.' });
-            }
-        }
-
-        const updatedRequest = await Request.findByIdAndUpdate(req.params.id, req.body, {
-            new: true,
-            runValidators: true,
-        });
-        if (!updatedRequest) {
-            return res.status(404).json({ error: 'Request not found' });
-        }
-        res.status(200).json(updatedRequest);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+  try {
+    // Validate requestedPrice structure if provided
+    if (req.body.requestedPrice) {
+      const { min, max, fixed } = req.body.requestedPrice;
+      if (
+        (min != null && max != null && fixed == null) || // Range
+        (fixed != null && min == null && max == null) || // Fixed
+        (min == null && max == null && fixed == null) // None
+      ) {
+        // Valid structure
+      } else {
+        return res
+          .status(400)
+          .json({
+            error:
+              "Invalid requestedPrice: Provide either a range (min and max) or a fixed price.",
+          });
+      }
     }
+
+    const updatedRequest = await Request.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+    if (!updatedRequest) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+    res.status(200).json(updatedRequest);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
 // Delete a request by ID
 exports.deleteRequest = async (req, res) => {
-    try {
-        const deletedRequest = await Request.findByIdAndDelete(req.params.id);
-        if (!deletedRequest) {
-            return res.status(404).json({ error: 'Request not found' });
-        }
-        res.status(200).json({ message: 'Request deleted successfully' });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+  try {
+    const deletedRequest = await Request.findByIdAndDelete(req.params.id);
+    if (!deletedRequest) {
+      return res.status(404).json({ error: "Request not found" });
     }
+    res.status(200).json({ message: "Request deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
