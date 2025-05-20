@@ -56,41 +56,77 @@ const CurrentRental = ({ propertyId }) => {
 
 
     const createBookingRequest = async () => {
-        try {
-           
-            console.log("Property : ");
-            console.log(property);
-            const response = await axios.post(`http://localhost:3000/api/booking/bookings`,{
-                    property_id: propertyId,
-                    user_id: user.user._id,
-                    landlord_id: property.landlord_id._id,
-                    moveInDate: new Date().toISOString(),
-                    durationMonths: 12,
-                    occupants: 1,
-                    rentAmount: property.rent,
-                    depositAmount: property.deposit,
-                    paymentStatus: "completed",
-                    bookingStatus: "completed",
-                    paymentMethod: "UPI",
-                    transaction_id: localStorage.getItem('lastTxnId'),
-                    contract_url: null,
-                    verificationStatus: "not_verified",
-                    cancellationReason: null,
-                    bookingDate: new Date().toISOString(),
+    try {
+        console.log("Property : ");
+        console.log(property);
+
+        const bookingResponse = await axios.post(
+            `http://localhost:3000/api/booking/bookings`,
+            {
+                property_id: propertyId,
+                user_id: user.user._id,
+                landlord_id: property.landlord_id._id,
+                moveInDate: new Date().toISOString(),
+                durationMonths: 12,
+                occupants: 1,
+                rentAmount: property.rent,
+                depositAmount: property.deposit,
+                paymentStatus: "completed",
+                bookingStatus: "completed",
+                paymentMethod: "UPI",
+                transaction_id: localStorage.getItem('lastTxnId'),
+                contract_url: null,
+                verificationStatus: "not_verified",
+                cancellationReason: null,
+                bookingDate: new Date().toISOString(),
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },
-                {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    },
-                }
-            );
-            // toast.success('Booking request sent successfully!');
-            console.log('Booking request response:', response.data);
-        } catch (error) {
-            console.error('Failed to send booking request:', error.response?.data || error.message);
-            toast.error('Failed to send booking request.');
-        }
-    };
+            }
+        );
+
+        // Extract booking_id from response
+        const booking = bookingResponse.data.booking || bookingResponse.data; // adjust as per your API
+        const booking_id = booking._id;
+
+        // Prepare month rent data
+        const monthRentPayload = {
+            booking_id: booking_id,
+            property_id: propertyId,
+            user_id: user.user._id,
+            landlord_id: property.landlord_id._id,
+            month: new Date().toISOString().slice(0, 7), // e.g. "2025-03"
+            due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // or set to your logic
+            amount_due: property.rent,
+            amount_paid: property.rent,
+            payment_status: "paid",
+            payment_method: "UPI",
+            transaction_id: localStorage.getItem('lastTxnId'),
+            late_fee: 0,
+            remarks: "Rent paid via PhonePe"
+        };
+
+        // Call MonthRent API
+        const rentResponse = await axios.post(
+            `http://localhost:3000/api/rents/`,
+            monthRentPayload,
+            {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            }
+        );
+
+        toast.success('Booking and rent recorded successfully!');
+        console.log('Month rent response:', rentResponse.data);
+
+    } catch (error) {
+        console.error('Failed to send booking or rent request:', error.response?.data || error.message);
+        toast.error('Failed to send booking or rent request.');
+    }
+};
 
     useEffect(() => {
         const txnId = localStorage.getItem('lastTxnId');
@@ -227,7 +263,7 @@ const CurrentRental = ({ propertyId }) => {
                             onClick={handlePayRent}
                             className='bg-white text-black w-full py-2 rounded-lg font-semibold hover:cursor-pointer hover:bg-slate-100'
                         >
-                            Pay Rent
+                            Pay Deposit
                         </button>
                     </div>
                 </div>
