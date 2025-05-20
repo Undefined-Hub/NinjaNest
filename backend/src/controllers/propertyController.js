@@ -278,6 +278,103 @@ const deleteProperty = async (req, res, next) => {
   }
 };
 
+/**
+ * Add a member to roomDetails.members array
+ * Expects: req.params.id (propertyId), req.body.userId (user to add)
+ */
+const addRoomMember = async (req, res, next) => {
+  try {
+    const propertyId = req.params.id;
+    const { userId } = req.body;
+
+    const property = await Property.findById(propertyId);
+    if (!property) {
+      return res.status(404).json({ message: "Property not found" });
+    }
+    if (property.propertyType !== "Room") {
+      return res.status(400).json({ message: "Members can only be added to Room type properties" });
+    }
+    if (!property.roomDetails) {
+      property.roomDetails = { members: [] };
+    }
+    if (!property.roomDetails.members) {
+      property.roomDetails.members = [];
+    }
+    if (property.roomDetails.members.includes(userId)) {
+      return res.status(400).json({ message: "User already a member" });
+    }
+    
+    property.roomDetails.members.push(userId);
+    property.roomDetails.occupiedBeds = (property.roomDetails.occupiedBeds || 0) + 1;
+    await property.save();
+    res.status(200).json({ message: "Member added", property });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Remove a member from roomDetails.members array
+ * Expects: req.params.id (propertyId), req.body.userId (user to remove)
+ */
+const removeRoomMember = async (req, res, next) => {
+  try {
+    const propertyId = req.params.id;
+    const { userId } = req.body;
+
+    const property = await Property.findById(propertyId);
+    if (!property) {
+      return res.status(404).json({ message: "Property not found" });
+    }
+    if (property.propertyType !== "Room") {
+      return res.status(400).json({ message: "Members can only be removed from Room type properties" });
+    }
+    if (!property.roomDetails || !property.roomDetails.members) {
+      return res.status(400).json({ message: "No members to remove" });
+    }
+    const idx = property.roomDetails.members.indexOf(userId);
+    if (idx === -1) {
+      return res.status(404).json({ message: "User not a member" });
+    }
+    property.roomDetails.members.splice(idx, 1);
+    property.roomDetails.occupiedBeds = Math.max((property.roomDetails.occupiedBeds || 1) - 1, 0);
+    await property.save();
+    res.status(200).json({ message: "Member removed", property });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Update roomDetails (beds, occupiedBeds) for a property
+ * Expects: req.params.id (propertyId), req.body.roomDetails (object)
+ */
+const updateRoomDetails = async (req, res, next) => {
+  try {
+    const propertyId = req.params.id;
+    const { roomDetails } = req.body;
+
+    const property = await Property.findById(propertyId);
+    if (!property) {
+      return res.status(404).json({ message: "Property not found" });
+    }
+    if (property.propertyType !== "Room") {
+      return res.status(400).json({ message: "Room details can only be updated for Room type properties" });
+    }
+    if (!roomDetails) {
+      return res.status(400).json({ message: "roomDetails required" });
+    }
+    // Only update allowed fields
+    if (roomDetails.beds !== undefined) property.roomDetails.beds = roomDetails.beds;
+    if (roomDetails.occupiedBeds !== undefined) property.roomDetails.occupiedBeds = roomDetails.occupiedBeds;
+    await property.save();
+    res.status(200).json({ message: "Room details updated", property });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 module.exports = {
   createProperty,
   getProperties,
@@ -285,4 +382,7 @@ module.exports = {
   updateProperty,
   deleteProperty,
   getPropertiesByLandlordId,
+  addRoomMember,
+  removeRoomMember,
+  updateRoomDetails
 };

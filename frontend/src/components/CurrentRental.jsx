@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+
 import { useNavigate } from 'react-router-dom';
 import house1 from '../assets/house1.jpg'
 import { useSelector } from 'react-redux' // Assuming you have a custom hook for Redux selector
+import toast from 'react-hot-toast';
 
 const CurrentRental = ({ propertyId }) => {
     const [property, setProperty] = useState(null);
+    
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
@@ -19,7 +22,9 @@ const CurrentRental = ({ propertyId }) => {
                     },
                 });
                 setProperty(response.data.property);
+                
                 setLoading(false);
+
             } catch (err) {
                 console.error('Error fetching property:', err);
                 setError('Failed to load property details.');
@@ -27,21 +32,104 @@ const CurrentRental = ({ propertyId }) => {
             }
         };
 
-        fetchProperty();
+       fetchProperty();
+      
     }, [propertyId]);
+    const addMemberToProperty = async () => {
+        try {
+            await axios.post(`http://localhost:3000/api/property/members/${propertyId}/`, {
+                userId: user.user._id
+            }, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                }
+            });
+            toast.success('You have been added as a member!');
+        } catch {
+            toast.error('Failed to update property membership.');
+        }
+    };
+    
 
+    
+
+
+
+    const createBookingRequest = async () => {
+        try {
+           
+            console.log("Property : ");
+            console.log(property);
+            const response = await axios.post(`http://localhost:3000/api/booking/bookings`,{
+                    property_id: propertyId,
+                    user_id: user.user._id,
+                    landlord_id: property.landlord_id._id,
+                    moveInDate: new Date().toISOString(),
+                    durationMonths: 12,
+                    occupants: 1,
+                    rentAmount: property.rent,
+                    depositAmount: property.deposit,
+                    paymentStatus: "completed",
+                    bookingStatus: "completed",
+                    paymentMethod: "UPI",
+                    transaction_id: localStorage.getItem('lastTxnId'),
+                    contract_url: null,
+                    verificationStatus: "not_verified",
+                    cancellationReason: null,
+                    bookingDate: new Date().toISOString(),
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                }
+            );
+            // toast.success('Booking request sent successfully!');
+            console.log('Booking request response:', response.data);
+        } catch (error) {
+            console.error('Failed to send booking request:', error.response?.data || error.message);
+            toast.error('Failed to send booking request.');
+        }
+    };
+
+    useEffect(() => {
+        const txnId = localStorage.getItem('lastTxnId');
+        if (txnId && property) {
+            axios.get(`http://localhost:3000/api/payment/status/${txnId}`)
+                .then(res => {
+                    console.log('Payment Status:', res);
+                    if (res.data.paymentDetails[0].state == "COMPLETED") {
+                        toast.success('Payment successful!');
+                        addMemberToProperty();
+                        createBookingRequest();
+                        localStorage.removeItem('lastTxnId');
+                    } else {
+                        alert('Payment failed or pending.');
+                    }
+                })
+                .catch(err => {
+                    alert('Could not verify payment status.');
+                });
+        }
+    }, [property])
     const handlePayRent = async () => {
         try {
-            // Send a request to the backend to initiate the payment
-            const response = await axios.post('http://localhost:3000/api/payment/initiate', {
-                user_id: user.user._id, // Assuming user ID is stored in localStorage
-                price: property.rent, // Rent amount
-                phone: '9876543210', // Replace with the user's phone number
-                name: property.title, // Property name
-                redirectUrl: 'http://localhost:3000/dashboard', // Redirect back to dashboard after payment
-            });
 
-            // Redirect the user to the payment gateway URL
+            const response = await axios.post('http://localhost:3000/api/payment/initiate', {
+                user_id: user.user._id,
+                price: property.rent,
+                phone: '9876543210',
+                name: property.title,
+
+                // No need to send redirectUrl if your backend uses a fixed one
+            });
+            alert('Payment Response:', response.data.orderId);
+            // Save transaction ID for status check after redirect
+            if (response.data.txnId) {
+                localStorage.setItem('lastTxnId', response.data.txnId);
+            }
+
+            // Redirect to PhonePe payment gateway
             if (response.data.redirectUrl) {
                 window.location.href = response.data.redirectUrl;
             } else {
