@@ -4,6 +4,8 @@ import axios from 'axios';
 import { fetchUser } from '../features/User/userSlice';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
+import { FiLogIn, FiLogOut } from "react-icons/fi";
+
 const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 import { toast } from 'react-hot-toast';
 const AuthPage = () => {
@@ -12,6 +14,21 @@ const AuthPage = () => {
         const mode = urlParams.get('mode');
         return mode === 'signin' ? true : mode === 'signup' ? false : true;
     });
+
+
+    useEffect(() => {
+  const expired = sessionStorage.getItem("sessionExpired");
+  console.log("sessionExpired value:", expired);
+
+  if (expired === "true") {
+    toast.error("Session expired. Please log in again.");
+
+    // Delay removal slightly to ensure toast appears
+    setTimeout(() => {
+      sessionStorage.removeItem("sessionExpired");
+    }, 100); // 100ms is usually enough
+  }
+}, []);
 
     const [signupData, setSignupData] = useState({ fullName: '', username: '', email: '', password: '' });
     const [loginData, setLoginData] = useState({ email: '', password: '' });
@@ -40,21 +57,37 @@ const AuthPage = () => {
         e.preventDefault();
       
         if (auth) {
-          const toastId = toast.loading('Logging in...');
-          try {
-            const response = await axios.post(`${SERVER_URL}/auth/login`, loginData);
-      
-            toast.success('Logged in successfully!', { id: toastId });
-      
-            localStorage.setItem('token', response.data.accessToken);
-            if (error) console.log('Error fetching user details :- ' + error);
-            dispatch(fetchUser(response.data.user.username));
-            navigate('/dashboard');
-          } catch (error) {
-            toast.error('Login failed! Please try again.', { id: toastId });
-            console.error('Error logging in NinjaNest:', error);
-          }
-        } else {
+            const toastId = toast.loading('Logging in...');
+            try {
+                const response = await axios.post(`${SERVER_URL}/auth/login`, loginData);
+
+               toast.success('Welcome back!', {
+                id: toastId,
+  
+                });
+
+                localStorage.setItem('token', response.data.accessToken);
+
+                const redirectTo = sessionStorage.getItem("redirectAfterLogin");
+                sessionStorage.removeItem("redirectAfterLogin");
+
+                // ✅ Wait for user to be fetched and set in Redux
+                const fetchResult = await dispatch(fetchUser(response.data.user.username));
+
+                if (fetchResult.meta.requestStatus === "fulfilled") {
+                // ✅ Optional small delay to allow Redux to propagate state (prevent race)
+                setTimeout(() => {
+                    navigate(redirectTo || "/dashboard", { replace: true });
+                }, 200); // 200ms delay
+                } else {
+                toast.error("Failed to load user data. Try again.");
+                }
+
+            } catch (error) {
+                toast.error('Login failed! Please try again.', { id: toastId });
+                console.error('Error logging in NinjaNest:', error);
+            }
+        }else {
           const toastId = toast.loading('Creating account...');
           try {
             const response = await axios.post(`${SERVER_URL}/auth/register`, {

@@ -19,7 +19,7 @@ import { MapContainer, TileLayer, Marker, Popup, LayersControl } from 'react-lea
 const { BaseLayer } = LayersControl;
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-
+import api from "../api/axiosInstance";
 // Fix default icon issue
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -87,7 +87,7 @@ const DetailsPage = () => {
         window.scrollTo(0, 0);
         const fetchProperty = async () => {
             try {
-                const response = await axios.get(`http://localhost:3000/api/property/${propertyId}`, {
+                const response = await api.get(`/property/${propertyId}`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`
                     }

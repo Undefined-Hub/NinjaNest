@@ -61,14 +61,19 @@ export const userSlice = createSlice({
         user: {},
         loading: false,
         error: false,
+        isHydrated: false,  // <- NEW
     },
     reducers: {
         logoutUser: (state) => {
             state.user = {};
             state.loading = false;
             state.error = false;
+            state.isHydrated = false;  // <- Reset isHydrated on logout
             localStorage.removeItem("token");
         },
+          setHydrated: (state) => {
+            state.isHydrated = true;
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -78,10 +83,12 @@ export const userSlice = createSlice({
             .addCase(fetchUser.fulfilled, (state, action) => {
                 state.user = action.payload;
                 state.loading = false;
+                state.isHydrated = true;  // <- Set isHydrated to true when user data is fetched
             })
             .addCase(fetchUser.rejected, (state, action) => {
                 state.error = action.error.message;
                 state.loading = false;
+                state.isHydrated = true;  // <- Set isHydrated to true even if there's an error
             })
             .addCase(postUser.pending, (state) => {
                 state.loading = true;
@@ -119,7 +126,7 @@ export const userSlice = createSlice({
     },
 });
 
-export const { logoutUser } = userSlice.actions;
+export const { logoutUser, setHydrated } = userSlice.actions;
 
 export default userSlice.reducer;
 export const {} = userSlice.actions;

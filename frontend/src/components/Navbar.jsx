@@ -70,10 +70,27 @@ const Navbar = () => {
     const dispatch = useDispatch();
 
     const handleLogout = () => {
+  // Set logout flag BEFORE dispatch
+        sessionStorage.setItem("isLoggingOut", "true");
+
         dispatch(logoutUser());
-        toast.success('Logged out successfully!');
-        navigate('/'); // or navigate('/login') based on your routing logic
-      };
+       const toastId = toast.loading('Logging out...');
+     
+             setTimeout(() => {
+                 toast.success('You’ve been logged out.', {
+                     id: toastId,
+                    //  icon: <FiLogOut className='text-red-500 font-bold text-lg' />,
+                 });
+             }, 200);
+
+        // Delay navigation to allow PrivateRoute to check isLoggingOut
+        setTimeout(() => {
+            sessionStorage.removeItem("redirectAfterLogin");
+            sessionStorage.removeItem("isLoggingOut");
+            navigate('/');
+        }, 100); // even 50ms might work, but 100ms is safer
+        };
+
 
     return (
         <header className="bg-main-bg border-b border-secondary-text/30 flex justify-between items-center text-primary-text p-3 md:px-16 relative z-50">

@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import house1 from '../assets/house1.jpg'
 import { useSelector } from 'react-redux' // Assuming you have a custom hook for Redux selector
+
 const CurrentRental = ({ propertyId }) => {
     const [property, setProperty] = useState(null);
     const [loading, setLoading] = useState(true);

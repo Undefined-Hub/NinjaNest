@@ -23,6 +23,8 @@ import { useLocation } from 'react-router-dom';
 import { FiCamera } from "react-icons/fi";
 import { FiEdit } from "react-icons/fi";
 import { FiUser,FiSave,FiRefreshCw } from "react-icons/fi";
+import api from "../api/axiosInstance";
+import { IoLogOut } from "react-icons/io5";
 
 import roommate from '/images/roommate.svg'
 import payment from '/images/payment.svg'
@@ -47,11 +49,29 @@ const Dashboard = () => {
     }, []);
 
 
-    const handleLogout = () => {
-        dispatch(logoutUser());
-        toast.success('Logged out successfully!');
-        navigate('/'); // or navigate('/login') based on your routing logic
-    };
+  const handleLogout = () => {
+  // Set logout flag BEFORE dispatch
+  sessionStorage.setItem("isLoggingOut", "true");
+
+  dispatch(logoutUser());
+        // Show loading toast first
+        const toastId = toast.loading('Logging out...');
+
+        setTimeout(() => {
+            toast.success('You’ve been logged out.', {
+                id: toastId,
+                // icon: <FiLogOut className='text-red-500 font-bold text-lg' />,
+            });
+        }, 200);
+  // Delay navigation to allow PrivateRoute to check isLoggingOut
+  setTimeout(() => {
+    sessionStorage.removeItem("redirectAfterLogin");
+    sessionStorage.removeItem("isLoggingOut");
+    navigate('/');
+  }, 500); // even 50ms might work, but 100ms is safer
+};
+
+
 
     const [activeTab, setActiveTab] = useState('Overview') // State to hold the active tab
      useEffect(() => {
@@ -543,10 +563,9 @@ const MyProperties = () => {
     useEffect(() => {
         const fetchProperties = async () => {
             try {
-                const response = await axios.get('http://localhost:3000/api/property/landlord/allproperty', {
+                const response = await api.get('/property/landlord/allproperty', {
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`,
                     },
                 }
                 );
@@ -676,11 +695,7 @@ const Profile = () => {
         const fetchUserDetails = async () => {
              const username =  user?.user?.username;
             try {
-                const response = await axios.get(`http://localhost:3000/api/user/getUser/${username}`, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    },
-                });
+                const response = await api.get(`/user/getUser/${username}`);
                 const userData = response.data.user;
                 methods.reset({
                     name: userData.name || "",
