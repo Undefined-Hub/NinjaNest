@@ -162,7 +162,7 @@ const CurrentRental = ({ propertyId }) => {
                             await addMemberToProperty();
                             await createBookingRequest();
                         } else {
-                            alert('else Executed')
+                           
                             // Deposit already paid, so this is a rent payment
                             // Find month rent for this booking where payment_status is not "paid"
                             const monthRentRes = await axios.get(
@@ -242,7 +242,7 @@ const CurrentRental = ({ propertyId }) => {
 
                 // No need to send redirectUrl if your backend uses a fixed one
             });
-            alert('Payment Initiated. Please complete the payment on PhonePe.');
+            // alert('Payment Initiated. Please complete the payment on PhonePe.');
             // Save transaction ID for status check after redirect
             if (response.data.txnId) {
                 localStorage.setItem('lastTxnId', response.data.txnId);
@@ -276,51 +276,54 @@ const CurrentRental = ({ propertyId }) => {
     console.log(property);
     return (
         <>
-
             <div className='w-full bg-sub-bg rounded-xl p-5'>
                 <div className='flex justify-between'>
                     <p className='text-white text-lg font-bold'>Current Property</p>
                     <p className='text-tertiary-text text-base font-semibold hover:cursor-pointer hover:underline'
-                        // TODO: Change this to navigate to the property details page of active property
                         onClick={() => navigate(`/currentpropertydashboard/${property._id}`)}>View Details</p>
                 </div>
                 <div className='flex flex-col md:flex-row gap-3 mt-3'>
                     <div className='flex flex-col w-full md:w-1/2 gap-4'>
                         <img src={property.mainImage || 'https://placehold.co/300x200'}
                             alt={property.title} className='w-full max-h-[16.6rem]  object-cover rounded-xl' />
-
                     </div>
                     <div className='flex flex-col space-y-2 w-full md:w-1/2'>
                         <p className='text-white text-lg font-semibold'>{property.title}</p>
                         <p className='text-secondary-text font-semibold text-base'>{property.location} 1.2 Kilometers away from D. Y. Patil College {property.address}</p>
                         <div className='grid grid-cols-2 gap-3'>
                             <div className='flex flex-col bg-cards-bg rounded-xl p-2'>
-                                <p className='text-secondary-text text-base font-semibold'>Room Type</p>
-                                <p className='text-white text-base font-semibold'>{property.flatType}</p>
+                                <p className='text-secondary-text text-base font-semibold'>{property.flatType?"Room Type":"Deposit"}</p>
+                                <p className='text-white text-base font-semibold'>{property.flatType?property.flatType:"₹"+property.deposit?.toLocaleString('en-IN')}</p>
                             </div>
                             <div className='flex flex-col bg-cards-bg rounded-xl p-2'>
                                 <p className='text-secondary-text text-base font-semibold'>Rent</p>
-                                <p className='text-white text-base font-semibold'>₹{property.rent}</p>
+                                <p className='text-white text-base font-semibold'>₹{property.rent?.toLocaleString('en-IN')}</p>
                             </div>
                             <div>
-
                             </div>
-
                         </div>
                         {!depositPaid && (
                             <button
-                                onClick={() => { handlePayRent('deposit'); }}
+                                onClick={async () => {
+                                    await handlePayRent('deposit');
+                                    setDepositPaid(true); // Optimistically update UI
+                                }}
                                 className='bg-white text-black w-full py-2 rounded-lg font-semibold hover:cursor-pointer hover:bg-slate-100'
                             >
                                 Pay Deposit
                             </button>
                         )}
-                        {depositPaid && (<button
-                            onClick={() => { handlePayRent('rent'); }}
-                            className='bg-white text-black w-full py-2 rounded-lg font-semibold hover:cursor-pointer hover:bg-slate-100'
-                        >
-                            Pay Rent
-                        </button>)}
+                        {depositPaid && (
+                            <button
+                                onClick={async () => {
+                                    await handlePayRent('rent');
+                                    // Optionally, you can update state here if you want to reflect rent payment
+                                }}
+                                className='bg-white text-black w-full py-2 rounded-lg font-semibold hover:cursor-pointer hover:bg-slate-100'
+                            >
+                                Pay Rent
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
