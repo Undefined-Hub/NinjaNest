@@ -8,7 +8,10 @@ const {
   getProperty,
   updateProperty,
   deleteProperty,
-  getPropertiesByLandlordId,addRoomMember,removeRoomMember,updateRoomDetails,
+  getPropertiesByLandlordId,
+  addRoomMember,
+  removeRoomMember,
+  updateRoomDetails,
 } = require("../controllers/propertyController");
 
 router.post("/", authMiddleware(), createProperty); // Create a new property
@@ -27,10 +30,10 @@ router.get(
   getPropertiesByLandlordId
 ); // Fetch all properties of a landlord
 
-router.post("/members/:id", authMiddleware(),addRoomMember );
+router.post("/members/:id", authMiddleware(), addRoomMember);
 
-router.delete("/members/:id", authMiddleware(),removeRoomMember);
+router.delete("/members/:id", authMiddleware(), removeRoomMember);
 
-router.put("/roomdetails/:id",authMiddleware(),updateRoomDetails);
+router.put("/roomdetails/:id", authMiddleware(), updateRoomDetails);
 // Fetch a single property
 module.exports = router;
