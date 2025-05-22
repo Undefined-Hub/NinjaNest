@@ -57,6 +57,7 @@ const DetailsPage = () => {
             ownerId: propertyData?.landlord_id._id,
             requestorId: user.user?._id,
             status: 'Pending',
+            requestType: 'Rent Request',
             message: `${user.user?.name} is interested to rent this property`,
         };
 

@@ -16,6 +16,11 @@ const RequestSchema = new mongoose.Schema({
         ref: 'Property',
         required: true,
     },
+    requestType: {
+        type: String,
+        enum: ['Rent Request', 'Leave Request', 'Maintenance Request'],
+        required: true,
+    },
     requestorName: {
         type: String,
         required: true,
