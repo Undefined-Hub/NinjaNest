@@ -5,6 +5,7 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const {
   initiatePayment,
   checkPayment,
+  getPaymentHistory
 } = require("../controllers/paymentController");
 
 router.post("/initiate",  initiatePayment); // Create a new property

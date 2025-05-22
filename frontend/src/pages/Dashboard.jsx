@@ -23,7 +23,6 @@ import { useLocation } from 'react-router-dom';
 import { FiCamera } from "react-icons/fi";
 import { FiEdit } from "react-icons/fi";
 import { FiUser, FiSave, FiRefreshCw } from "react-icons/fi";
-import { FiUser, FiSave, FiRefreshCw } from "react-icons/fi";
 import api from "../api/axiosInstance";
 import { IoLogOut } from "react-icons/io5";
 import roommate from '/images/roommate.svg'

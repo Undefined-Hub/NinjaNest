@@ -83,6 +83,7 @@ exports.createInvitation = async (req, res) => {
 };
 
 // Accept an invitation
+// Accept an invitation
 exports.acceptInvitation = async (req, res) => {
   try {
     const { invitationId } = req.params;
@@ -114,37 +115,6 @@ exports.acceptInvitation = async (req, res) => {
     invitation.status = "accepted";
     await invitation.save();
 
-    // Just use the damn findByIdAndUpdate with $push directly
-    // This should work unless your schema is weird
-    await Property.findByIdAndUpdate(
-      invitation.propertyId._id,
-      [
-        {
-          $set: {
-            "roomDetails.members": {
-              $cond: {
-                if: { $isArray: "$roomDetails.members" },
-                then: {
-                  $concatArrays: [
-                    "$roomDetails.members",
-                    [invitation.inviteeId._id],
-                  ],
-                },
-                else: [invitation.inviteeId._id],
-              },
-            },
-          },
-        },
-      ],
-      { new: true }
-    );
-
-    console.log("Property updated with new member:", await Property.findById(invitation.propertyId._id));
-
-    // Update the invitee's currentRental
-    await User.findByIdAndUpdate(invitation.inviteeId._id, {
-      currentRental: invitation.propertyId._id,
-    });
 
     // Redirect to success page
     res.redirect(
@@ -155,7 +125,6 @@ exports.acceptInvitation = async (req, res) => {
     res.status(500).json({ message: "Failed to process invitation" });
   }
 };
-
 // Decline an invitation
 exports.declineInvitation = async (req, res) => {
   try {
