@@ -25,10 +25,6 @@ import { FiEdit } from "react-icons/fi";
 import { FiUser, FiSave, FiRefreshCw } from "react-icons/fi";
 import api from "../api/axiosInstance";
 import { IoLogOut } from "react-icons/io5";
-// In your imports section, add:
-import PaymentHistorySection from '../components/PaymentHistorySection';
-
-
 import roommate from '/images/roommate.svg'
 import payment from '/images/payment.svg'
 import profile from '/images/profile.svg'
@@ -184,15 +180,15 @@ const Dashboard = () => {
                         }
                     }
                 }
-                    setDashboardLoading(false);
-                } catch (err) {
-                    console.error('Error fetching dashboard data:', err);
-                    setDashboardLoading(false);
-                }
-            };
+                setDashboardLoading(false);
+            } catch (err) {
+                console.error('Error fetching dashboard data:', err);
+                setDashboardLoading(false);
+            }
+        };
 
-            fetchDashboardData();
-        }, [user?.user?.currentRental]);
+        fetchDashboardData();
+    }, [user?.user?.currentRental]);
     return (
         <>
             <div className='flex justify-center items-center bg-main-bg p-3'> {/* Main container for profile page */}
@@ -357,20 +353,15 @@ const Dashboard = () => {
 
 
                     {activeTab === 'Payment' &&
-                        <div className='flex flex-col max-h-[82vh] overflow-y-scroll space-y-4 w-4/5'>
-                            {/* <img
+                        <div className='flex flex-col items-center justify-center h-[64vh] space-y-4 w-4/5'>
+                            <img
                                 src={payment} // Replace with your illustration URL
                                 alt='No Payment History'
                                 className='w-1/2 h-auto'
                             />
                             <p className='text-secondary-text text-lg font-semibold text-center'>
                                 No payment history is available yet. <br />Stay tuned for updates or make your first payment!
-                            </p> */}
-                            <PaymentHistorySection 
-                                userId={user?._id}
-                                mode="user"
-                                title="My Payment History"
-                            />
+                            </p>
                         </div>
                     }
 
@@ -699,14 +690,48 @@ const Roommates = () => {
 
     // Fetch current roommates on component mount
     useEffect(() => {
-        // Simulating API call to fetch roommates
-        // Replace with actual API call when ready
-        setTimeout(() => {
-            // Example data - replace with real data from API
-            setCurrentRoommates([]);
-            setLoading(false);
-        }, 1000);
-    }, []);
+        const fetchRoommates = async () => {
+            try {
+                // First check if user has a current rental
+                if (!currentUser?.user?.currentRental) {
+                    setCurrentRoommates([]);
+                    setLoading(false);
+                    return;
+                }
+
+                // Fetch property details with populated roommates
+                const propertyResponse = await axios.get(
+                    `http://localhost:3000/api/property/${currentUser.user.currentRental}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem('token')}`
+                        }
+                    }
+                );
+
+                const property = propertyResponse.data.property;
+
+                // Check if property has roomDetails.members
+                if (property && property.roomDetails && Array.isArray(property.roomDetails.members)) {
+                    // Filter out current user from roommates list
+                    const roommates = property.roomDetails.members.filter(
+                        member => member._id !== currentUser.user._id
+                    );
+
+                    setCurrentRoommates(roommates);
+                } else {
+                    setCurrentRoommates([]);
+                }
+            } catch (error) {
+                console.error('Error fetching roommates:', error);
+                setCurrentRoommates([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchRoommates();
+    }, [currentUser?.user?._id, currentUser?.user?.currentRental]);
 
     useEffect(() => {
         const fetchInvitations = async () => {
