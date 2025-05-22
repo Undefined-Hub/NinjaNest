@@ -6,7 +6,7 @@ require('dotenv').config();
 const initiatePayment = async (req, res) => {
     try {
         console.log('Request Body:', req.body);
-        const { user_id, price, phone, name } = req.body;
+        const { user_id, price, phone, name, property_id } = req.body;
         // Step 1: Get access token
         const tokenResponse = await axios.post(
             'https://api-preprod.phonepe.com/apis/pg-sandbox/v1/oauth/token',
@@ -35,7 +35,7 @@ const initiatePayment = async (req, res) => {
                 type: "PG_CHECKOUT",
                 message: "Payment message used for collect requests",
                 merchantUrls: {
-                    redirectUrl: "http://localhost:5173/dashboard",
+                    redirectUrl: "http://localhost:5173/currentpropertydashboard/"+property_id,
                 },
             },
         };

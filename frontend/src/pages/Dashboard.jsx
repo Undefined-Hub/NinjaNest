@@ -94,6 +94,65 @@ const Dashboard = () => {
     let navigate = useNavigate()
     const { user, loading, error } = useSelector((state) => state.user);
     user.user && console.log(`User Details: (ProfilePage) `, user);
+    const [dashboardProperty, setDashboardProperty] = useState(null);
+const [dashboardNextRent, setDashboardNextRent] = useState(null);
+const [dashboardLeaseEnd, setDashboardLeaseEnd] = useState(null);
+const [dashboardRoommates, setDashboardRoommates] = useState([]);
+const [dashboardLoading, setDashboardLoading] = useState(true);
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            if (!user?.user?.currentRental) {
+                setDashboardLoading(false);
+                return;
+            }
+            try {
+                // Fetch property
+                const propRes = await axios.get(`http://localhost:3000/api/property/${user.user.currentRental}`, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                });
+                setDashboardProperty(propRes.data.property);
+
+                // Fetch booking
+                const bookingRes = await axios.get(
+                    `http://localhost:3000/api/booking/bookings/property/${user.user.currentRental}`,
+                    { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+                );
+                const booking = bookingRes.data.booking || bookingRes.data;
+                let bookingId = Array.isArray(booking) ? booking[0]?._id : booking?._id;
+                if (booking[0]) {
+                    // Lease end
+                    const moveIn = new Date(booking[0].moveInDate);
+                    const leaseMonths = booking[0].durationMonths || 12;
+                    const leaseEnd = new Date(moveIn.setMonth(moveIn.getMonth() + leaseMonths));
+                    setDashboardLeaseEnd(leaseEnd);
+
+                    // Roommates (from property)
+                    setDashboardRoommates(propRes.data.property?.roomDetails?.members || []);
+                }
+
+                // Fetch rents
+                if (bookingId) {
+                    const rentRes = await axios.get(
+                        `http://localhost:3000/api/rents/${bookingId}`,
+                        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+                    );
+                    const rents = Array.isArray(rentRes.data) ? rentRes.data : (rentRes.data.monthRents || []);
+                    // Find next unpaid rent
+                    const unpaidRents = rents.filter(r => r.payment_status !== "paid");
+                    if (unpaidRents.length > 0) {
+                        unpaidRents.sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
+                        setDashboardNextRent(unpaidRents[0]);
+                    } else {
+                        setDashboardNextRent(null);
+                    }
+                }
+                setDashboardLoading(false);
+            } catch (err) {
+                setDashboardLoading(false);
+            }
+        };
+        fetchDashboardData();
+    }, [user?.user?.currentRental]);
     return (
         <>
             <div className='flex justify-center items-center bg-main-bg p-3'> {/* Main container for profile page */}
@@ -151,34 +210,55 @@ const Dashboard = () => {
                     {activeTab === 'Overview' &&
                         <div className='flex flex-col space-y-4 w-4/5'>
                             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3'>
-                                {[{
-                                    title: 'Next Payment',
-                                    value: '₹1,800',
-                                    date: 'Due March 1, 2025',
-                                    icon: pay,
-                                    color: 'bg-green-900'
-                                }, {
-                                    title: 'Lease Ends',
-                                    value: '250 Days',
-                                    date: 'December 31, 2025',
-                                    icon: calendar,
-                                    color: 'bg-violet-900'
-                                }, {
-                                    title: 'Roommates',
-                                    value: '3 Active',
-                                    date: 'All verified',
-                                    icon: people,
-                                    color: 'bg-blue-900'
-                                }].map((card, index) => (
-                                    <div key={index} className='flex flex-col justify-center items-center text-white bg-sub-bg rounded-xl p-5 space-y-2'>
-                                        <div className={`flex justify-center items-center h-10 w-10 ${card.color} rounded-xl`}>
-                                            <img src={card.icon} alt={card.title} className='h-5 w-5' />
-                                        </div>
-                                        <p className='text-secondary-text font-semibold text-base'>{card.title}</p>
-                                        <p className='text-white font-semibold text-xl'>{card.value}</p>
-                                        <p className='text-secondary-text font-semibold text-base'>{card.date}</p>
+                                {/* Next Payment */}
+                                <div className='flex flex-col justify-center items-center text-white bg-sub-bg rounded-xl p-5 space-y-2'>
+                                    <div className="flex justify-center items-center h-10 w-10 bg-green-900 rounded-xl">
+                                        <img src={pay} alt="Next Payment" className='h-5 w-5' />
                                     </div>
-                                ))}
+                                    <p className='text-secondary-text font-semibold text-base'>Next Payment</p>
+                                    <p className='text-white font-semibold text-xl'>
+                                        {dashboardNextRent
+                                            ? `₹${dashboardNextRent.amount_due?.toLocaleString('en-IN')}`
+                                            : "No due"}
+                                    </p>
+                                    <p className='text-secondary-text font-semibold text-base'>
+                                        {dashboardNextRent
+                                            ? `Due ${new Date(dashboardNextRent.due_date).toLocaleDateString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' })}`
+                                            : ""}
+                                    </p>
+                                </div>
+                                {/* Lease Ends */}
+                                <div className='flex flex-col justify-center items-center text-white bg-sub-bg rounded-xl p-5 space-y-2'>
+                                    <div className="flex justify-center items-center h-10 w-10 bg-violet-900 rounded-xl">
+                                        <img src={calendar} alt="Lease Ends" className='h-5 w-5' />
+                                    </div>
+                                    <p className='text-secondary-text font-semibold text-base'>Lease Ends</p>
+                                    <p className='text-white font-semibold text-xl'>
+                                        {dashboardLeaseEnd
+                                            ? `${Math.max(0, Math.ceil((dashboardLeaseEnd - new Date()) / (1000 * 60 * 60 * 24)))} Days`
+                                            : "Unknown"}
+                                    </p>
+                                    <p className='text-secondary-text font-semibold text-base'>
+                                        {dashboardLeaseEnd
+                                            ? dashboardLeaseEnd.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })
+                                            : ""}
+                                    </p>
+                                </div>
+                                {/* Roommates */}
+                                <div className='flex flex-col justify-center items-center text-white bg-sub-bg rounded-xl p-5 space-y-2'>
+                                    <div className="flex justify-center items-center h-10 w-10 bg-blue-900 rounded-xl">
+                                        <img src={people} alt="Roommates" className='h-5 w-5' />
+                                    </div>
+                                    <p className='text-secondary-text font-semibold text-base'>Roommates</p>
+                                    <p className='text-white font-semibold text-xl'>
+                                        {dashboardRoommates.length > 0
+                                            ? `${dashboardRoommates.length} Active`
+                                            : "No roommates"}
+                                    </p>
+                                    <p className='text-secondary-text font-semibold text-base'>
+                                        {dashboardRoommates.length > 0 ? "All verified" : ""}
+                                    </p>
+                                </div>
                             </div>
 
                             <div className='w-full bg-sub-bg rounded-xl '>
@@ -203,15 +283,19 @@ const Dashboard = () => {
                             <div className='w-full bg-sub-bg rounded-xl p-5'>
                                 <p className='text-white text-lg font-bold'>Roommates</p>
                                 <div className='grid grid-cols-1 md:grid-cols-2 gap-3 mt-3'>
-                                    {[{ name: 'Aryan Patil', course: 'Computer Science & Engg.' }, { name: 'Harshwardhan Patil', course: 'Computer Science & Engg.' }].map((mate, index) => (
-                                        <div key={index} className='flex items-center bg-cards-bg rounded-xl p-2 space-x-3'>
-                                            <img src='https://placehold.co/100' alt={mate.name} className='h-12 w-12 rounded-full' />
-                                            <div className='flex flex-col'>
-                                                <p className='text-white text-base font-semibold'>{mate.name}</p>
-                                                <p className='text-secondary-text text-base font-semibold'>{mate.course}</p>
+                                    {dashboardRoommates.length > 0 ? (
+                                        dashboardRoommates.map((mate, index) => (
+                                            <div key={index} className='flex items-center bg-cards-bg rounded-xl p-2 space-x-3'>
+                                                <img src={mate.profilePicture || 'https://placehold.co/100'} alt={mate.name} className='h-12 w-12 rounded-full' />
+                                                <div className='flex flex-col'>
+                                                    <p className='text-white text-base font-semibold'>{mate.name}</p>
+                                                    <p className='text-secondary-text text-base font-semibold'>{mate.course}</p>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))
+                                    ) : (
+                                        <p className='text-secondary-text text-base'>No roommates found.</p>
+                                    )}
                                 </div>
                             </div>
                         </div>

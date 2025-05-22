@@ -139,94 +139,94 @@ const CurrentRental = ({ propertyId }) => {
         }
     };
 
-    useEffect(() => {
-        const txnId = localStorage.getItem('lastTxnId');
-        if (txnId && property) {
-            axios.get(`http://localhost:3000/api/payment/status/${txnId}`)
-                .then(async res => {
-                    if (res.data.paymentDetails && res.data.paymentDetails[0].state === "COMPLETED") {
-                        // 1. Check if deposit is already paid by fetching booking for this property
-                        const bookingRes = await axios.get(
-                            `http://localhost:3000/api/booking/bookings/property/${property._id}`,
-                            { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-                        );
-                        const booking = bookingRes.data.booking || bookingRes.data;
-                        console.log("Booking : ");
-                        console.log(booking);
-                        if (!booking[0] || booking[0].paymentStatus !== "completed") {
-                            // Deposit not paid yet, so this is the first time
-                            toast.success('Deposit payment successful!');
-                            await addMemberToProperty();
-                            await createBookingRequest();
-                        } else {
+    // useEffect(() => {
+    //     const txnId = localStorage.getItem('lastTxnId');
+    //     if (txnId && property) {
+    //         axios.get(`http://localhost:3000/api/payment/status/${txnId}`)
+    //             .then(async res => {
+    //                 if (res.data.paymentDetails && res.data.paymentDetails[0].state === "COMPLETED") {
+    //                     // 1. Check if deposit is already paid by fetching booking for this property
+    //                     const bookingRes = await axios.get(
+    //                         `http://localhost:3000/api/booking/bookings/property/${property._id}`,
+    //                         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+    //                     );
+    //                     const booking = bookingRes.data.booking || bookingRes.data;
+    //                     console.log("Booking : ");
+    //                     console.log(booking);
+    //                     if (!booking[0] || booking[0].paymentStatus !== "completed") {
+    //                         // Deposit not paid yet, so this is the first time
+    //                         toast.success('Deposit payment successful!');
+    //                         await addMemberToProperty();
+    //                         await createBookingRequest();
+    //                     } else {
                            
-                            // Deposit already paid, so this is a rent payment
-                            // Find month rent for this booking where payment_status is not "paid"
-                            const monthRentRes = await axios.get(
-                                `http://localhost:3000/api/rents/${booking[0]._id}`,
-                                { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-                            );
+    //                         // Deposit already paid, so this is a rent payment
+    //                         // Find month rent for this booking where payment_status is not "paid"
+    //                         const monthRentRes = await axios.get(
+    //                             `http://localhost:3000/api/rents/${booking[0]._id}`,
+    //                             { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+    //                         );
 
-                            // monthRentRes.data should be an array of rents
-                            const rents = Array.isArray(monthRentRes.data) ? monthRentRes.data : (monthRentRes.data.monthRents || []);
-                            const latestRent = rents.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
+    //                         // monthRentRes.data should be an array of rents
+    //                         const rents = Array.isArray(monthRentRes.data) ? monthRentRes.data : (monthRentRes.data.monthRents || []);
+    //                         const latestRent = rents.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
 
-                            if (latestRent && latestRent.payment_status !== "paid") {
-                                // Update latest month rent payment status
-                                await axios.put(
-                                    `http://localhost:3000/api/rents/rent/${latestRent._id}`,
-                                    {
-                                        payment_status: "paid",
-                                        amount_paid: latestRent.amount_due,
-                                        payment_method: "UPI",
-                                        transaction_id: txnId,
-                                    },
-                                    { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-                                );
-                                toast.success('Monthly rent payment successful!');
-                                // --- Create next month's rent entry ---
-                                // Calculate next month in "YYYY-MM" format
-                                const [year, month] = latestRent.month.split('-');
-                                const nextMonthDate = new Date(Number(year), Number(month), 1); // JS months are 0-based
-                                const nextMonthStr = `${nextMonthDate.getFullYear()}-${String(nextMonthDate.getMonth() + 1).padStart(2, '0')}`;
+    //                         if (latestRent && latestRent.payment_status !== "paid") {
+    //                             // Update latest month rent payment status
+    //                             await axios.put(
+    //                                 `http://localhost:3000/api/rents/rent/${latestRent._id}`,
+    //                                 {
+    //                                     payment_status: "paid",
+    //                                     amount_paid: latestRent.amount_due,
+    //                                     payment_method: "UPI",
+    //                                     transaction_id: txnId,
+    //                                 },
+    //                                 { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+    //                             );
+    //                             toast.success('Monthly rent payment successful!');
+    //                             // --- Create next month's rent entry ---
+    //                             // Calculate next month in "YYYY-MM" format
+    //                             const [year, month] = latestRent.month.split('-');
+    //                             const nextMonthDate = new Date(Number(year), Number(month), 1); // JS months are 0-based
+    //                             const nextMonthStr = `${nextMonthDate.getFullYear()}-${String(nextMonthDate.getMonth() + 1).padStart(2, '0')}`;
 
-                                const nextMonthRentPayload = {
-                                    booking_id: latestRent.booking_id,
-                                    property_id: latestRent.property_id,
-                                    user_id: latestRent.user_id,
-                                    landlord_id: latestRent.landlord_id,
-                                    month: nextMonthStr,
-                                    due_date: new Date(new Date(latestRent.due_date).getTime() + 30 * 24 * 60 * 60 * 1000), // 30 days after last due date
-                                    amount_due: latestRent.amount_due,
-                                    amount_paid: 0,
-                                    payment_status: "pending",
-                                    payment_method: null,
-                                    transaction_id: null,
-                                    late_fee: 0,
-                                    remarks: "Auto-generated for next month"
-                                };
+    //                             const nextMonthRentPayload = {
+    //                                 booking_id: latestRent.booking_id,
+    //                                 property_id: latestRent.property_id,
+    //                                 user_id: latestRent.user_id,
+    //                                 landlord_id: latestRent.landlord_id,
+    //                                 month: nextMonthStr,
+    //                                 due_date: new Date(new Date(latestRent.due_date).getTime() + 30 * 24 * 60 * 60 * 1000), // 30 days after last due date
+    //                                 amount_due: latestRent.amount_due,
+    //                                 amount_paid: 0,
+    //                                 payment_status: "pending",
+    //                                 payment_method: null,
+    //                                 transaction_id: null,
+    //                                 late_fee: 0,
+    //                                 remarks: "Auto-generated for next month"
+    //                             };
 
-                                await axios.post(
-                                    `http://localhost:3000/api/rents/`,
-                                    nextMonthRentPayload,
-                                    { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-                                );
-                                toast.success('Next month rent entry created!');
+    //                             await axios.post(
+    //                                 `http://localhost:3000/api/rents/`,
+    //                                 nextMonthRentPayload,
+    //                                 { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+    //                             );
+    //                             toast.success('Next month rent entry created!');
 
-                            } else {
-                                toast.success('Payment successful!');
-                            }
-                        }
-                        localStorage.removeItem('lastTxnId');
-                    } else {
-                        alert('Payment failed or pending.');
-                    }
-                })
-                .catch(err => {
-                    alert('Could not verify payment status.');
-                });
-        }
-    }, [property]);
+    //                         } else {
+    //                             toast.success('Payment successful!');
+    //                         }
+    //                     }
+    //                     localStorage.removeItem('lastTxnId');
+    //                 } else {
+    //                     alert('Payment failed or pending.');
+    //                 }
+    //             })
+    //             .catch(err => {
+    //                 alert('Could not verify payment status.');
+    //             });
+    //     }
+    // }, [property]);
 
     const handlePayRent = async (paymentType) => {
         try {
@@ -236,6 +236,7 @@ const CurrentRental = ({ propertyId }) => {
                 price: paymentType == 'deposit' ? property.deposit : property.rent,
                 phone: '9876543210',
                 name: property.title,
+                
 
                 // No need to send redirectUrl if your backend uses a fixed one
             });
@@ -299,7 +300,7 @@ const CurrentRental = ({ propertyId }) => {
                             <div>
                             </div>
                         </div>
-                        {!depositPaid && (
+                        {/* {!depositPaid && (
                             <button
                                 onClick={async () => {
                                     await handlePayRent('deposit');
@@ -320,7 +321,7 @@ const CurrentRental = ({ propertyId }) => {
                             >
                                 Pay Rent
                             </button>
-                        )}
+                        )} */}
                     </div>
                 </div>
             </div>
