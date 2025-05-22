@@ -387,6 +387,18 @@ const updateRoomDetails = async (req, res, next) => {
   }
 };
 
+const getPropertyById = async (req, res, next) => {
+  try {
+    const property = await Property.findById(req.params.id)
+      .populate("roomDetails.members", "name profilePicture course");
+    if (!property)
+      return res.status(404).json({ message: "Property not found" });
+    res.status(200).json({ property });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createProperty,
   getProperties,
@@ -397,4 +409,5 @@ module.exports = {
   addRoomMember,
   removeRoomMember,
   updateRoomDetails,
+  getPropertyById,
 };

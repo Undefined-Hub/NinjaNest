@@ -32,6 +32,22 @@ const getBookingById = async (req, res, next) => {
 // Add a new booking
 const addBooking = async (req, res, next) => {
     try {
+        const { property_id, user_id } = req.body;
+        const property = await Property.findById(property_id);
+
+        if (!property) {
+            return res.status(404).json({ message: "Property not found" });
+        }
+
+        // For Flat type, add user to members if not already present
+        if (property.propertyType === "Flat") {
+            if (!property.roomDetails) property.roomDetails = { members: [] };
+            if (!property.roomDetails.members.includes(user_id)) {
+                property.roomDetails.members.push(user_id);
+                await property.save();
+            }
+        }
+
         const newBooking = new Booking(req.body);
         await newBooking.save();
         res.status(201).json({ message: "Booking added successfully", booking: newBooking });
