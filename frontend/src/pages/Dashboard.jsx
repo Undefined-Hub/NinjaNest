@@ -30,7 +30,7 @@ import roommate from '/images/roommate.svg'
 import payment from '/images/payment.svg'
 import profile from '/images/profile.svg'
 import CurrentRental from '../components/CurrentRental'
-
+import { setHydrated, fetchUser } from "../features/User/userSlice";
 const menuItems = [
     { label: "Overview", icon: <AiOutlineHome /> },
     { label: "My Properties", icon: <FaRegBuilding /> },
@@ -46,7 +46,18 @@ const Dashboard = () => {
     const dispatch = useDispatch();
     useEffect(() => {
         window.scrollTo(0, 0);
+        fetchUserData();
     }, []);
+
+    const fetchUserData = async () => {
+        try {
+               const fetchResult = await dispatch(fetchUser(user?.user?.username));
+            console.log('Fetched user data:', fetchResult);
+        }
+        catch (error) {
+            console.error('Error fetching user data:', error);
+        }
+    };
 
 
   const handleLogout = () => {
@@ -82,7 +93,7 @@ const Dashboard = () => {
 
     let navigate = useNavigate()
     const { user, loading, error } = useSelector((state) => state.user);
-    // user.user && console.log(`User Details: (ProfilePage) `, user);
+    user.user && console.log(`User Details: (ProfilePage) `, user);
     return (
         <>
             <div className='flex justify-center items-center bg-main-bg p-3'> {/* Main container for profile page */}

@@ -66,9 +66,6 @@ const CurrentRental = ({ propertyId }) => {
 
 
 
-
-
-
     const createBookingRequest = async () => {
         try {
             console.log("Property : ");
