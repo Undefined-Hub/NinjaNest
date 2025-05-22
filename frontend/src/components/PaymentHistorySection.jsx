@@ -25,6 +25,10 @@ const PaymentHistorySection = ({
     const [error, setError] = useState(null);
     const [filterOpen, setFilterOpen] = useState(false);
     
+    // Define status types
+    const depositStatuses = ['completed'];
+    const rentStatuses = ['Pending', 'paid', 'overdue'];
+    
     // Filter states
     const [filters, setFilters] = useState({
         type: '',
@@ -38,7 +42,7 @@ const PaymentHistorySection = ({
         total: 0,
         paid: 0,
         pending: 0,
-        refunded: 0
+        overdue: 0
     });
 
     // Fetch transactions based on provided filters
@@ -61,23 +65,20 @@ const PaymentHistorySection = ({
                 },
             });
             
-            // Normalize transaction statuses for UI clarity
-            const normalizedTransactions = response.data.data.map(tx => ({
-                ...tx,
-                displayStatus: tx.status === 'completed' && tx.type === 'Deposit' ? 'paid' : tx.status
-            }));
-            
-            setTransactions(normalizedTransactions);
+            setTransactions(response.data.data);
             
             // Calculate stats
             const newStats = {
                 total: response.data.count,
-                // Count both 'paid' and 'completed' deposits as paid
                 paid: response.data.data.filter(tx => 
-                    tx.status === 'paid' || (tx.status === 'completed' && tx.type === 'Deposit')
+                    tx.status === 'paid' || tx.status === 'completed'
                 ).length,
-                pending: response.data.data.filter(tx => tx.status === 'overdue').length,
-                refunded: response.data.data.filter(tx => tx.status === 'refunded').length
+                pending: response.data.data.filter(tx => 
+                    tx.status === 'Pending'
+                ).length,
+                overdue: response.data.data.filter(tx => 
+                    tx.status === 'overdue'
+                ).length
             };
             
             setStats(newStats);
@@ -124,34 +125,75 @@ const PaymentHistorySection = ({
     };
     
     // Helper to get status indicator styles
-    const getStatusIndicator = (status) => {
-        const displayStatus = status === 'completed' ? 'paid' : status;
-        
-        switch (displayStatus) {
-            case 'paid':
-                return {
-                    color: 'text-green-400',
-                    bgColor: 'bg-green-400 bg-opacity-20',
-                    icon: <Check size={16} className="text-green-400" />
-                };
-            case 'overdue':
-                return {
-                    color: 'text-red-400',
-                    bgColor: 'bg-red-400 bg-opacity-20',
-                    icon: <Clock size={16} className="text-red-400" />
-                };
-            case 'refunded':
-                return {
-                    color: 'text-yellow-400',
-                    bgColor: 'bg-yellow-400 bg-opacity-20',
-                    icon: <RefreshCcw size={16} className="text-yellow-400" />
-                };
-            default:
-                return {
-                    color: 'text-secondary-text',
-                    bgColor: 'bg-secondary-text bg-opacity-20',
-                    icon: <Ban size={16} className="text-secondary-text" />
-                };
+    const getStatusIndicator = (status, type) => {
+        // Different status styles for different transaction types
+        if (type === 'Deposit') {
+            switch (status) {
+                case 'completed':
+                    return {
+                        color: 'text-logo-blue',
+                        bgColor: 'bg-logo-blue bg-opacity-20',
+                        icon: <Check size={16} className="text-logo-blue" />
+                    };
+                case 'Pending':
+                    return {
+                        color: 'text-yellow-400',
+                        bgColor: 'bg-yellow-400 bg-opacity-20',
+                        icon: <Clock size={16} className="text-yellow-400" />
+                    };
+                case 'refunded':
+                    return {
+                        color: 'text-purple-400',
+                        bgColor: 'bg-purple-400 bg-opacity-20',
+                        icon: <RefreshCcw size={16} className="text-purple-400" />
+                    };
+                case 'failed':
+                    return {
+                        color: 'text-red-400',
+                        bgColor: 'bg-red-400 bg-opacity-20',
+                        icon: <Ban size={16} className="text-red-400" />
+                    };
+                default:
+                    return {
+                        color: 'text-secondary-text',
+                        bgColor: 'bg-secondary-text bg-opacity-20',
+                        icon: <Ban size={16} className="text-secondary-text" />
+                    };
+            }
+        } else {
+            // Rent transaction statuses
+            switch (status) {
+                case 'paid':
+                    return {
+                        color: 'text-green-400',
+                        bgColor: 'bg-green-400 bg-opacity-20',
+                        icon: <Check size={16} className="text-green-400" />
+                    };
+                case 'Pending':
+                    return {
+                        color: 'text-yellow-400',
+                        bgColor: 'bg-yellow-400 bg-opacity-20',
+                        icon: <Clock size={16} className="text-yellow-400" />
+                    };
+                case 'partial':
+                    return {
+                        color: 'text-orange-400',
+                        bgColor: 'bg-orange-400 bg-opacity-20',
+                        icon: <AlertTriangle size={16} className="text-orange-400" />
+                    };
+                case 'overdue':
+                    return {
+                        color: 'text-red-400',
+                        bgColor: 'bg-red-400 bg-opacity-20',
+                        icon: <AlertTriangle size={16} className="text-red-400" />
+                    };
+                default:
+                    return {
+                        color: 'text-secondary-text',
+                        bgColor: 'bg-secondary-text bg-opacity-20',
+                        icon: <Ban size={16} className="text-secondary-text" />
+                    };
+            }
         }
     };
 
@@ -193,7 +235,7 @@ const PaymentHistorySection = ({
     }
 
     return (
-        <div className="bg-sub-bg rounded-xl p-1 lg:p-1">
+        <div className="bg-sub-bg rounded-xl p-4 lg:p-4">
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center">
                     <DollarSign size={20} className="text-tertiary-text mr-2" />
@@ -208,7 +250,7 @@ const PaymentHistorySection = ({
                 </button>
             </div>
 
-            {/* Filters section */}
+             {/* Filters section */}
             {filterOpen && (
                 <div className="bg-cards-bg p-4 rounded-xl mb-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
@@ -221,8 +263,8 @@ const PaymentHistorySection = ({
                                 className="w-full bg-sub-bg text-white p-2 rounded-lg border border-gray-700 focus:outline-none focus:border-tertiary-text"
                             >
                                 <option value="">All Types</option>
-                                <option value="Rent">Rent</option>
-                                <option value="Deposit">Deposit</option>
+                                <option value="rent">Rent</option>
+                                <option value="deposit">Deposit</option>
                             </select>
                         </div>
                         <div>
@@ -234,9 +276,19 @@ const PaymentHistorySection = ({
                                 className="w-full bg-sub-bg text-white p-2 rounded-lg border border-gray-700 focus:outline-none focus:border-tertiary-text"
                             >
                                 <option value="">All Status</option>
-                                <option value="paid">Paid</option>
-                                <option value="overdue">Overdue</option>
-                                <option value="refunded">Refunded</option>
+                                
+                                {filters.type === 'Deposit' 
+                                    ? depositStatuses.map(status => (
+                                        <option key={status} value={status}>{status.charAt(0).toUpperCase() + status.slice(1)}</option>
+                                    ))
+                                    : filters.type === 'Rent'
+                                        ? rentStatuses.map(status => (
+                                            <option key={status} value={status}>{status.charAt(0).toUpperCase() + status.slice(1)}</option>
+                                        ))
+                                        : [...new Set([...depositStatuses, ...rentStatuses])].map(status => (
+                                            <option key={status} value={status}>{status.charAt(0).toUpperCase() + status.slice(1)}</option>
+                                        ))
+                                }
                             </select>
                         </div>
                         <div>
@@ -263,23 +315,23 @@ const PaymentHistorySection = ({
                     <div className="flex justify-end gap-2 mt-4">
                         <button 
                             onClick={resetFilters}
-                            className="bg-cards-bg text-secondary-text py-1 px-4 rounded-lg hover:text-white transition-colors"
+                            className="bg-cards-bg text-secondary-text py-1 px-4 rounded-lg hover:text-tertiary-text transition-colors"
                         >
                             Reset
                         </button>
                     </div>
                 </div>
             )}
-            
+                        
             {/* Payment stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                 <div className="bg-cards-bg rounded-lg p-3 flex items-center">
-                    <div className="bg-main-purple bg-opacity-20 p-2 rounded-lg mr-3">
-                        <CreditCard size={18} className="text-main-purple" />
+                    <div className="bg-tertiary-text bg-opacity-20 p-2 rounded-lg mr-3">
+                        <CreditCard size={18} className="text-tertiary-text" />
                     </div>
                     <div>
                         <p className="text-secondary-text text-xs">Total</p>
-                        <p className="text-white text-lg font-semibold">{stats.total}</p>
+                        <p className="text-tertiary-text text-lg font-semibold">{stats.total}</p>
                     </div>
                 </div>
                 <div className="bg-cards-bg rounded-lg p-3 flex items-center">
@@ -292,21 +344,21 @@ const PaymentHistorySection = ({
                     </div>
                 </div>
                 <div className="bg-cards-bg rounded-lg p-3 flex items-center">
+                    <div className="bg-yellow-400 bg-opacity-20 p-2 rounded-lg mr-3">
+                        <Clock size={18} className="text-yellow-400" />
+                    </div>
+                    <div>
+                        <p className="text-secondary-text text-xs">Pending</p>
+                        <p className="text-yellow-400 text-lg font-semibold">{stats.pending}</p>
+                    </div>
+                </div>
+                <div className="bg-cards-bg rounded-lg p-3 flex items-center">
                     <div className="bg-red-400 bg-opacity-20 p-2 rounded-lg mr-3">
                         <AlertTriangle size={18} className="text-red-400" />
                     </div>
                     <div>
-                        <p className="text-secondary-text text-xs">Pending</p>
-                        <p className="text-red-400 text-lg font-semibold">{stats.pending}</p>
-                    </div>
-                </div>
-                <div className="bg-cards-bg rounded-lg p-3 flex items-center">
-                    <div className="bg-yellow-400 bg-opacity-20 p-2 rounded-lg mr-3">
-                        <RefreshCcw size={18} className="text-yellow-400" />
-                    </div>
-                    <div>
-                        <p className="text-secondary-text text-xs">Refunded</p>
-                        <p className="text-yellow-400 text-lg font-semibold">{stats.refunded}</p>
+                        <p className="text-secondary-text text-xs">Overdue</p>
+                        <p className="text-red-400 text-lg font-semibold">{stats.overdue}</p>
                     </div>
                 </div>
             </div>
@@ -315,7 +367,7 @@ const PaymentHistorySection = ({
             <div className="divide-y divide-gray-700 bg-cards-bg rounded-xl overflow-hidden">
                 {transactions.length > 0 ? (
                     transactions.map((transaction) => {
-                        const statusInfo = getStatusIndicator(transaction.displayStatus || transaction.status);
+                        const statusInfo = getStatusIndicator(transaction.status, transaction.type);
                         const formattedDate = format(new Date(transaction.date), 'MMM dd, yyyy');
                         const showPropertyInfo = shouldShowProperty(transaction);
                         
@@ -336,11 +388,11 @@ const PaymentHistorySection = ({
                                                     {transaction.month && ` - ${format(new Date(transaction.month), 'MMM yyyy')}`}
                                                 </p>
                                                 <span className={`text-xs ${statusInfo.color} px-2 py-0.5 rounded-full ${statusInfo.bgColor}`}>
-                                                    {transaction.displayStatus || transaction.status}
+                                                    {transaction.status}
                                                 </span>
                                             </div>
                                             <div className="flex gap-2 text-secondary-text text-sm items-center">
-                                                <span>#{transaction.transaction_id.split('-')[1]}</span>
+                                                <span>#{transaction.transaction_id?.split('-')[1]}</span>
                                                 <span>•</span>
                                                 <span>{formattedDate}</span>
                                                 {showPropertyInfo && (
@@ -354,7 +406,7 @@ const PaymentHistorySection = ({
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-white font-semibold">₹{transaction.amount.toLocaleString('en-IN')}</p>
+                                        <p className="text-tertiary-text font-semibold">₹{transaction.amount.toLocaleString('en-IN')}</p>
                                         <p className="text-secondary-text text-xs">
                                             <span className="inline-flex items-center">
                                                 <CreditCard size={10} className="mr-1" />

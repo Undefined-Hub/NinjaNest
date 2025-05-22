@@ -131,14 +131,14 @@ const getPaymentHistory = async (req, res) => {
       landlord_id,
       fromDate,
       toDate,
-      type, // 'deposit', 'rent', or undefined
+      type,   // 'deposit', 'rent', or undefined (both)
       status, // 'paid', 'overdue', 'completed', etc.
     } = req.query;
 
     const bookingFilter = {};
     const rentFilter = {};
 
-    // Dynamic filtering
+    // 🧠 Dynamic Filters
     if (user_id) {
       bookingFilter.user_id = user_id;
       rentFilter.user_id = user_id;
@@ -152,7 +152,7 @@ const getPaymentHistory = async (req, res) => {
       rentFilter.landlord_id = landlord_id;
     }
 
-    // Date filters
+    // 📅 Date Range Filters
     if (fromDate || toDate) {
       const from = fromDate ? new Date(fromDate) : new Date("1970-01-01");
       const to = toDate ? new Date(toDate) : new Date();
@@ -160,20 +160,31 @@ const getPaymentHistory = async (req, res) => {
       rentFilter.createdAt = { $gte: from, $lte: to };
     }
 
-    // Status filter
+    // 🎯 Status Filtering (Dynamic based on input or default allowed statuses)
+    const depositStatuses = ['Pending', 'completed', 'failed', 'refunded'];
+    const rentStatuses = ['Pending', 'paid', 'partial', 'overdue'];
+
     if (status) {
-      bookingFilter.paymentStatus = status;
-      rentFilter.payment_status = status;
+      if (type !== 'rent') {
+        bookingFilter.paymentStatus = { $in: [status] };
+      }
+      if (type !== 'deposit') {
+        rentFilter.payment_status = { $in: [status] };
+      }
+    } else {
+      if (type !== 'rent') {
+        bookingFilter.paymentStatus = { $in: depositStatuses };
+      }
+      if (type !== 'deposit') {
+        rentFilter.payment_status = { $in: rentStatuses };
+      }
     }
 
     let transactions = [];
 
     // 🧾 Fetch Deposit Transactions
-    if (type !== "rent") {
-      const bookings = await Booking.find({
-        ...bookingFilter,
-        paymentStatus: { $in: ["completed", "refunded", "failed"] },
-      })
+    if (type !== 'rent') {
+      const bookings = await Booking.find(bookingFilter)
         .populate("property_id", "_id title location address")
         .populate("user_id", "_id name username profilePicture")
         .populate("landlord_id", "_id name username profilePicture");
@@ -195,11 +206,8 @@ const getPaymentHistory = async (req, res) => {
     }
 
     // 💸 Fetch Rent Transactions
-    if (type !== "deposit") {
-      const rents = await MonthRent.find({
-        ...rentFilter,
-        payment_status: { $in: ["paid", "partial", "overdue"] },
-      })
+    if (type !== 'deposit') {
+      const rents = await MonthRent.find(rentFilter)
         .populate("property_id", "_id title location address")
         .populate("user_id", "_id name username profilePicture")
         .populate("landlord_id", "_id name username profilePicture");
@@ -221,7 +229,7 @@ const getPaymentHistory = async (req, res) => {
       transactions.push(...rentHistory);
     }
 
-    // Sort by date descending
+    // 🔽 Sort by Date Descending
     transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     res.status(200).json({
@@ -234,7 +242,6 @@ const getPaymentHistory = async (req, res) => {
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
-
 
 
 

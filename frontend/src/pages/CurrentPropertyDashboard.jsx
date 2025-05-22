@@ -11,6 +11,9 @@ import { MapContainer, TileLayer, Marker, Popup, LayersControl } from 'react-lea
 import { useRef } from 'react';
 import toast from 'react-hot-toast';
 // Inside your component
+// In your imports section, add:
+import PaymentHistorySection from '../components/PaymentHistorySection';
+
 
 const { BaseLayer } = LayersControl;
 import L from 'leaflet';
@@ -682,6 +685,11 @@ const EarlyPaymentModal = ({ isOpen, onClose, onConfirm, month }) => {
                         </div>
                     ))}
                 </div>
+                <PaymentHistorySection 
+                    propertyId={propertyId} 
+                    userId={user?._id}
+                    mode="tenant" 
+                />
                 <div
                     ref={mapSectionRef}
                     className='w-full flex flex-col bg-sub-bg p-4 rounded-xl'
@@ -693,6 +701,7 @@ const EarlyPaymentModal = ({ isOpen, onClose, onConfirm, month }) => {
                         propertyName={property?.title}
                     />
                 </div>
+
                 {/* Reviews Section - IMPROVED */}
                 <div className='w-full flex flex-col bg-sub-bg p-4 rounded-xl'>
                     <p className='font-semibold text-lg text-tertiary-text mb-4'>Reviews</p>
