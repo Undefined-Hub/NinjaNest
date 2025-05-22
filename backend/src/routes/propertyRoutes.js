@@ -12,6 +12,7 @@ const {
   addRoomMember,
   removeRoomMember,
   updateRoomDetails,
+  saveDocuments
 } = require("../controllers/propertyController");
 
 router.post("/", authMiddleware(), createProperty); // Create a new property
@@ -35,5 +36,8 @@ router.post("/members/:id", authMiddleware(), addRoomMember);
 router.delete("/members/:id", authMiddleware(), removeRoomMember);
 
 router.put("/roomdetails/:id", authMiddleware(), updateRoomDetails);
+
+// Route to fetch documents for a specific property
+router.post("/:id/documents",  saveDocuments); // Save documents for a property
 // Fetch a single property
 module.exports = router;

@@ -401,9 +401,54 @@ const getPropertyById = async (req, res, next) => {
   }
 };
 
+  // documents: {
+  //     rentalAgreement: {
+  //       type: String,
+  //       default: null,
+  //     },
+  //     idProof: [
+  //       {
+  //         type: String,
+  //         default: null,
+  //       }
+  //     ]
+  //   }
+const saveDocuments = async (req, res, next) => {
+  try {
+    const propertyId = req.params.id;
+    const { url, type } = req.body;
+
+    const property = await Property.findById(propertyId);
+    if (!property) {
+      return res.status(404).json({ message: "Property not found" });
+    }
+
+    if (!property.documents) {
+      property.documents = { rentalAgreement: null, idProof: [] };
+    }
+
+    if (type === "agreement") {
+      property.documents.rentalAgreement = url;
+    } else if (type === "id") {
+      if (!Array.isArray(property.documents.idProof)) {
+        property.documents.idProof = [];
+      }
+      property.documents.idProof.push(url);
+    } else {
+      return res.status(400).json({ message: "Invalid document type" });
+    }
+
+    await property.save();
+    res.status(200).json({ message: "Documents saved", property });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createProperty,
   getProperties,
+  saveDocuments,
   getProperty,
   updateProperty,
   deleteProperty,

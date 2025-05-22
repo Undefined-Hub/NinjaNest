@@ -143,6 +143,18 @@ const PropertySchema = new Schema(
       min: 0,
       max: 5,
     },
+    documents: {
+      rentalAgreement: {
+        type: String,
+        default: null,
+      },
+      idProof: [
+        {
+          type: String,
+          default: null,
+        }
+      ]
+    }
   },
   { timestamps: true }
 );

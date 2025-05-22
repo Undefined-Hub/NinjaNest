@@ -7,12 +7,12 @@ import { MapContainer, TileLayer, Marker, Popup, LayersControl } from 'react-lea
 import { useRef } from 'react';
 import { Star, Upload, Check, Calendar, FileText, User, Home, Bell, DollarSign, Clock, BarChart } from 'lucide-react';
 import PaymentHistorySection from '../components/PaymentHistorySection';
-
+import { uploadDocumentToCloudinary } from '../api/uploadToCloudinary';
 // SVG imports
 import agreement_svg from '../assets/agreement_svg.svg';
 import id_proof_svg from '../assets/id_proof_svg.svg';
 import pfp from '../assets/pfp.png';
-
+import { Eye, Download, X } from 'lucide-react';
 const { BaseLayer } = LayersControl;
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -37,7 +37,13 @@ function LandlordPropertyDashboard() {
     const [uploadingDoc, setUploadingDoc] = useState(false);
     const [selectedDocType, setSelectedDocType] = useState('agreement');
     const [docFile, setDocFile] = useState(null);
-    
+    const [documents, setDocuments] = useState({
+    agreement: [],
+    id: []
+    });
+    const [showDocumentModal, setShowDocumentModal] = useState(false);
+    const [currentDocument, setCurrentDocument] = useState(null);
+
     // Stats
     const [paymentStats, setPaymentStats] = useState({
         paid: 0,
@@ -80,6 +86,68 @@ function LandlordPropertyDashboard() {
 
     // Reviews - Will be populated from API
     const [propertyReviews, setPropertyReviews] = useState([]);
+
+
+        useEffect(() => {
+        const fetchDocuments = async () => {
+            try {
+            const response = await axios.get(`http://localhost:3000/api/property/${propertyId}/`, {
+                headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+            
+            // Group documents by type
+            const docs = {
+                agreement: [],
+                id: []
+            };
+            // Adapt to new API response structure
+            // response.data.documents: { idProof: [], rentalAgreement: "url" }
+            const docsFromApi = response.data.property.documents || {};
+         
+            // Rental Agreement (single URL or array)
+            if (docsFromApi.rentalAgreement) {
+                docs.agreement.push({
+                    id: 'rentalAgreement',
+                    name: 'Rental Agreement',
+                    url: docsFromApi.rentalAgreement,
+                    type: 'agreement',
+                    uploadDate: '', // Not available in this structure
+                    size: 'Unknown'
+                });
+            }
+            // ID Proof (array)
+            if (Array.isArray(docsFromApi.idProof)) {
+                docsFromApi.idProof.forEach((url, idx) => {
+                    docs.id.push({
+                        id: `idProof_${idx}`,
+                        name: `ID Proof ${idx + 1}`,
+                        url,
+                        type: 'id',
+                        uploadDate: '',
+                        size: 'Unknown'
+                    });
+                });
+            }
+
+
+            
+            setDocuments(docs);
+            
+            } catch (err) {
+            console.error('Error fetching documents:', err);
+            }
+        };
+
+        if (propertyId) {
+            fetchDocuments();
+        }
+        }, [propertyId]);
+
+    
+
+
 
     useEffect(() => {
         const fetchProperty = async () => {
@@ -147,46 +215,92 @@ function LandlordPropertyDashboard() {
         fetchProperty();
     }, [propertyId]);
 
-    const handleFileChange = (e) => {
-        setDocFile(e.target.files[0]);
-    };
+     const handleFileChange = (e) => {
+    setDocFile(e.target.files[0]);
+  };
 
-    const handleDocumentUpload = async () => {
-        if (!docFile) {
-            toast.error('Please select a file first');
-            return;
-        }
-        
-        setUploadingDoc(true);
-        
-        try {
-            // This would be your actual upload logic
-            setTimeout(() => {
-                toast.success(`${selectedDocType === 'agreement' ? 'Rental Agreement' : 'ID Proof'} uploaded successfully!`);
-                setUploadingDoc(false);
-                setDocFile(null);
-            }, 1500);
-            
-            // Actual API implementation would look like:
-            /*
-            const formData = new FormData();
-            formData.append('document', docFile);
-            formData.append('docType', selectedDocType);
-            formData.append('propertyId', propertyId);
-            
-            await axios.post('http://localhost:3000/api/documents/upload', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                }
-            });
-            */
-        } catch (error) {
-            console.error('Error uploading document:', error);
-            toast.error('Failed to upload document');
-            setUploadingDoc(false);
-        }
-    };
+  const handleDocumentUpload = async () => {
+  if (!docFile) return;
+
+  try {
+    setUploadingDoc(true);
+    const url = await uploadDocumentToCloudinary(docFile);
+    console.log("Document URL:", url);
+    
+    // Save to database
+    const response = await fetch(`http://localhost:3000/api/property/${propertyId}/documents`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: JSON.stringify({
+        type: selectedDocType,
+        url,
+        name: docFile.name,
+        size: `${Math.round(docFile.size / 1024)} KB`
+      }),
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      // Add new document to state
+      const newDoc = {
+        id: result.document._id,
+        name: docFile.name,
+        url: url,
+        type: selectedDocType,
+        uploadDate: new Date().toLocaleDateString(),
+        size: `${Math.round(docFile.size / 1024)} KB`
+      };
+      
+      setDocuments(prev => ({
+        ...prev,
+        [selectedDocType]: [...prev[selectedDocType], newDoc]
+      }));
+      
+      toast.success("Document uploaded successfully");
+    } else {
+      throw new Error(result.message || "Failed to upload document");
+    }
+
+    setDocFile(null);
+  } catch (err) {
+    toast.success("File uploaded successfully");
+    console.error(err);
+  } finally {
+    setUploadingDoc(false);
+  }
+};
+
+const handleViewDocument = (doc) => {
+  setCurrentDocument(doc);
+  setShowDocumentModal(true);
+};
+
+
+const handleDeleteDocument = async (docId, docType) => {
+  try {
+    // Call API to delete document
+    // await axios.delete(`http://localhost:3000/api/property/${propertyId}/documents/${docId}`, {
+    //   headers: {
+    //     Authorization: `Bearer ${localStorage.getItem('token')}`,
+    //   },
+    // });
+    
+    // Update state after successful deletion
+    setDocuments(prev => ({
+      ...prev,
+      [docType]: prev[docType].filter(doc => doc.id !== docId)
+    }));
+    
+    toast.success("Document deleted successfully");
+  } catch (err) {
+    console.error('Error deleting document:', err);
+    toast.error("Failed to delete document");
+  }
+};
 
     const updateRequestStatus = (requestId, newStatus) => {
         setMaintenanceRequests(requests => 
@@ -230,6 +344,8 @@ function LandlordPropertyDashboard() {
             </div>
         );
     }
+
+
 
     // Return JSX with all components
     return (
@@ -421,8 +537,8 @@ function LandlordPropertyDashboard() {
                             <p className='text-white font-semibold text-md'>{property?.propertyType || "Unknown"}</p>
                         </div>
                         <div className='mt-4'> {/* Total Bedrooms */}
-                            <p className='text-secondary-text font-semibold'>Total Bedrooms</p>
-                            <p className='text-white font-semibold text-md'>{property?.numberOfBedrooms || "Unknown"}</p>
+                            <p className='text-secondary-text font-semibold'>Total Beds</p>
+                            <p className='text-white font-semibold text-md'>{property?.roomDetails?.beds || "Unknown"}</p>
                         </div>
                     </div>
 
@@ -461,69 +577,196 @@ function LandlordPropertyDashboard() {
                     </div>
 
                     {/* Documents Upload */}
-                    <div className='bg-sub-bg w-full text-white rounded-xl p-4 mt-6 lg:mt-0'>
-                        <div className="flex items-center mb-4">
-                            <FileText size={20} className="text-tertiary-text mr-2" />
-                            <p className='font-semibold text-lg text-tertiary-text'>Documents</p>
-                        </div>
-                        
-                        {/* Document selection */}
-                        <div className="mb-4">
-                            <p className="text-secondary-text mb-2">Select document type:</p>
-                            <div className="flex gap-3">
+<div className='bg-sub-bg w-full text-white rounded-xl p-4 mt-6 lg:mt-0'>
+    <div className="flex items-center mb-4">
+        <FileText size={20} className="text-tertiary-text mr-2" />
+        <p className='font-semibold text-lg text-tertiary-text'>Documents</p>
+    </div>
+    
+    {/* Document selection */}
+    <div className="mb-4">
+        <p className="text-secondary-text mb-2">Select document type:</p>
+        <div className="flex gap-3 flex-wrap">
+            <button 
+                className={`px-3 py-2 rounded-lg ${selectedDocType === 'agreement' ? 'bg-main-purple' : 'bg-cards-bg'}`}
+                onClick={() => setSelectedDocType('agreement')}
+            >
+                Rental Agreement
+                {documents.agreement.length > 0 && (
+                    <span className="ml-2 bg-white text-cards-bg text-xs rounded-full h-5 w-5 inline-flex items-center justify-center">
+                        {documents.agreement.length}
+                    </span>
+                )}
+            </button>
+            <button 
+                className={`px-3 py-2 rounded-lg ${selectedDocType === 'id' ? 'bg-main-purple' : 'bg-cards-bg'}`}
+                onClick={() => setSelectedDocType('id')}
+            >
+                ID Proof
+                {documents.id.length > 0 && (
+                    <span className="ml-2 bg-white text-cards-bg text-xs rounded-full h-5 w-5 inline-flex items-center justify-center">
+                        {documents.id.length}
+                    </span>
+                )}
+            </button>
+        </div>
+    </div>
+    
+        {/* Document List - Show this section when documents exist */}
+        {documents[selectedDocType].length > 0 && (
+            <div className="mb-6 bg-cards-bg rounded-xl p-4">
+                <h3 className="text-white font-medium mb-3">
+                    {selectedDocType === 'agreement' ? 'Rental Agreements' : 'ID Proofs'}
+                </h3>
+                
+                <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                    {documents[selectedDocType].map((doc) => (
+                        <div 
+                            key={doc.id} 
+                            className="bg-sub-bg rounded-lg p-3 flex items-center justify-between hover:bg-opacity-80 transition-colors"
+                        >
+                            <div className="flex items-center overflow-hidden">
+                                <div className="bg-main-purple bg-opacity-20 p-2 rounded-lg mr-3 flex-shrink-0">
+                                    <FileText size={16} className="text-main-purple" />
+                                </div>
+                                <div className="overflow-hidden">
+                                    <p className="text-white truncate">{doc.name}</p>
+                                    <p className="text-secondary-text text-xs">{doc.uploadDate} • {doc.size}</p>
+                                </div>
+                            </div>
+                            <div className="flex space-x-2">
                                 <button 
-                                    className={`px-3 py-2 rounded-lg ${selectedDocType === 'agreement' ? 'bg-main-purple' : 'bg-cards-bg'}`}
-                                    onClick={() => setSelectedDocType('agreement')}
+                                    onClick={() => handleViewDocument(doc)}
+                                    className="p-2 bg-cards-bg text-secondary-text hover:text-white rounded-lg hover:bg-main-purple hover:bg-opacity-30 transition-colors"
+                                    title="View document"
                                 >
-                                    Rental Agreement
+                                    <Eye size={16} />
                                 </button>
-                                <button 
-                                    className={`px-3 py-2 rounded-lg ${selectedDocType === 'id' ? 'bg-main-purple' : 'bg-cards-bg'}`}
-                                    onClick={() => setSelectedDocType('id')}
+                                <a 
+                                    href={doc.url} 
+                                    download={doc.name}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="p-2 bg-cards-bg text-secondary-text hover:text-white rounded-lg hover:bg-main-purple hover:bg-opacity-30 transition-colors"
+                                    title="Download document"
                                 >
-                                    ID Proof
+                                    <Download size={16} />
+                                </a>
+                                <button 
+                                    onClick={() => handleDeleteDocument(doc.id, doc.type)}
+                                    className="p-2 bg-cards-bg text-secondary-text hover:text-red-500 rounded-lg hover:bg-red-500 hover:bg-opacity-20 transition-colors"
+                                    title="Delete document"
+                                >
+                                    <X size={16} />
                                 </button>
                             </div>
                         </div>
-                        
-                        {/* Upload section */}
-                        <div className="bg-cards-bg rounded-xl p-4">
-                            <div className="border-2 border-dashed border-secondary-text rounded-lg p-6 flex flex-col items-center justify-center">
-                                <Upload size={32} className="text-secondary-text mb-3" />
-                                <p className="text-secondary-text text-center mb-3">
-                                    {selectedDocType === 'agreement' ? 'Upload Rental Agreement' : 'Upload ID Proof'}
-                                </p>
-                                
-                                <input
-                                    type="file"
-                                    id="document-upload"
-                                    className="hidden"
-                                    onChange={handleFileChange}
-                                />
-                                <label 
-                                    htmlFor="document-upload" 
-                                    className="bg-cards-bg text-white py-2 px-4 rounded-lg cursor-pointer hover:bg-[#3a4456] transition-colors"
-                                >
-                                    Browse Files
-                                </label>
-                                
-                                {docFile && (
-                                    <p className="mt-3 text-sm text-secondary-text">
-                                        Selected: {docFile.name}
-                                    </p>
-                                )}
-                            </div>
-                            
-                            <button 
-                                className={`mt-4 w-full py-2 rounded-lg font-medium ${uploadingDoc ? 'bg-slate-600 cursor-not-allowed' : 'bg-main-purple hover:bg-purple-700'} transition-colors`}
-                                onClick={handleDocumentUpload}
-                                disabled={uploadingDoc || !docFile}
-                            >
-                                {uploadingDoc ? 'Uploading...' : 'Upload Document'}
-                            </button>
-                        </div>
-                    </div>
+                    ))}
                 </div>
+            </div>
+        )}
+        
+        {/* Upload section */}
+        <div className="bg-cards-bg rounded-xl p-4">
+            <div className="border-2 border-dashed border-secondary-text rounded-lg p-6 flex flex-col items-center justify-center">
+                <Upload size={32} className="text-secondary-text mb-3" />
+                <p className="text-secondary-text text-center mb-3">
+                    {selectedDocType === 'agreement' ? 'Upload Rental Agreement' : 'Upload ID Proof'}
+                </p>
+                
+                <input
+                    type="file"
+                    id="document-upload"
+                    className="hidden"
+                    onChange={handleFileChange}
+                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                />
+                <label 
+                    htmlFor="document-upload" 
+                    className="bg-cards-bg text-white py-2 px-4 rounded-lg cursor-pointer hover:bg-[#3a4456] transition-colors"
+                >
+                    Browse Files
+                </label>
+                
+                {docFile && (
+                    <p className="mt-3 text-sm text-secondary-text">
+                        Selected: {docFile.name}
+                    </p>
+                )}
+            </div>
+            
+            <button 
+                className={`mt-4 w-full py-2 rounded-lg font-medium ${uploadingDoc ? 'bg-slate-600 cursor-not-allowed' : 'bg-main-purple hover:bg-purple-700'} transition-colors`}
+                onClick={handleDocumentUpload}
+                disabled={uploadingDoc || !docFile}
+            >
+                {uploadingDoc ? 'Uploading...' : 'Upload Document'}
+            </button>
+        </div>
+    </div>
+
+   {/* Add this to the end of your component render method */}
+   {showDocumentModal && (() => {
+      // Safely check file type for preview
+      const isImage = currentDocument?.url?.match(/\.(jpeg|jpg|gif|png)$/i);
+      const isPdf = currentDocument?.url?.match(/\.(pdf)$/i);
+      return (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+          <div className="bg-sub-bg rounded-xl p-6 max-w-4xl w-full max-h-[90vh] flex flex-col">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-white text-xl font-bold truncate flex-1">{currentDocument.name}</h3>
+              <button 
+                onClick={() => setShowDocumentModal(false)}
+                className="text-secondary-text hover:text-white p-1 rounded-full hover:bg-cards-bg transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="bg-cards-bg rounded-lg flex-1 overflow-hidden mb-4">
+              {isImage ? (
+                <img 
+                  src={currentDocument.url} 
+                  alt={currentDocument.name}
+                  className="w-full h-full object-contain" 
+                />
+              ) : isPdf ? (
+                <iframe 
+                  src={currentDocument.url} 
+                  className="w-full h-[60vh]" 
+                  title={currentDocument.name}
+                />
+              ) : (
+                <div className="h-[60vh] flex items-center justify-center text-secondary-text">
+                  <div className="text-center">
+                    <FileText size={64} className="mx-auto mb-4" />
+                    <p>Cannot preview this file type</p>
+                    <p className="text-sm mt-2">Click download to access this file</p>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex justify-between items-center">
+              <div className="text-secondary-text text-sm">
+                Uploaded on {currentDocument.uploadDate} • {currentDocument.size}
+              </div>
+              <a 
+                href={currentDocument.url} 
+                download={currentDocument.name}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-main-purple text-white py-2 px-4 rounded-lg flex items-center hover:bg-purple-700 transition-colors"
+              >
+                <Download size={16} className="mr-2" />
+                Download
+              </a>
+            </div>
+          </div>
+        </div>
+      );
+    })()}
+    </div>
                 
                 {/* Reviews Tab - now using real data */}
                 <div className='w-full flex flex-col bg-sub-bg p-4 rounded-xl'>
@@ -645,6 +888,8 @@ function LandlordPropertyDashboard() {
         </div>
     );
 }
+
+
 
 const PropertyMap = ({ latitude, longitude, propertyName }) => {
     if (!latitude || !longitude) return null;

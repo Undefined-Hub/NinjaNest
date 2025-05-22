@@ -29,7 +29,7 @@ const PaymentHistorySection = ({
     const [activeTab, setActiveTab] = useState('all'); // 'all', 'sent', 'received'
     
     // Define status types
-    const depositStatuses = ['Pending', 'completed', 'failed', 'refunded'];
+    const depositStatuses = ['completed'];
     const rentStatuses = ['Pending', 'paid', 'partial', 'overdue'];
     
     // Filter states
@@ -332,8 +332,8 @@ const PaymentHistorySection = ({
                                 className="w-full bg-sub-bg text-white p-2 rounded-lg border border-gray-700 focus:outline-none focus:border-tertiary-text"
                             >
                                 <option value="">All Types</option>
-                                <option value="Rent">Rent</option>
-                                <option value="Deposit">Deposit</option>
+                                <option value="rent">Rent</option>
+                                <option value="deposit">Deposit</option>
                             </select>
                         </div>
                         <div>
@@ -346,16 +346,16 @@ const PaymentHistorySection = ({
                             >
                                 <option value="">All Status</option>
                                 
-                                {filters.type === 'Deposit' 
+                               {filters.type === 'Deposit' 
                                     ? depositStatuses.map(status => (
-                                        <option key={status} value={status}>{status}</option>
+                                        <option key={status} value={status}>{status.charAt(0).toUpperCase() + status.slice(1)}</option>
                                     ))
                                     : filters.type === 'Rent'
                                         ? rentStatuses.map(status => (
-                                            <option key={status} value={status}>{status}</option>
+                                            <option key={status} value={status}>{status.charAt(0).toUpperCase() + status.slice(1)}</option>
                                         ))
                                         : [...new Set([...depositStatuses, ...rentStatuses])].map(status => (
-                                            <option key={status} value={status}>{status}</option>
+                                            <option key={status} value={status}>{status.charAt(0).toUpperCase() + status.slice(1)}</option>
                                         ))
                                 }
                             </select>
