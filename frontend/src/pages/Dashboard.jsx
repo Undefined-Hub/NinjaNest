@@ -30,6 +30,7 @@ import payment from '/images/payment.svg'
 import profile from '/images/profile.svg'
 import CurrentRental from '../components/CurrentRental'
 import { setHydrated, fetchUser } from "../features/User/userSlice";
+import PaymentHistorySection  from '../components/PaymentHistorySection'
 const menuItems = [
     { label: "Overview", icon: <AiOutlineHome /> },
     { label: "My Properties", icon: <FaRegBuilding /> },
@@ -353,15 +354,15 @@ const Dashboard = () => {
 
 
                     {activeTab === 'Payment' &&
-                        <div className='flex flex-col items-center justify-center h-[64vh] space-y-4 w-4/5'>
-                            <img
+                        <div className='flex flex-col  max-h-[82vh] overflow-y-scroll space-y-4 w-4/5'>
+                            {/* <img
                                 src={payment} // Replace with your illustration URL
                                 alt='No Payment History'
                                 className='w-1/2 h-auto'
                             />
                             <p className='text-secondary-text text-lg font-semibold text-center'>
                                 No payment history is available yet. <br />Stay tuned for updates or make your first payment!
-                            </p> */}
+                            </p>  */}
                             <PaymentHistorySection 
                                 userId={user?.user?._id}
                                 mode="user"
