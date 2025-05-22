@@ -615,7 +615,7 @@ const EarlyPaymentModal = ({ isOpen, onClose, onConfirm, month }) => {
                             property.roomDetails.members.map((mate, index) => (
                                 console.log(mate),
                                 <div key={index} className='flex items-center bg-cards-bg rounded-xl p-3 space-x-3 mt-4'>
-                                    <img src={mate.profilePicture || 'https://placehold.co/100'} alt="pfp" className='h-12 w-12 rounded-full' />
+                                    <img src={mate.profilePicture || 'https://placehold.co/100'} alt="pfp" className='h-12 w-12 rounded-full object-cover' />
                                     <div className='flex flex-col'>
                                         <p className='text-white text-base font-semibold'>{mate.name}</p>
                                         <p className='text-secondary-text text-base font-semibold'>{mate.course}</p>

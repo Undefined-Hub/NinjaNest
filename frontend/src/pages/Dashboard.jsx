@@ -283,7 +283,7 @@ const Dashboard = () => {
                                 {/* Roommates */}
                                 <div className='flex flex-col justify-center items-center text-white bg-sub-bg rounded-xl p-5 space-y-2'>
                                     <div className="flex justify-center items-center h-10 w-10 bg-blue-900 rounded-xl">
-                                        <img src={people} alt="Roommates" className='h-5 w-5' />
+                                        <img src={people} alt="Roommates" className='h-5 w-5 object-cover' />
                                     </div>
                                     <p className='text-secondary-text font-semibold text-base'>Roommates</p>
                                     <p className='text-white font-semibold text-xl'>
@@ -322,7 +322,7 @@ const Dashboard = () => {
                                     {dashboardRoommates.length > 0 ? (
                                         dashboardRoommates.map((mate, index) => (
                                             <div key={index} className='flex items-center bg-cards-bg rounded-xl p-2 space-x-3'>
-                                                <img src={mate.profilePicture || 'https://placehold.co/100'} alt={mate.name} className='h-12 w-12 rounded-full' />
+                                                <img src={mate.profilePicture || 'https://placehold.co/100'} alt={mate.name} className='h-12 w-12 rounded-full object-cover' />
                                                 <div className='flex flex-col'>
                                                     <p className='text-white text-base font-semibold'>{mate.name}</p>
                                                     <p className='text-secondary-text text-base font-semibold'>{mate.course}</p>
@@ -874,7 +874,7 @@ const Roommates = () => {
                         <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
                             {currentRoommates.map((mate, index) => (
                                 <div key={index} className='flex items-center bg-cards-bg rounded-xl p-3 space-x-3'>
-                                    <img src={mate.profilePicture || 'https://placehold.co/100'} alt="pfp" className='h-12 w-12 rounded-full' />
+                                    <img src={mate.profilePicture || 'https://placehold.co/100'} alt="pfp" className='h-12 w-12 rounded-full object-cover' />
                                     <div className='flex flex-col'>
                                         <p className='text-white text-base font-semibold'>{mate.name}</p>
                                         <p className='text-secondary-text text-base font-semibold'>{mate.course}</p>
