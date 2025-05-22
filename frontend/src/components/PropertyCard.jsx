@@ -8,8 +8,8 @@ const PropertyCard = ({ property }) => {
   return (
     <div
       id=""
-      className="flex flex-col w-[21rem] md:w-96 rounded-2xl bg-[#18212f] justify-center h-fit overflow-hidden md:border-[0.1px] md:border-secondary-text/50 hover:border-main-purple ease-in-out duration-300 cursor-pointer shadow-sm hover:shadow-[#a98cfc]" onClick={()=>{navigate("property/"+property._id)}}>
-        {/* Image Div */}
+      className="flex flex-col w-[21rem] md:w-96 rounded-2xl bg-[#18212f] justify-center h-fit overflow-hidden md:border-[0.1px] md:border-secondary-text/50 hover:border-main-purple ease-in-out duration-300 cursor-pointer shadow-sm hover:shadow-[#a98cfc]" onClick={() => { navigate("property/" + property._id) }}>
+      {/* Image Div */}
       <div className="w-[21rem] md:w-full h-40 relative">
         <img
           src={property.mainImage || "https://placehold.co/1000"}
@@ -49,31 +49,30 @@ const PropertyCard = ({ property }) => {
         <hr className="w-72 md:w-80 self-center border-[#727986]" />
 
 
-          {/*Trust Score and Rating*/}
+        {/*Trust Score and Rating*/}
 
         <div className="flex justify-between text-white py-2">
           <div className="flex flex-row p-2 items-center gap-2">
             <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center">
               <img
-                src={property?.landlord_id?.profilePicture||"https://placehold.co/1000"}
+                src={property?.landlord_id?.profilePicture || "https://placehold.co/1000"}
                 className="object-cover w-full h-full"
                 alt="Landlord"
               />
             </div>
             <div>
-              <p className="text-md font-bold">{property.landlord_name?property.landlord_name:"Landlord XYZ"}</p>
+              <p className="text-md font-bold">{property.landlord_name ? property.landlord_name : "Landlord XYZ"}</p>
               <p className="text-sm flex items-center gap-1 text-[#727986] text-md">
                 <span className="text-green-500">
                   <IoShieldCheckmark />
                 </span>
-                {property.averageTrustScore} Trust
+                {property?.landlord_id?.trustScore} Trust
               </p>
             </div>
           </div>
           <div className="flex flex-col p-2 justify-center">
             <p className="text-right text-lg text-[#727986] font-bold">
-              <span className="text-yellow-400 mx-1">★</span>
-              {property.averageRating}
+              <span className="text-yellow-400 mx-1">★ {property.averageRating}</span>
             </p>
           </div>
         </div>

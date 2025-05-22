@@ -113,7 +113,6 @@ function ExplorePage() {
         </div>
 
         {/* Properties section - make it a flex column to add pagination below */}
-        {/* Properties section - make it a flex column to add pagination below */}
         <div className="w-5/6 flex flex-col">
           {/* Properties grid or No Results message */}
           {properties.length === 0 ? (
@@ -191,6 +190,26 @@ const Filters = ({ filters, setFilters }) => {
     }));
   };
 
+  const amenities = [
+    "Wi-Fi",
+    "Bed",
+    "Study Table",
+    "Wardrobe",
+    "Ceiling Fan",
+    "Air Conditioning",
+    "Attached Bathroom",
+    "Geyser",
+    "24/7 Water Supply",
+    "Washing Machine",
+    "Refrigerator",
+    "Kitchen Access",
+    "Power Backup",
+    "Two-Wheeler Parking",
+    "CCTV Surveillance",
+    "Drinking Water (RO)",
+    "Electricity Included"
+  ];
+
   const updateSingleCheckbox = (field, value) => {
     setFilters((prev) => ({
       ...prev,
@@ -217,199 +236,206 @@ const Filters = ({ filters, setFilters }) => {
 
   return (
     <>
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-5">
         <h1 className="text-lg font-bold">Filters</h1>
-        <button className="text-sm bg-[#a98cfc] px-2 rounded-full font-bold" onClick={resetFilters}>
+        <button className="text-sm bg-[#a98cfc] px-3 py-1 rounded-full font-bold hover:bg-[#9371fc] transition-colors" onClick={resetFilters}>
           Reset
         </button>
       </div>
 
-      {/* Location */}
-      <div className="my-2">
-        <h1 className="font-bold">Location</h1>
-        <input
-          type="text"
-          placeholder="e.g. Mumbai"
-          className="w-full rounded-lg py-1 px-2 bg-[#111827]"
-          value={filters.location}
-          onChange={(e) => setFilters((prev) => ({ ...prev, location: e.target.value }))}
-        />
-      </div>
-
-      {/* Property Type */}
-      <div className="my-2">
-        <h1 className="font-bold">Property Type</h1>
-        <div className="flex gap-2 my-2 justify-around">
-          {["Flat", "Room"].map((type) => (
-            <label key={type} className="flex items-center gap-2 my-1">
-              <input
-                type="radio"
-                className="w-4 h-4"
-                checked={filters.propertyType === type}
-                onChange={() =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    propertyType: type,
-                    flatType: [],
-                    totalBeds: "",
-                    occupiedBeds: ""
-                  }))
-                }
-              />
-              {type}
-            </label>
-          ))}
+      {/* Filter sections with consistent spacing */}
+      <div className="space-y-6"> {/* Main container with consistent spacing */}
+        {/* Location */}
+        <div className="filter-section">
+          <h2 className="font-bold text-center mb-2">Location</h2>
+          <input
+            type="text"
+            placeholder="e.g. Mumbai"
+            className="w-full rounded-lg py-2 px-3 bg-[#111827] focus:outline-none focus:ring-1 focus:ring-[#a98cfc]"
+            value={filters.location}
+            onChange={(e) => setFilters((prev) => ({ ...prev, location: e.target.value }))}
+          />
         </div>
-      </div>
 
-      {/* Flat Type */}
-      {filters.propertyType === "Flat" && (
-        <div className="my-2">
-          <h1 className="font-bold">Flat Type</h1>
-          {["1BHK", "2BHK", "3BHK"].map((type) => (
-            <label key={type} className="flex items-center gap-2 my-1">
+        {/* Property Type */}
+        <div className="filter-section">
+          <h2 className="font-bold text-center mb-2">Property Type</h2>
+          <div className="flex gap-4 justify-around">
+            {["Flat", "Room"].map((type) => (
+              <label key={type} className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  className="w-4 h-4 accent-violet-600"
+                  checked={filters.propertyType === type}
+                  onChange={() =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      propertyType: type,
+                      flatType: [],
+                      totalBeds: "",
+                      occupiedBeds: ""
+                    }))
+                  }
+                />
+                <span>{type}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Flat Type - conditional */}
+        {filters.propertyType === "Flat" && (
+          <div className="filter-section">
+            <h2 className="font-bold text-center mb-2">Flat Type</h2>
+            <div className="space-y-2">
+              {["1BHK", "2BHK", "3BHK"].map((type) => (
+                <label key={type} className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4 accent-violet-600"
+                    checked={filters.flatType.includes(type)}
+                    onChange={() => updateCheckboxList("flatType", type)}
+                  />
+                  <span>{type}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Room Details - conditional */}
+        {filters.propertyType === "Room" && (
+          <div className="filter-section">
+            <h2 className="font-bold text-center mb-2">Room Details</h2>
+            <div className="space-y-3">
+              <label className="flex flex-col">
+                <span className="text-sm mb-1">Total Beds</span>
+                <input
+                  type="number"
+                  className="w-full rounded-lg py-2 px-3 bg-[#111827] focus:outline-none focus:ring-1 focus:ring-[#a98cfc]"
+                  placeholder="e.g. 3"
+                  value={filters.totalBeds}
+                  onChange={(e) => setFilters((prev) => ({ ...prev, totalBeds: e.target.value }))}
+                />
+              </label>
+              <label className="flex flex-col">
+                <span className="text-sm mb-1">Occupied Beds</span>
+                <input
+                  type="number"
+                  className="w-full rounded-lg py-2 px-3 bg-[#111827] focus:outline-none focus:ring-1 focus:ring-[#a98cfc]"
+                  placeholder="e.g. 1"
+                  value={filters.occupiedBeds}
+                  onChange={(e) => setFilters((prev) => ({ ...prev, occupiedBeds: e.target.value }))}
+                />
+              </label>
+            </div>
+          </div>
+        )}
+
+        {/* Rent */}
+        <div className="filter-section">
+          <h2 className="font-bold text-center mb-2">Pricing</h2>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-sm">Min.</label>
+              <input
+                type="number"
+                className="w-32 rounded-lg py-2 px-3 bg-[#111827] text-center focus:outline-none focus:ring-1 focus:ring-[#a98cfc]"
+                placeholder="1000"
+                value={filters.minRent}
+                onChange={(e) => setFilters((prev) => ({ ...prev, minRent: e.target.value }))}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <label className="text-sm">Max.</label>
+              <input
+                type="number"
+                className="w-32 rounded-lg py-2 px-3 bg-[#111827] text-center focus:outline-none focus:ring-1 focus:ring-[#a98cfc]"
+                placeholder="5000"
+                value={filters.maxRent}
+                onChange={(e) => setFilters((prev) => ({ ...prev, maxRent: e.target.value }))}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Availability & Verification in a row */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="filter-section">
+            <h2 className="font-bold text-center mb-2">Availability</h2>
+            <label className="flex items-center gap-2 cursor-pointer justify-center">
               <input
                 type="checkbox"
-                className="w-4 h-4"
-                checked={filters.flatType.includes(type)}
-                onChange={() => updateCheckboxList("flatType", type)}
+                className="w-4 h-4 accent-violet-600"
+                checked={filters.isAvailable === true}
+                onChange={() => updateSingleCheckbox("isAvailable", true)}
               />
-              {type}
+              <span>Available</span>
             </label>
-          ))}
-        </div>
-      )}
+          </div>
 
-      {/* Room Details */}
-      {filters.propertyType === "Room" && (
-        <div className="my-2">
-          <h1 className="font-bold">Room Details</h1>
+          <div className="filter-section">
+            <h2 className="font-bold text-center mb-2">Verification</h2>
+            <label className="flex items-center gap-2 cursor-pointer justify-center">
+              <input
+                type="checkbox"
+                className="w-4 h-4 accent-violet-600"
+                checked={filters.isVerified === true}
+                onChange={() => updateSingleCheckbox("isVerified", true)}
+              />
+              <span>Verified</span>
+            </label>
+          </div>
+        </div>
+
+        {/* Amenities */}
+        <div className="filter-section">
+          <h2 className="font-bold text-center mb-2">Amenities</h2>
           <div className="flex flex-col gap-2">
-            <label className="flex flex-col text-sm">
-              Total Beds
-              <input
-                type="number"
-                className="w-full rounded-lg py-1 px-2 bg-[#111827] mt-1"
-                placeholder="e.g. 3"
-                value={filters.totalBeds}
-                onChange={(e) => setFilters((prev) => ({ ...prev, totalBeds: e.target.value }))}
-              />
-            </label>
-            <label className="flex flex-col text-sm">
-              Occupied Beds
-              <input
-                type="number"
-                className="w-full rounded-lg py-1 px-2 bg-[#111827] mt-1"
-                placeholder="e.g. 1"
-                value={filters.occupiedBeds}
-                onChange={(e) => setFilters((prev) => ({ ...prev, occupiedBeds: e.target.value }))}
-              />
-            </label>
+            {amenities.map((a) => (
+              <label key={a} className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="w-3 h-3 accent-violet-600"
+                  checked={filters.amenities.includes(a)}
+                  onChange={() => updateCheckboxList("amenities", a)}
+                />
+                <span>{a}</span>
+              </label>
+            ))}
           </div>
         </div>
-      )}
 
-      {/* Rent */}
-      <div className="my-4">
-        <h1 className="font-bold">Pricing</h1>
-        <div className="flex flex-col gap-2 my-2">
-          <div className="flex items-center justify-between gap-2">
-            <label>Min.</label>
+        {/* Rating & Trust Score */}
+        <div className="grid grid-cols-1 gap-4">
+          <div className="filter-section">
+            <h2 className="font-bold text-center mb-2">Minimum Rating</h2>
             <input
               type="number"
-              className="w-32 rounded-lg py-1 bg-[#111827] text-center"
-              placeholder="1000"
-              value={filters.minRent}
-              onChange={(e) => setFilters((prev) => ({ ...prev, minRent: e.target.value }))}
+              step="0.1"
+              min="0"
+              max="5"
+              className="w-full rounded-lg py-2 px-3 bg-[#111827] focus:outline-none focus:ring-1 focus:ring-[#a98cfc]"
+              placeholder="e.g. 3.5"
+              value={filters.minRating}
+              onChange={(e) => setFilters((prev) => ({ ...prev, minRating: e.target.value }))}
             />
           </div>
-          <div className="flex items-center justify-between gap-2">
-            <label>Max.</label>
+
+          <div className="filter-section">
+            <h2 className="font-bold text-center mb-2">Minimum Trust Score</h2>
             <input
               type="number"
-              className="w-32 rounded-lg py-1 bg-[#111827] text-center"
-              placeholder="5000"
-              value={filters.maxRent}
-              onChange={(e) => setFilters((prev) => ({ ...prev, maxRent: e.target.value }))}
+              step="0.1"
+              min="0"
+              max="5"
+              className="w-full rounded-lg py-2 px-3 bg-[#111827] focus:outline-none focus:ring-1 focus:ring-[#a98cfc]"
+              placeholder="e.g. 2.0"
+              value={filters.minTrustScore}
+              onChange={(e) => setFilters((prev) => ({ ...prev, minTrustScore: e.target.value }))}
             />
           </div>
         </div>
-      </div>
-
-      {/* Availability */}
-      <div className="my-4">
-        <h1 className="font-bold my-2">Availability</h1>
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            className="w-4 h-4"
-            checked={filters.isAvailable === true}
-            onChange={() => updateSingleCheckbox("isAvailable", true)}
-          />
-          Available
-        </label>
-      </div>
-
-      {/* Verification */}
-      <div className="my-4">
-        <h1 className="font-bold my-2">Verification</h1>
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            className="w-4 h-4"
-            checked={filters.isVerified === true}
-            onChange={() => updateSingleCheckbox("isVerified", true)}
-          />
-          Verified
-        </label>
-      </div>
-
-      {/* Amenities */}
-      <div className="my-4">
-        <h1 className="font-bold">Amenities</h1>
-        <div className="flex flex-col gap-2 my-2">
-          {["WiFi", "Furnished", "Parking"].map((a) => (
-            <label key={a} className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                className="w-4 h-4"
-                checked={filters.amenities.includes(a)}
-                onChange={() => updateCheckboxList("amenities", a)}
-              />
-              {a}
-            </label>
-          ))}
-        </div>
-      </div>
-
-      {/* Rating */}
-      <div className="my-4">
-        <h1 className="font-bold">Minimum Rating</h1>
-        <input
-          type="number"
-          step="0.1"
-          min="0"
-          max="5"
-          className="w-full rounded-lg py-1 px-2 bg-[#111827]"
-          placeholder="e.g. 3.5"
-          value={filters.minRating}
-          onChange={(e) => setFilters((prev) => ({ ...prev, minRating: e.target.value }))}
-        />
-      </div>
-
-      {/* Trust Score */}
-      <div className="my-4">
-        <h1 className="font-bold">Minimum Trust Score</h1>
-        <input
-          type="number"
-          step="0.1"
-          min="0"
-          max="5"
-          className="w-full rounded-lg py-1 px-2 bg-[#111827]"
-          placeholder="e.g. 2.0"
-          value={filters.minTrustScore}
-          onChange={(e) => setFilters((prev) => ({ ...prev, minTrustScore: e.target.value }))}
-        />
       </div>
     </>
   );

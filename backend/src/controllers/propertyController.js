@@ -181,7 +181,8 @@ const Review = require("../models/Review"); // Add this import at the top with o
 const getProperty = async (req, res, next) => {
   try {
     const property = await Property.findById(req.params.id)
-      .populate("landlord_id", "name email profilePicture trustScore") // populate with desired fields only
+      .populate("landlord_id", "name email profilePicture trustScore")
+      .populate("roomDetails.members", "name course profilePicture -_id")
       .select("-__v"); // optional: remove __v if not needed
 
     if (!property) {

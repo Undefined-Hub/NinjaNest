@@ -9,7 +9,7 @@ import { useSelector } from 'react-redux'
 import { Star } from 'lucide-react'
 import { MapContainer, TileLayer, Marker, Popup, LayersControl } from 'react-leaflet';
 import { useRef } from 'react';
-
+import toast from 'react-hot-toast';
 // Inside your component
 
 const { BaseLayer } = LayersControl;
@@ -80,8 +80,13 @@ const CurrentPropertyDashboard = () => {
                 },
             });
             console.log('Review submitted successfully:', response.data);
+            toast.success('Review submitted successfully!');
+            setPropertyComment(''); // Clear the comment input
+            setPropertyRating(0); // Reset the rating
+            setPropertyHover(0); // Reset the hover state
         } catch (err) {
             console.error('Error submitting review:', err);
+            toast.error('Error submitting review. Please try again.');
         }
 
 
@@ -107,8 +112,12 @@ const CurrentPropertyDashboard = () => {
                 },
             });
             console.log('Landlord rating submitted successfully:', response.data);
+            toast.success('Landlord rating submitted successfully!');
+            setLandlordRating(0); // Reset the rating
+            setLandlordHover(0); // Reset the hover state
         } catch (err) {
             console.error('Error submitting landlord rating:', err);
+            toast.error('Error submitting landlord rating. Please try again.');
         }
     };
 
@@ -137,16 +146,16 @@ const CurrentPropertyDashboard = () => {
                             <p className='text-secondary-text font-semibold'>{property?.address || "Unknown Address"}</p>
                             <p className='bg-cards-bg text-secondary-text mt-1 rounded-full w-fit px-3 text-center text-sm font-semibold'>{property?.flatType || "Unknown Flat Type"}</p>
                         </div>
-                      <div className='flex justify-start sm:justify-end items-center w-full mt-4 sm:mt-0'>
-                        <button
-                            className='bg-cards-bg text-white font-semibold px-4 py-2 rounded-lg hover:bg-main-purple'
-                            onClick={() => {
-                                console.log(mapSectionRef.current); // Should log a DOM element
-                                mapSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+                        <div className='flex justify-start sm:justify-end items-center w-full mt-4 sm:mt-0'>
+                            <button
+                                className='bg-cards-bg text-white font-semibold px-4 py-2 rounded-lg hover:bg-main-purple'
+                                onClick={() => {
+                                    console.log(mapSectionRef.current); // Should log a DOM element
+                                    mapSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
                                 }}
-                        >
-                            View on Map
-                        </button>
+                            >
+                                View on Map
+                            </button>
                         </div>
 
                     </div>
@@ -165,7 +174,7 @@ const CurrentPropertyDashboard = () => {
 
                     </div>
                 </div>
-                     
+
                 <div className='w-full flex flex-col lg:flex-row gap-6'> {/* Changed space-x-6 to gap-6 for better responsiveness */}
                     {/* Rent Details */}
                     <div className='flex flex-col bg-sub-bg w-full text-white rounded-xl p-4'>
@@ -192,19 +201,24 @@ const CurrentPropertyDashboard = () => {
                     </div>
 
                     {/* Your Roommates */}
-                    {/* TODO: Implement Roommate List in Property Schema */}
                     <div className='bg-sub-bg w-full text-white rounded-xl p-4 mt-6 lg:mt-0'>
                         <p className='font-semibold text-lg text-tertiary-text'>Your Roomates</p>
                         {/* Roommate List */}
-                        {[{ name: 'Aryan Patil', course: 'Computer Science & Engg.' }, { name: 'Harshwardhan Patil', course: 'Computer Science & Engg.' }].map((mate, index) => (
-                            <div key={index} className='flex items-center bg-cards-bg rounded-xl p-3 space-x-3 mt-4'> {/* Increased padding for consistency */}
-                                <img src='https://placehold.co/100' alt="pfp" className='h-12 w-12 rounded-full' />
-                                <div className='flex flex-col'>
-                                    <p className='text-white text-base font-semibold'>{mate.name}</p>
-                                    <p className='text-secondary-text text-base font-semibold'>{mate.course}</p>
+                        {property?.roomDetails?.members && property.roomDetails.members.length > 0 ? (
+                            property.roomDetails.members.map((mate, index) => (
+                                <div key={index} className='flex items-center bg-cards-bg rounded-xl p-3 space-x-3 mt-4'>
+                                    <img src={mate.profilePicture || 'https://placehold.co/100'} alt="pfp" className='h-12 w-12 rounded-full' />
+                                    <div className='flex flex-col'>
+                                        <p className='text-white text-base font-semibold'>{mate.name}</p>
+                                        <p className='text-secondary-text text-base font-semibold'>{mate.course}</p>
+                                    </div>
                                 </div>
+                            ))
+                        ) : (
+                            <div className='bg-cards-bg p-4 rounded-lg text-center mt-4'>
+                                <p className='text-slate-300 font-medium'>No roommates found.</p>
                             </div>
-                        ))}
+                        )}
                     </div>
 
                     {/* Documents */}
@@ -260,24 +274,24 @@ const CurrentPropertyDashboard = () => {
                         </div>
                     ))}
                 </div>
-             <div
-                ref={mapSectionRef}
-                className='w-full flex flex-col bg-sub-bg p-4 rounded-xl'
+                <div
+                    ref={mapSectionRef}
+                    className='w-full flex flex-col bg-sub-bg p-4 rounded-xl'
                 >
-                <p className='font-semibold text-lg text-tertiary-text mb-4'>Location</p>
-                <PropertyMap
-                    latitude={property?.latitude}
-                    longitude={property?.longitude}
-                    propertyName={property?.title}
-                />
+                    <p className='font-semibold text-lg text-tertiary-text mb-4'>Location</p>
+                    <PropertyMap
+                        latitude={property?.latitude}
+                        longitude={property?.longitude}
+                        propertyName={property?.title}
+                    />
                 </div>
                 {/* Reviews Section - IMPROVED */}
                 <div className='w-full flex flex-col bg-sub-bg p-4 rounded-xl'>
                     <p className='font-semibold text-lg text-tertiary-text mb-4'>Reviews</p>
 
                     {/* Landlord Review */}
-                    <p className='text-white font-semibold text-base mb-3'>Rate your Landlord</p>
                     <div className='flex flex-col bg-cards-bg rounded-xl p-4 mb-4'>
+                        <p className='text-white font-semibold text-base mb-3'>Rate your Landlord</p>
                         <div className="flex justify-between items-center"> {/* Added items-center */}
                             {/* Star Rating for Landlord */}
                             <div className='flex items-center'> {/* Removed mb-4 */}
@@ -312,7 +326,7 @@ const CurrentPropertyDashboard = () => {
                             </div>
                         </div>
                     </div>
-             
+
                     {/* Property Review */}
                     <div className='flex flex-col bg-cards-bg rounded-xl p-4'>
                         <p className='text-white font-semibold text-base mb-3'>Rate & Review Property</p>
@@ -374,33 +388,33 @@ export default CurrentPropertyDashboard
 
 
 const PropertyMap = ({ latitude, longitude, propertyName }) => {
-  if (!latitude || !longitude) return null;
+    if (!latitude || !longitude) return null;
 
-  return (
-    <div className="w-full h-[50vh] rounded-lg overflow-hidden">
-      <MapContainer center={[latitude, longitude]} zoom={16} scrollWheelZoom={false} className="w-full h-full z-0">
-        <LayersControl position="topright">
-          {/* Default OSM Layer */}
-          <BaseLayer checked name="Street View">
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-          </BaseLayer>
+    return (
+        <div className="w-full h-[50vh] rounded-lg overflow-hidden">
+            <MapContainer center={[latitude, longitude]} zoom={16} scrollWheelZoom={false} className="w-full h-full z-0">
+                <LayersControl position="topright">
+                    {/* Default OSM Layer */}
+                    <BaseLayer checked name="Street View">
+                        <TileLayer
+                            attribution='&copy; <a href="https://www.openstreetmap.org">OpenStreetMap</a> contributors'
+                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        />
+                    </BaseLayer>
 
-          {/* Satellite Layer (Esri) */}
-          <BaseLayer name="Satellite View">
-            <TileLayer
-              attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, etc.'
-              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-            />
-          </BaseLayer>
-        </LayersControl>
+                    {/* Satellite Layer (Esri) */}
+                    <BaseLayer name="Satellite View">
+                        <TileLayer
+                            attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, etc.'
+                            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                        />
+                    </BaseLayer>
+                </LayersControl>
 
-        <Marker position={[latitude, longitude]}>
-          <Popup>{propertyName || "This property is located here!"}</Popup>
-        </Marker>
-      </MapContainer>
-    </div>
-  );
+                <Marker position={[latitude, longitude]}>
+                    <Popup>{propertyName || "This property is located here!"}</Popup>
+                </Marker>
+            </MapContainer>
+        </div>
+    );
 };

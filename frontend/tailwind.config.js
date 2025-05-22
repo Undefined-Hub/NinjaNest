@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        "main-bg": "#111827",     // background
+        "main-bg": "#111827", // background
         "menu-active-bg": "#302d57", // background of active menu item
         "sub-bg": "#18212f", //main div background
         "primary-text": "#fbfbfb", // text color of main text
@@ -13,19 +13,19 @@ export default {
         "cards-bg": "#283141", // background of sub cards
         "logo-blue": "#5695E1",
         "main-purple": "#7c3bf1",
-        "logout-red": "#572d2d",      // background
-        "logout-text": "#e78686", 
+        "logout-red": "#572d2d", // background
+        "logout-text": "#e78686",
       },
       keyframes: {
-      shimmer: {
-        '0%': { transform: 'translateX(-100%)' },
-        '100%': { transform: 'translateX(100%)' },
+        shimmer: {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(100%)" },
+        },
       },
+      animation: {
+        shimmer: "shimmer 2s infinite",
       },
-    animation: {
-      shimmer: 'shimmer 2s infinite',
-    },
     },
   },
-  plugins: [require('@tailwindcss/line-clamp')],
+  plugins: [require("@tailwindcss/line-clamp")],
 };

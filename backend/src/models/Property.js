@@ -99,7 +99,7 @@ const PropertySchema = new Schema(
     roomDetails: {
       beds: { type: Number },
       occupiedBeds: { type: Number, default: 0 },
-      members: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+      members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     },
 
     flatType: {
