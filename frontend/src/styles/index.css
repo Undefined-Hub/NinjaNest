@@ -1,0 +1,26 @@
+/* Custom Slider Styles */
+.rc-slider {
+  @apply w-full;
+}
+
+.rc-slider-handle {
+  @apply cursor-pointer transition-all duration-200 hover:scale-110;
+}
+
+.rc-slider-handle:hover {
+  @apply border-purple-400;
+  box-shadow: 0 0 0 5px rgba(124, 59, 241, 0.2);
+}
+
+.rc-slider-handle-dragging {
+  @apply border-purple-400;
+  box-shadow: 0 0 0 5px rgba(124, 59, 241, 0.2) !important;
+}
+
+.rc-slider-track {
+  @apply transition-all duration-200;
+}
+
+.rc-slider:hover .rc-slider-track {
+  @apply bg-purple-500;
+}

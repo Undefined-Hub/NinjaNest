@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useForm, FormProvider, useFormContext } from 'react-hook-form';
 import Step4MediaLocation from './steps/Step4MediaLocation';
 import { FiEye } from 'react-icons/fi';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import cities from '../services/cities.json';
 
 import { useNavigate } from 'react-router-dom';
 const BasicInfoSection = () => {
@@ -14,12 +15,52 @@ const BasicInfoSection = () => {
     setValue,
     formState: { errors },
   } = useFormContext();
-// const titleValue = watch('title');
 
-// useEffect(() => {
-//   console.log('Title updated:', titleValue);
-// }, [titleValue]);
+  const [locationSuggestions, setLocationSuggestions] = useState([]);
+  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
+  const locationRef = useRef(null);
+  const locationValue = watch('location');
 
+  // Handle click outside suggestions
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (locationRef.current && !locationRef.current.contains(event.target)) {
+        setShowLocationSuggestions(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Handle location input change
+  const handleLocationChange = (e) => {
+    const value = e.target.value;
+    setValue('location', value);
+
+    if (value.trim()) {
+      const filteredCities = cities
+        .filter(city => 
+          city.District.toLowerCase().includes(value.toLowerCase())
+        )
+        .map(city => city.District)
+        // Remove duplicates
+        .filter((city, index, self) => self.indexOf(city) === index)
+        .slice(0, 5); // Limit to 5 suggestions
+      
+      setLocationSuggestions(filteredCities);
+      setShowLocationSuggestions(true);
+    } else {
+      setLocationSuggestions([]);
+      setShowLocationSuggestions(false);
+    }
+  };
+
+  // Handle suggestion selection
+  const handleSuggestionClick = (suggestion) => {
+    setValue('location', suggestion);
+    setShowLocationSuggestions(false);
+  };
 
   const propertyType = watch('propertyType');
   const flatType = watch('flatType');
@@ -49,22 +90,29 @@ const BasicInfoSection = () => {
           {errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
         </div>
 
-        {/* Location */}
-        <div className="flex flex-col">
+        {/* Location with Autocomplete */}
+        <div className="flex flex-col relative" ref={locationRef}>
           <label className="text-sm text-secondary-text">Location</label>
-          <select
-            {...register('location')}
+          <input
+            type="text"
+            placeholder="Enter city name"
+            value={locationValue || ''}
+            onChange={handleLocationChange}
             className="bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text"
-          >
-            <option value="" disabled>Select your City</option>
-            <option value="Bangalore">Bangalore</option>
-            <option value="Hyderabad">Hyderabad</option>
-            <option value="Chennai">Chennai</option>
-            <option value="Delhi">Delhi</option>
-            <option value="Pune">Pune</option>
-            <option value="Nagpur">Nagpur</option>
-            <option value="Mumbai">Mumbai</option>
-          </select>
+          />
+          {showLocationSuggestions && locationSuggestions.length > 0 && (
+            <div className="absolute left-0 right-0 top-[100%] mt-1 bg-cards-bg border border-gray-700/30 rounded-lg overflow-hidden z-50">
+              {locationSuggestions.map((suggestion, index) => (
+                <div
+                  key={index}
+                  className="px-4 py-2 text-sm text-gray-300 hover:bg-[#222b39] cursor-pointer transition-colors duration-200"
+                  onClick={() => handleSuggestionClick(suggestion)}
+                >
+                  {suggestion}
+                </div>
+              ))}
+            </div>
+          )}
           {errors.location && <p className="text-red-500 text-sm">{errors.location.message}</p>}
         </div>
 

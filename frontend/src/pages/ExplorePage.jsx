@@ -1,7 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import { useLocation } from "react-router-dom";
+import cities from "../services/cities.json";
 import PropertyCard from "../components/PropertyCard";
 
 function ExplorePage() {
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+
+  // Get all relevant filters from URL
+  const initialLocation = params.get("location") || "";
+  const initialMinRent = params.get("minRent") || "";
+  const initialMaxRent = params.get("maxRent") || "";
+
   const [properties, setProperties] = useState([]);
   const [noResults, setNoResults] = useState(false);
   const [pagination, setPagination] = useState({
@@ -13,11 +23,12 @@ function ExplorePage() {
     hasPrevPage: false
   });
 
+  // Use URL params as initial filter values
   const [filters, setFilters] = useState({
-    location: "",
+    location: initialLocation,
     amenities: [],
-    minRent: "",
-    maxRent: "",
+    minRent: initialMinRent,
+    maxRent: initialMaxRent,
     propertyType: "",
     flatType: [],
     isVerified: null,
@@ -114,6 +125,9 @@ function ExplorePage() {
 
         {/* Properties section - make it a flex column to add pagination below */}
         <div className="w-5/6 flex flex-col">
+          {/* Active Filters - new component */}
+          <ActiveFilters filters={filters} setFilters={setFilters} />
+
           {/* Properties grid or No Results message */}
           {properties.length === 0 ? (
             <div className="flex flex-col items-center justify-center w-full py-16 bg-[#18212f] rounded-xl text-white">
@@ -145,11 +159,17 @@ function ExplorePage() {
               </button>
             </div>
           ) : (
-            <div className="flex flex-wrap gap-5 items-start justify-start md:p-4 max-h-[110vh] overflow-y-auto" id="propertiesContainer">
-              {properties.map((property) => (
-                <PropertyCard key={property._id} property={property} />
-              ))}
-            </div>
+            <>
+              <div className="text-gray-400 mt-4 pl-4 text-xl">
+                Found {properties.length} properties
+                {filters.location && ` in ${filters.location}`}
+              </div>
+              <div className="flex flex-wrap gap-5 items-start justify-start md:p-4 max-h-[110vh] overflow-y-auto" id="propertiesContainer">
+                {properties.map((property) => (
+                  <PropertyCard key={property._id} property={property} />
+                ))}
+              </div>
+            </>
           )}
 
           {/* Pagination controls - only show when there are results */}
@@ -181,6 +201,51 @@ function ExplorePage() {
 }
 
 const Filters = ({ filters, setFilters }) => {
+  const [locationSuggestions, setLocationSuggestions] = useState([]);
+  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
+  const locationRef = useRef(null);
+
+  // Handle click outside suggestions
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (locationRef.current && !locationRef.current.contains(event.target)) {
+        setShowLocationSuggestions(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Handle location input change
+  const handleLocationInputChange = (e) => {
+    const value = e.target.value;
+    setFilters(prev => ({ ...prev, location: value }));
+
+    if (value.trim()) {
+      const filteredCities = cities
+        .filter(city => 
+          city.District.toLowerCase().includes(value.toLowerCase())
+        )
+        .map(city => city.District)
+        // Remove duplicates
+        .filter((city, index, self) => self.indexOf(city) === index)
+        .slice(0, 5); // Limit to 5 suggestions
+      
+      setLocationSuggestions(filteredCities);
+      setShowLocationSuggestions(true);
+    } else {
+      setLocationSuggestions([]);
+      setShowLocationSuggestions(false);
+    }
+  };
+
+  // Handle suggestion selection
+  const handleSuggestionClick = (suggestion) => {
+    setFilters(prev => ({ ...prev, location: suggestion }));
+    setShowLocationSuggestions(false);
+  };
+
   const updateCheckboxList = (field, value) => {
     setFilters((prev) => ({
       ...prev,
@@ -245,16 +310,30 @@ const Filters = ({ filters, setFilters }) => {
 
       {/* Filter sections with consistent spacing */}
       <div className="space-y-6"> {/* Main container with consistent spacing */}
-        {/* Location */}
-        <div className="filter-section">
+        {/* Location with Autocomplete */}
+        <div className="filter-section relative" ref={locationRef}>
           <h2 className="font-bold text-center mb-2">Location</h2>
           <input
             type="text"
             placeholder="e.g. Mumbai"
             className="w-full rounded-lg py-2 px-3 bg-[#111827] focus:outline-none focus:ring-1 focus:ring-[#a98cfc]"
             value={filters.location}
-            onChange={(e) => setFilters((prev) => ({ ...prev, location: e.target.value }))}
+            onChange={handleLocationInputChange}
           />
+          {/* Suggestions Dropdown */}
+          {showLocationSuggestions && locationSuggestions.length > 0 && (
+            <div className="absolute left-0 right-0 mt-1 bg-[#111827] border border-gray-700/30 rounded-lg overflow-hidden z-10">
+              {locationSuggestions.map((suggestion, index) => (
+                <div
+                  key={index}
+                  className="px-3 py-2 text-sm text-gray-300 hover:bg-[#1c2739] cursor-pointer transition-colors duration-200"
+                  onClick={() => handleSuggestionClick(suggestion)}
+                >
+                  {suggestion}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Property Type */}
@@ -438,6 +517,76 @@ const Filters = ({ filters, setFilters }) => {
         </div>
       </div>
     </>
+  );
+};
+
+// New ActiveFilters component
+const ActiveFilters = ({ filters, setFilters }) => {
+  const removeFilter = (key, value) => {
+    if (Array.isArray(filters[key])) {
+      setFilters(prev => ({
+        ...prev,
+        [key]: prev[key].filter(item => item !== value)
+      }));
+    } else {
+      setFilters(prev => ({
+        ...prev,
+        [key]: key === 'propertyType' ? '' : null
+      }));
+    }
+  };
+
+  const renderFilterValue = (key, value) => {
+    if (key === 'minRent') return `Min Rent: ₹${value}`;
+    if (key === 'maxRent') return `Max Rent: ₹${value}`;
+    if (key === 'minRating') return `Rating: ≥${value}⭐`;
+    if (key === 'minTrustScore') return `Trust Score: ≥${value}`;
+    return value;
+  };
+
+  const activeFilters = Object.entries(filters).filter(([key, value]) => {
+    if (Array.isArray(value)) return value.length > 0;
+    if (typeof value === 'boolean') return value !== null;
+    return value && value !== '';
+  });
+
+  if (activeFilters.length === 0) return null;
+
+  return (
+    <div className="bg-[#18212f] p-4 rounded-xl mt-4">
+      <div className="flex flex-wrap gap-2">
+        {activeFilters.map(([key, value]) => (
+          Array.isArray(value) ? 
+            value.map(v => (
+              <span 
+                key={`${key}-${v}`}
+                className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm bg-[#222b39] text-gray-200"
+              >
+                {renderFilterValue(key, v)}
+                <button
+                  onClick={() => removeFilter(key, v)}
+                  className="ml-2 text-gray-400 hover:text-white"
+                >
+                  ×
+                </button>
+              </span>
+            ))
+          :
+          <span 
+            key={key}
+            className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm bg-[#222b39] text-gray-200"
+          >
+            {renderFilterValue(key, value)}
+            <button
+              onClick={() => removeFilter(key, value)}
+              className="ml-2 text-gray-400 hover:text-white"
+            >
+              ×
+            </button>
+          </span>
+        ))}
+      </div>
+    </div>
   );
 };
 
