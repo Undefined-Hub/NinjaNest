@@ -32,14 +32,17 @@ exports.createRequest = async (req, res) => {
 // Get all requests
 exports.getAllRequests = async (req, res) => {
   try {
-    const requests = await Request.find().populate(
-      "requestorId ownerId propertyId"
-    );
+    const requests = await Request.find()
+      .populate("requestorId", "_id name username profilePicture")
+      .populate("ownerId", "_id name username profilePicture")
+      .populate("propertyId", "_id title location address"); // 👈 Select specific fields
+
     res.status(200).json(requests);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 // Get a single request by ID
 exports.getRequestById = async (req, res) => {

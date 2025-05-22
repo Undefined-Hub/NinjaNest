@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { Calendar, Check, Clock, Ban, RefreshCcw, DollarSign, Filter, Home, CreditCard, AlertTriangle, User } from 'lucide-react';
+import { Calendar, Check, Clock, Ban, RefreshCcw, DollarSign, Filter, Home, CreditCard, AlertTriangle, User, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
 import { format } from 'date-fns';
 
 /**
@@ -25,9 +25,12 @@ const PaymentHistorySection = ({
     const [error, setError] = useState(null);
     const [filterOpen, setFilterOpen] = useState(false);
     
+    // Add active tab for user mode to switch between sent and received payments
+    const [activeTab, setActiveTab] = useState('all'); // 'all', 'sent', 'received'
+    
     // Define status types
-    const depositStatuses = ['completed'];
-    const rentStatuses = ['Pending', 'paid', 'overdue'];
+    const depositStatuses = ['Pending', 'completed', 'failed', 'refunded'];
+    const rentStatuses = ['Pending', 'paid', 'partial', 'overdue'];
     
     // Filter states
     const [filters, setFilters] = useState({
@@ -35,6 +38,7 @@ const PaymentHistorySection = ({
         status: '',
         fromDate: '',
         toDate: '',
+        direction: '', // new filter for sent/received
     });
     
     // Stats
@@ -42,7 +46,9 @@ const PaymentHistorySection = ({
         total: 0,
         paid: 0,
         pending: 0,
-        overdue: 0
+        overdue: 0,
+        sent: 0,
+        received: 0
     });
 
     // Fetch transactions based on provided filters
@@ -65,20 +71,52 @@ const PaymentHistorySection = ({
                 },
             });
             
-            setTransactions(response.data.data);
+            // Process transactions to identify sent vs received for user mode
+            const processedTransactions = response.data.data.map(tx => {
+                // For user mode, determine if this transaction is sent or received
+                if (mode === 'user' && userId) {
+                    // If user is landlord, they received the payment
+                    const isReceived = tx.landlord._id === userId;
+                    return { 
+                        ...tx, 
+                        direction: isReceived ? 'received' : 'sent'
+                    };
+                }
+                return tx;
+            });
+            
+            let filteredTransactions = processedTransactions;
+            
+            // Apply direction filter if in user mode
+            if (mode === 'user' && filters.direction) {
+                filteredTransactions = processedTransactions.filter(tx => 
+                    tx.direction === filters.direction
+                );
+            }
+            
+            // Apply active tab filter in user mode
+            if (mode === 'user' && activeTab !== 'all') {
+                filteredTransactions = filteredTransactions.filter(tx => 
+                    tx.direction === activeTab
+                );
+            }
+            
+            setTransactions(filteredTransactions);
             
             // Calculate stats
             const newStats = {
-                total: response.data.count,
-                paid: response.data.data.filter(tx => 
+                total: filteredTransactions.length,
+                paid: filteredTransactions.filter(tx => 
                     tx.status === 'paid' || tx.status === 'completed'
                 ).length,
-                pending: response.data.data.filter(tx => 
+                pending: filteredTransactions.filter(tx => 
                     tx.status === 'Pending'
                 ).length,
-                overdue: response.data.data.filter(tx => 
+                overdue: filteredTransactions.filter(tx => 
                     tx.status === 'overdue'
-                ).length
+                ).length,
+                sent: mode === 'user' ? processedTransactions.filter(tx => tx.direction === 'sent').length : 0,
+                received: mode === 'user' ? processedTransactions.filter(tx => tx.direction === 'received').length : 0
             };
             
             setStats(newStats);
@@ -93,7 +131,7 @@ const PaymentHistorySection = ({
 
     useEffect(() => {
         fetchTransactions();
-    }, [userId, propertyId, landlordId]);
+    }, [userId, propertyId, landlordId, activeTab]);
     
     // Effect to refetch when filters change
     useEffect(() => {
@@ -121,6 +159,7 @@ const PaymentHistorySection = ({
             status: '',
             fromDate: '',
             toDate: '',
+            direction: ''
         });
     };
     
@@ -235,7 +274,7 @@ const PaymentHistorySection = ({
     }
 
     return (
-        <div className="bg-sub-bg rounded-xl p-4 lg:p-4">
+        <div className="bg-sub-bg rounded-xl p-4 lg:p-6">
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center">
                     <DollarSign size={20} className="text-tertiary-text mr-2" />
@@ -249,8 +288,38 @@ const PaymentHistorySection = ({
                     <span>Filter</span>
                 </button>
             </div>
+            
+            {/* User mode tabs */}
+            {mode === 'user' && (
+                <div className="flex mb-4 border-b border-gray-700">
+                    <button 
+                        className={`py-2 px-4 font-medium text-sm ${activeTab === 'all' ? 'text-tertiary-text border-b-2 border-tertiary-text' : 'text-secondary-text'}`}
+                        onClick={() => setActiveTab('all')}
+                    >
+                        All Transactions ({stats.total})
+                    </button>
+                    <button 
+                        className={`py-2 px-4 font-medium text-sm ${activeTab === 'sent' ? 'text-tertiary-text border-b-2 border-tertiary-text' : 'text-secondary-text'}`}
+                        onClick={() => setActiveTab('sent')}
+                    >
+                        <span className="flex items-center">
+                            <ArrowUpRight size={14} className="mr-1" />
+                            Sent ({stats.sent})
+                        </span>
+                    </button>
+                    <button 
+                        className={`py-2 px-4 font-medium text-sm ${activeTab === 'received' ? 'text-tertiary-text border-b-2 border-tertiary-text' : 'text-secondary-text'}`}
+                        onClick={() => setActiveTab('received')}
+                    >
+                        <span className="flex items-center">
+                            <ArrowDownLeft size={14} className="mr-1" />
+                            Received ({stats.received})
+                        </span>
+                    </button>
+                </div>
+            )}
 
-             {/* Filters section */}
+            {/* Filters section */}
             {filterOpen && (
                 <div className="bg-cards-bg p-4 rounded-xl mb-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
@@ -263,8 +332,8 @@ const PaymentHistorySection = ({
                                 className="w-full bg-sub-bg text-white p-2 rounded-lg border border-gray-700 focus:outline-none focus:border-tertiary-text"
                             >
                                 <option value="">All Types</option>
-                                <option value="rent">Rent</option>
-                                <option value="deposit">Deposit</option>
+                                <option value="Rent">Rent</option>
+                                <option value="Deposit">Deposit</option>
                             </select>
                         </div>
                         <div>
@@ -279,14 +348,14 @@ const PaymentHistorySection = ({
                                 
                                 {filters.type === 'Deposit' 
                                     ? depositStatuses.map(status => (
-                                        <option key={status} value={status}>{status.charAt(0).toUpperCase() + status.slice(1)}</option>
+                                        <option key={status} value={status}>{status}</option>
                                     ))
                                     : filters.type === 'Rent'
                                         ? rentStatuses.map(status => (
-                                            <option key={status} value={status}>{status.charAt(0).toUpperCase() + status.slice(1)}</option>
+                                            <option key={status} value={status}>{status}</option>
                                         ))
                                         : [...new Set([...depositStatuses, ...rentStatuses])].map(status => (
-                                            <option key={status} value={status}>{status.charAt(0).toUpperCase() + status.slice(1)}</option>
+                                            <option key={status} value={status}>{status}</option>
                                         ))
                                 }
                             </select>
@@ -322,7 +391,7 @@ const PaymentHistorySection = ({
                     </div>
                 </div>
             )}
-                        
+            
             {/* Payment stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                 <div className="bg-cards-bg rounded-lg p-3 flex items-center">
@@ -375,6 +444,16 @@ const PaymentHistorySection = ({
                             <div key={transaction._id} className="p-4 hover:bg-opacity-60">
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between">
                                     <div className="flex items-start mb-2 sm:mb-0">
+                                        {/* Add direction indicator for user mode */}
+                                        {mode === 'user' && (
+                                            <div className={`p-2 rounded-lg mr-3 ${transaction.direction === 'sent' ? 'bg-blue-400 bg-opacity-20' : 'bg-green-500 bg-opacity-20'}`}>
+                                                {transaction.direction === 'sent' ? (
+                                                    <ArrowUpRight size={16} className="text-blue-400" />
+                                                ) : (
+                                                    <ArrowDownLeft size={16} className="text-green-500" />
+                                                )}
+                                            </div>
+                                        )}
                                         <div className={`${statusInfo.bgColor} p-2 rounded-lg mr-3`}>
                                             {transaction.type === 'Rent' ? 
                                                 <Calendar size={16} className={statusInfo.color} /> : 
@@ -406,7 +485,14 @@ const PaymentHistorySection = ({
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-tertiary-text font-semibold">₹{transaction.amount.toLocaleString('en-IN')}</p>
+                                        <p className="text-tertiary-text font-semibold">
+                                            {mode === 'user' && (
+                                                <span className={transaction.direction === 'received' ? 'text-green-400' : ''}>
+                                                    {transaction.direction === 'received' ? '+' : ''}
+                                                </span>
+                                            )}
+                                            ₹{transaction.amount.toLocaleString('en-IN')}
+                                        </p>
                                         <p className="text-secondary-text text-xs">
                                             <span className="inline-flex items-center">
                                                 <CreditCard size={10} className="mr-1" />
@@ -416,11 +502,17 @@ const PaymentHistorySection = ({
                                     </div>
                                 </div>
                                 
-                                {/* User/Landlord Info */}
+                                {/* User/Landlord Info based on context */}
                                 <div className="mt-3">
                                     <div className="bg-sub-bg rounded-lg p-2 flex items-center">
                                         <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
-                                            {mode === 'landlord' ? (
+                                            {mode === 'user' ? (
+                                                <img 
+                                                    src={(transaction.direction === 'sent' ? transaction.landlord.profilePicture : transaction.user.profilePicture) || 'https://placehold.co/100'} 
+                                                    alt={transaction.direction === 'sent' ? transaction.landlord.name : transaction.user.name}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : mode === 'landlord' ? (
                                                 <img 
                                                     src={transaction.user.profilePicture || 'https://placehold.co/100'} 
                                                     alt={transaction.user.name}
@@ -435,13 +527,28 @@ const PaymentHistorySection = ({
                                             )}
                                         </div>
                                         <div>
-                                            <p className="text-white text-sm flex items-center">
-                                                <User size={12} className="mr-1 text-secondary-text" />
-                                                {mode === 'landlord' ? 'From: ' : 'To: '}
-                                                {mode === 'landlord' ? transaction.user.name : transaction.landlord.name}
-                                            </p>
+                                            {mode === 'user' ? (
+                                                <p className="text-white text-sm flex items-center">
+                                                    <User size={12} className="mr-1 text-secondary-text" />
+                                                    {transaction.direction === 'sent' ? (
+                                                        <>To: {transaction.landlord.name}</>
+                                                    ) : (
+                                                        <>From: {transaction.user.name}</>
+                                                    )}
+                                                </p>
+                                            ) : (
+                                                <p className="text-white text-sm flex items-center">
+                                                    <User size={12} className="mr-1 text-secondary-text" />
+                                                    {mode === 'landlord' ? 'From: ' : 'To: '}
+                                                    {mode === 'landlord' ? transaction.user.name : transaction.landlord.name}
+                                                </p>
+                                            )}
                                             <p className="text-secondary-text text-xs">
-                                                @{mode === 'landlord' ? transaction.user.username : transaction.landlord.username}
+                                                {mode === 'user' ? (
+                                                    <>@{transaction.direction === 'sent' ? transaction.landlord.username : transaction.user.username}</>
+                                                ) : (
+                                                    <>@{mode === 'landlord' ? transaction.user.username : transaction.landlord.username}</>
+                                                )}
                                             </p>
                                         </div>
                                     </div>

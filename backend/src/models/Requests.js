@@ -65,12 +65,14 @@ const RequestSchema = new mongoose.Schema({
 });
 
 // Ensure only `_id` is populated for references
+// REMOVE this block entirely OR update it to:
 RequestSchema.pre(/^find/, function (next) {
-    this.populate('requestorId', '_id')
-        .populate('ownerId', '_id')
-        .populate('propertyId', '_id');
-    next();
+  this.populate('requestorId', '_id name username profilePicture')
+      .populate('ownerId', '_id name username profilePicture' )
+      .populate('propertyId', '_id title location address');
+  next();
 });
+
 
 RequestSchema.set('toObject', { transform: (doc, ret) => { delete ret.__v; return ret; } });
 RequestSchema.set('toJSON', { transform: (doc, ret) => { delete ret.__v; return ret; } });

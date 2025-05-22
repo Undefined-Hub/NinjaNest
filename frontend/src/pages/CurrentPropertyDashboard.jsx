@@ -50,6 +50,61 @@ const [nextUnpaidMonth, setNextUnpaidMonth] = useState(null);
     const isCurrentMonthRentPaid = currentMonthRent && currentMonthRent.payment_status === "paid";
     const [depositPaid, setDepositPaid] = useState(false);
 
+
+
+
+    const [showLeavePropertyModal, setShowLeavePropertyModal] = useState(false);
+const [leaveReason, setLeaveReason] = useState('');
+const [leaveRequestStatus, setLeaveRequestStatus] = useState(null);
+
+// Add this function to handle the leave property request
+const handleLeavePropertyRequest = async () => {
+    try {
+        const userBooking = await fetchUserBooking();
+        
+        if (!userBooking) {
+            toast.error('No active booking found for this property');
+            setShowLeavePropertyModal(false);
+            return;
+        }
+
+        // Calculate months remaining in lease
+        const moveInDate = new Date(userBooking.moveInDate);
+        const leaseEndDate = new Date(moveInDate);
+        leaseEndDate.setMonth(leaseEndDate.getMonth() + userBooking.durationMonths);
+        const today = new Date();
+        const monthsRemaining = (leaseEndDate.getFullYear() - today.getFullYear()) * 12 + 
+                               (leaseEndDate.getMonth() - today.getMonth());
+        
+        const response = await axios.post(
+            `http://localhost:3000/api/property/${propertyId}/leave-request`,
+            {
+                user_id: user.user._id,
+                booking_id: userBooking._id,
+                reason: leaveReason,
+                requested_date: today.toISOString(),
+                months_remaining: monthsRemaining > 0 ? monthsRemaining : 0
+            },
+            {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            }
+        );
+        
+        setLeaveRequestStatus('success');
+        toast.success('Leave request submitted successfully!');
+        
+        // Reset after 5 seconds
+        setTimeout(() => {
+            setShowLeavePropertyModal(false);
+            setLeaveRequestStatus(null);
+            setLeaveReason('');
+        }, 5000);
+    } catch (error) {
+        console.error('Error submitting leave request:', error);
+        setLeaveRequestStatus('error');
+        toast.error(error.response?.data?.message || 'Failed to submit leave request');
+    }
+};
     const addMemberToProperty = async () => {
         try {
             await axios.post(`http://localhost:3000/api/property/members/${propertyId}/`, {
@@ -795,8 +850,159 @@ const EarlyPaymentModal = ({ isOpen, onClose, onConfirm, month }) => {
                         </div>
                     </div>
                 </div>
-
+                <div className='mt-6 bg-sub-bg rounded-xl p-6 flex flex-col items-start'>
+                    <h2 className='text-lg font-semibold text-red-500 mb-2 flex items-center'>
+                        <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        Leave Property
+                    </h2>
+                    <p className='text-secondary-text mb-4'>
+                        If you wish to leave this property before your lease ends, you can submit a leave request to the property owner. Please review your rental agreement for any early termination policies.
+                    </p>
+                    <button 
+                        className='border border-red-500 text-red-500 w-full py-2 rounded-xl font-semibold hover:bg-red-500 hover:text-white transition-all duration-200'
+                        onClick={() => setShowLeavePropertyModal(true)}
+                    >
+                        Submit Leave Request
+                    </button>
+                </div>
             </div>
+         { showLeavePropertyModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+            <div className="bg-sub-bg rounded-xl p-6 max-w-lg w-full">
+                <div className="flex flex-col space-y-5">
+                    {leaveRequestStatus === 'success' ? (
+                        <div className="flex flex-col items-center text-center space-y-4">
+                            <div className="bg-green-500 bg-opacity-20 p-4 rounded-full">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <h3 className="text-white text-xl font-bold">Request Submitted!</h3>
+                            <p className="text-secondary-text">
+                                Your request has been sent to the property owner. You'll be notified once they review it.
+                            </p>
+                            <button
+                                onClick={() => {
+                                    setShowLeavePropertyModal(false);
+                                    setLeaveRequestStatus(null);
+                                    setLeaveReason('');
+                                }}
+                                className="bg-main-purple text-white py-2 px-8 rounded-lg font-semibold hover:bg-purple-700 transition-colors"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    ) : leaveRequestStatus === 'error' ? (
+                        <div className="flex flex-col items-center text-center space-y-4">
+                            <div className="bg-red-500 bg-opacity-20 p-4 rounded-full">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <h3 className="text-white text-xl font-bold">Request Failed</h3>
+                            <p className="text-secondary-text">
+                                Something went wrong. Please try again later or contact support.
+                            </p>
+                            <button
+                                onClick={() => {
+                                    setLeaveRequestStatus(null);
+                                }}
+                                className="bg-main-purple text-white py-2 px-8 rounded-lg font-semibold hover:bg-purple-700 transition-colors"
+                            >
+                                Try Again
+                            </button>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-white text-xl font-bold">Leave Property</h3>
+                                <button 
+                                    onClick={() => setShowLeavePropertyModal(false)}
+                                    className="text-secondary-text hover:text-white transition-colors"
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            
+                            <div className="bg-cards-bg rounded-lg p-4">
+                                <div className="flex items-start space-x-3">
+                                    <div className="bg-yellow-500 bg-opacity-20 p-2 rounded-full flex-shrink-0 mt-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 className="text-white font-semibold">Important Notice</h4>
+                                        <p className="text-secondary-text mt-1 text-sm">
+                                            If you're leaving before your lease ends, you may be subject to early termination fees and forfeit your security deposit according to your rental agreement terms.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-white font-medium block">Reason for leaving</label>
+                                <textarea
+                                    className="w-full bg-cards-bg text-white p-3 rounded-lg resize-none h-32 focus:outline-none focus:ring-2 focus:ring-main-purple transition-all"
+                                    placeholder="Please explain why you want to leave this property..."
+                                    value={leaveReason}
+                                    onChange={(e) => setLeaveReason(e.target.value)}
+                                ></textarea>
+                            </div>
+                            
+                            <div className="pt-2">
+                                <h4 className="text-white font-semibold">What happens next?</h4>
+                                <ul className="mt-2 space-y-2 text-secondary-text text-sm">
+                                    <li className="flex items-start">
+                                        <svg className="w-5 h-5 text-main-purple mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        Your request will be sent to the property owner for review
+                                    </li>
+                                    <li className="flex items-start">
+                                        <svg className="w-5 h-5 text-main-purple mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        You'll be notified when they accept or reject your request
+                                    </li>
+                                    <li className="flex items-start">
+                                        <svg className="w-5 h-5 text-main-purple mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        If accepted, you'll need to complete the move-out process
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div className="flex space-x-3 justify-end pt-2">
+                                <button
+                                    onClick={() => setShowLeavePropertyModal(false)}
+                                    className="px-4 py-2 bg-cards-bg text-secondary-text rounded-lg hover:bg-opacity-80 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleLeavePropertyRequest}
+                                    disabled={!leaveReason.trim()}
+                                    className={`px-6 py-2 text-white rounded-lg transition-colors ${
+                                        leaveReason.trim() 
+                                        ? 'bg-main-purple hover:bg-purple-700' 
+                                        : 'bg-gray-600 cursor-not-allowed'
+                                    }`}
+                                >
+                                    Submit Request
+                                </button>
+                            </div>
+                        </>
+                    )}
+                </div>
+            </div>
+        </div>
+    )  }
         </div>
     )
 }

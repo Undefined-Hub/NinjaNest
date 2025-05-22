@@ -135,56 +135,66 @@ const getPaymentHistory = async (req, res) => {
       status, // 'paid', 'overdue', 'completed', etc.
     } = req.query;
 
-    const bookingFilter = {};
-    const rentFilter = {};
+    // ⏳ Filters
+    const bookingFilters = [];
+    const rentFilters = [];
 
-    // 🧠 Dynamic Filters
-    if (user_id) {
-      bookingFilter.user_id = user_id;
-      rentFilter.user_id = user_id;
-    }
-    if (property_id) {
-      bookingFilter.property_id = property_id;
-      rentFilter.property_id = property_id;
-    }
-    if (landlord_id) {
-      bookingFilter.landlord_id = landlord_id;
-      rentFilter.landlord_id = landlord_id;
-    }
+    const from = fromDate ? new Date(fromDate) : new Date("1970-01-01");
+    const to = toDate ? new Date(toDate) : new Date();
 
-    // 📅 Date Range Filters
-    if (fromDate || toDate) {
-      const from = fromDate ? new Date(fromDate) : new Date("1970-01-01");
-      const to = toDate ? new Date(toDate) : new Date();
-      bookingFilter.createdAt = { $gte: from, $lte: to };
-      rentFilter.createdAt = { $gte: from, $lte: to };
-    }
+    const dateRange = { $gte: from, $lte: to };
 
-    // 🎯 Status Filtering (Dynamic based on input or default allowed statuses)
+    // 💳 Statuses
     const depositStatuses = ['Pending', 'completed', 'failed', 'refunded'];
     const rentStatuses = ['Pending', 'paid', 'partial', 'overdue'];
 
-    if (status) {
-      if (type !== 'rent') {
-        bookingFilter.paymentStatus = { $in: [status] };
+    // 🧾 --- BOOKING (DEPOSIT) FILTERS ---
+    if (type !== 'rent') {
+      if (user_id) {
+        bookingFilters.push({
+          $or: [
+            { user_id: user_id },
+            { landlord_id: user_id }
+          ]
+        });
       }
-      if (type !== 'deposit') {
-        rentFilter.payment_status = { $in: [status] };
+      if (property_id) bookingFilters.push({ property_id });
+      if (landlord_id) bookingFilters.push({ landlord_id });
+      bookingFilters.push({ createdAt: dateRange });
+
+      if (status) {
+        bookingFilters.push({ paymentStatus: status });
+      } else {
+        bookingFilters.push({ paymentStatus: { $in: depositStatuses } });
       }
-    } else {
-      if (type !== 'rent') {
-        bookingFilter.paymentStatus = { $in: depositStatuses };
+    }
+
+    // 💸 --- RENT FILTERS ---
+    if (type !== 'deposit') {
+      if (user_id) {
+        rentFilters.push({
+          $or: [
+            { user_id: user_id },
+            { landlord_id: user_id }
+          ]
+        });
       }
-      if (type !== 'deposit') {
-        rentFilter.payment_status = { $in: rentStatuses };
+      if (property_id) rentFilters.push({ property_id });
+      if (landlord_id) rentFilters.push({ landlord_id });
+      rentFilters.push({ createdAt: dateRange });
+
+      if (status) {
+        rentFilters.push({ payment_status: status });
+      } else {
+        rentFilters.push({ payment_status: { $in: rentStatuses } });
       }
     }
 
     let transactions = [];
 
-    // 🧾 Fetch Deposit Transactions
+    // ✅ Fetch Deposit (Booking) History
     if (type !== 'rent') {
-      const bookings = await Booking.find(bookingFilter)
+      const bookings = await Booking.find(bookingFilters.length ? { $and: bookingFilters } : {})
         .populate("property_id", "_id title location address")
         .populate("user_id", "_id name username profilePicture")
         .populate("landlord_id", "_id name username profilePicture");
@@ -200,14 +210,15 @@ const getPaymentHistory = async (req, res) => {
         user: b.user_id,
         landlord: b.landlord_id,
         paymentMethod: b.paymentMethod,
+        direction: user_id === b.user_id?.toString() ? "Sent" : "Received",
       }));
 
       transactions.push(...bookingHistory);
     }
 
-    // 💸 Fetch Rent Transactions
+    // ✅ Fetch Rent History
     if (type !== 'deposit') {
-      const rents = await MonthRent.find(rentFilter)
+      const rents = await MonthRent.find(rentFilters.length ? { $and: rentFilters } : {})
         .populate("property_id", "_id title location address")
         .populate("user_id", "_id name username profilePicture")
         .populate("landlord_id", "_id name username profilePicture");
@@ -224,12 +235,13 @@ const getPaymentHistory = async (req, res) => {
         landlord: r.landlord_id,
         paymentMethod: r.payment_method,
         month: r.month,
+        direction: user_id === r.user_id?.toString() ? "Sent" : "Received",
       }));
 
       transactions.push(...rentHistory);
     }
 
-    // 🔽 Sort by Date Descending
+    // 🧮 Sort by date descending
     transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     res.status(200).json({
@@ -242,6 +254,7 @@ const getPaymentHistory = async (req, res) => {
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
+
 
 
 

@@ -328,8 +328,8 @@ function LandlordPropertyDashboard() {
                     </div> */}
                     
                     {/* Payment Chart/Timeline */}
-                    <div className="mt-6 bg-cards-bg rounded-xl p-4">
-                        <div className="flex items-center justify-between mb-3">
+                    <div className=" bg-cards-bg rounded-xl p-4">
+                        {/* <div className="flex items-center justify-between mb-3">
                             <p className="text-white font-medium">Monthly Payment History</p>
                             <div className="flex items-center text-secondary-text text-sm">
                                 <div className="flex items-center mr-4">
@@ -341,11 +341,11 @@ function LandlordPropertyDashboard() {
                                     <span>Pending</span>
                                 </div>
                             </div>
-                        </div>
+                        </div> */}
                         
-                        <div className="mt-4">
+                        <div className="">
                             {/* Payment History Timeline */}
-                            <div className="space-y-3">
+                            {/* <div className="space-y-3">
                                 {paymentHistory.map((payment, index) => (
                                     <div key={index} className="flex items-center">
                                         <div className="w-16 text-secondary-text text-sm">{payment.month}</div>
@@ -366,9 +366,9 @@ function LandlordPropertyDashboard() {
                                     </div>
                                 ))}
                             </div>
-                            
+                             */}
                             {/* Payment Summary */}
-                            <div className="mt-6 pt-4 border-t border-gray-700 flex items-center justify-between">
+                            <div className=" border-gray-700 flex items-center justify-between">
                                 <div>
                                     <p className="text-secondary-text text-sm">Next payment due</p>
                                     <p className="text-white font-medium">May 30, 2025</p>
@@ -396,20 +396,7 @@ function LandlordPropertyDashboard() {
                         title="Payment History"
                     />
                     </div>
-                             {/* <div className='w-full flex flex-col bg-sub-bg p-4 rounded-xl'>
-                    <PaymentHistorySection 
-                        propertyId={propertyId} 
-                        userId={user?._id}
-                        mode="tenant" 
-                    />
-                        </div>
-                    <div className='w-full flex flex-col bg-sub-bg p-4 rounded-xl'>
-                    <PaymentHistorySection 
-                        userId={user?._id}
-                        mode="user"
-                        title="My Payment History"
-                    />
-                    </div> */}
+                        
                  <div className='w-full flex flex-col lg:flex-row gap-6'> {/* Changed space-x-6 to gap-6 for better responsiveness */}
                     {/* Property Details */}
                     <div className='flex flex-col bg-sub-bg w-full text-white rounded-xl p-4'>
@@ -450,7 +437,7 @@ function LandlordPropertyDashboard() {
                         {property?.roomDetails?.members && property.roomDetails.members.length > 0 ? (
                             property.roomDetails.members.map((mate, index) => (
                                 <div key={index} className='flex items-center bg-cards-bg rounded-xl p-3 space-x-3 mt-4'>
-                                    <img src={mate.profilePicture || 'https://placehold.co/100'} alt="pfp" className='h-12 w-12 rounded-full' />
+                                    <img src={mate.profilePicture || 'https://placehold.co/100'} alt="pfp" className='h-12 w-12 rounded-full object-cover' />
                                     <div className='flex flex-col flex-1'>
                                         <p className='text-white text-base font-semibold'>{mate.name}</p>
                                         <p className='text-secondary-text text-base font-semibold'>{mate.course || "Student"}</p>

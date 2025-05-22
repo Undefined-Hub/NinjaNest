@@ -51,9 +51,7 @@ const DetailsPage = () => {
 
         const requestData = {
             propertyId,
-            requestedPrice: selectedOption === 'customRange'
-                ? { min: parseFloat(minPrice), max: parseFloat(maxPrice) }
-                : { fixed: propertyData?.rent },
+            requestedPrice: { fixed: propertyData?.rent },
             requestorName: user.user?.name,
             ownerName: propertyData?.landlord_id.name,
             ownerId: propertyData?.landlord_id._id,
@@ -395,13 +393,13 @@ const DetailsPage = () => {
                             <div className='flex flex-col space-y-3'> {/* Contact Button */}
                                 <button
                                     className='flex w-full bg-main-purple p-3 rounded-lg justify-center items-center hover:bg-violet-700'
-                                    onClick={() => setShowModal(true)}
+                                    onClick={() => handleSendRentRequest()}
                                 >
-                                    <p className='text-white font-bold text-base'>Book Now</p>
+                                    <p className='text-white font-bold text-base'>Request to Rent</p>
                                 </button>
 
                                 {/* Modal */}
-                                {showModal && (
+                                {/* {showModal && (
                                     <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50">
                                         <div className="bg-sub-bg p-6 rounded-lg w-11/12 max-w-md">
                                             <h2 className="text-white text-lg font-semibold mb-4">Send Rent Request</h2>
@@ -467,7 +465,7 @@ const DetailsPage = () => {
                                             </div>
                                         </div>
                                     </div>
-                                )}
+                                )} */}
                                 <button className='flex w-full bg-slate-600 p-3 rounded-lg justify-center items-center hover:bg-slate-700'> {/* Contact Button */}
                                     <p className='text-white font-bold text-base'>Contact Landlord</p>
                                 </button>

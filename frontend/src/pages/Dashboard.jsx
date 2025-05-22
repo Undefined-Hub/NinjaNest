@@ -325,7 +325,7 @@ const Dashboard = () => {
                                                 <img src={mate.profilePicture || 'https://placehold.co/100'} alt={mate.name} className='h-12 w-12 rounded-full object-cover' />
                                                 <div className='flex flex-col'>
                                                     <p className='text-white text-base font-semibold'>{mate.name}</p>
-                                                    <p className='text-secondary-text text-base font-semibold'>{mate.course}</p>
+                                                    <p className='text-secondary-text text-base font-semibold'>   {mate.course ? mate.course : 'No course info'}</p>
                                                 </div>
                                             </div>
                                         ))
@@ -361,7 +361,12 @@ const Dashboard = () => {
                             />
                             <p className='text-secondary-text text-lg font-semibold text-center'>
                                 No payment history is available yet. <br />Stay tuned for updates or make your first payment!
-                            </p>
+                            </p> */}
+                            <PaymentHistorySection 
+                                userId={user?.user?._id}
+                                mode="user"
+                                title="My Payment History"
+                            />
                         </div>
                     }
 
@@ -389,15 +394,18 @@ const Dashboard = () => {
 
 
 import notification from '/images/notification.svg'
+import { Bell, Home, AlertTriangle, Check, Clock, X, MessageCircle, FileText, User } from 'lucide-react';
+
 
 const Notifications = () => {
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showModal, setShowModal] = useState(false);
+    const [activeFilter, setActiveFilter] = useState('all'); // 'all', 'sent', 'received'
     const { user } = useSelector((state) => state.user)
-    const user_id = user.user;// Assuming userId is stored in localStorage
-    // console.log(user_id)
+    const user_id = user.user;
+    
     useEffect(() => {
         const fetchNotifications = async () => {
             try {
@@ -406,13 +414,14 @@ const Notifications = () => {
                         Authorization: `Bearer ${localStorage.getItem('token')}`,
                     },
                 });
-                console.log(user_id._id === response.data[0].requestorId._id)
+                
                 // Filter requests where the user is either the requestor or the owner
                 const userRequests = response.data.filter(
                     (request) => request.requestorId._id === user_id._id || request.ownerId._id === user_id._id
                 );
-                console.log(userRequests)
+                
                 setNotifications(userRequests);
+                console.log('Fetched notifications:', userRequests);
                 setLoading(false);
             } catch (err) {
                 console.error('Error fetching notifications:', err);
@@ -424,16 +433,41 @@ const Notifications = () => {
         fetchNotifications();
     }, [user_id._id]);
 
+    const getStatusIcon = (status) => {
+        switch (status) {
+            case 'Pending':
+                return <Clock size={18} className="text-yellow-400" />;
+            case 'Accepted':
+                return <Check size={18} className="text-green-400" />;
+            case 'Rejected':
+                return <X size={18} className="text-red-400" />;
+            default:
+                return <AlertTriangle size={18} className="text-secondary-text" />;
+        }
+    };
+    
     const getStatusColor = (status) => {
         switch (status) {
             case 'Pending':
-                return 'text-yellow-500';
+                return {
+                    text: 'text-yellow-400',
+                    bg: 'bg-yellow-400 bg-opacity-20',
+                };
             case 'Accepted':
-                return 'text-green-500';
+                return {
+                    text: 'text-green-400',
+                    bg: 'bg-green-400 bg-opacity-20',
+                };
             case 'Rejected':
-                return 'text-red-500';
+                return {
+                    text: 'text-red-400',
+                    bg: 'bg-red-400 bg-opacity-20',
+                };
             default:
-                return 'text-secondary-text';
+                return {
+                    text: 'text-secondary-text',
+                    bg: 'bg-secondary-text bg-opacity-20',
+                };
         }
     };
 
@@ -441,114 +475,212 @@ const Notifications = () => {
         if (notification.requestorId._id === userId) {
             switch (notification.status) {
                 case 'Accepted':
-                    return 'Request Accepted by Owner.';
+                    return 'Your request has been accepted by the property owner.';
                 case 'Rejected':
-                    return 'Owner Rejected Your Request.';
+                    return 'Your request was declined by the property owner.';
                 default:
-                    return 'Request Sent to Owner is reviewing your request.';
+                    return 'Your request is pending review by the property owner.';
             }
         } else {
-            return notification.message;
+            return `${notification.requestorName} is interested in your property.`;
         }
     };
+    
+    const getNotificationIcon = (notification, userId) => {
+        if (notification.requestorId._id === userId) {
+            // Outgoing notification
+            switch (notification.status) {
+                case 'Accepted':
+                    return <Check className="text-green-400" />;
+                case 'Rejected':
+                    return <X className="text-red-400" />;
+                default:
+                    return <Clock className="text-yellow-400" />;
+            }
+        } else {
+            // Incoming notification
+            return <MessageCircle className="text-tertiary-text" />;
+        }
+    };
+    
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-IN', { 
+            day: 'numeric', 
+            month: 'short', 
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+    
     const handleRequestsClick = () => {
-        console.log('Requests button clicked!' + notifications);
-        setShowModal(true); // Show the modal when the button is clicked
+        setShowModal(true);
     };
 
     const closeModal = () => {
-        setShowModal(false); // Close the modal
+        setShowModal(false);
     };
+    
+    const getFilteredNotifications = () => {
+        if (activeFilter === 'sent') {
+            return notifications.filter(notification => notification.requestorId._id === user_id._id);
+        } else if (activeFilter === 'received') {
+            return notifications.filter(notification => notification.ownerId._id === user_id._id);
+        } else {
+            return notifications;
+        }
+    };
+    
+    const filteredNotifications = getFilteredNotifications();
+    
+    const sentCount = notifications.filter(n => n.requestorId._id === user_id._id).length;
+    const receivedCount = notifications.filter(n => n.ownerId._id === user_id._id).length;
+    const pendingCount = notifications.filter(n => n.status === 'Pending' && n.ownerId._id === user_id._id).length;
 
     if (loading) {
-        return <p className="text-white">Loading notifications...</p>;
+        return (
+            <div className="flex flex-col space-y-4 w-4/5">
+                <div className="bg-cards-bg rounded-xl p-6 animate-pulse">
+                    <div className="h-7 bg-sub-bg rounded w-48 mb-4"></div>
+                    <div className="space-y-3">
+                        {[1, 2, 3].map(i => (
+                            <div key={i} className="h-24 bg-sub-bg rounded-xl w-full"></div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     if (error) {
-        return <p className="text-red-500">{error}</p>;
+        return (
+            <div className="flex flex-col space-y-4 w-4/5">
+                <div className="bg-cards-bg rounded-xl p-6 text-center">
+                    <AlertTriangle size={48} className="text-red-400 mx-auto mb-3" />
+                    <p className="text-red-400 mb-2">{error}</p>
+                    <button 
+                        className="bg-main-purple text-white py-2 px-6 rounded-lg mt-4"
+                        onClick={() => window.location.reload()}
+                    >
+                        Try Again
+                    </button>
+                </div>
+            </div>
+        );
     }
 
     return (
-        <div className="flex flex-col  space-y-4 w-4/5">
-            <div className='flex justify-between items-center'>
-                <p className="text-white text-lg font-bold">Notifications</p>
-                <button onClick={handleRequestsClick} className="flex items-center justify-center space-x-4 w-1/5 bg-main-purple hover:bg-[#6b2bd2] transition-all duration-300 p-2 rounded-lg self-end">
-                    <MdManageAccounts className="text-white text-base" />
-                    <span className="text-white font-semibold text-sm">Requests</span>
+        <div className="flex flex-col space-y-4 w-4/5">
+            <div className="flex justify-between items-center">
+                <div className="flex items-center">
+                    <Bell size={20} className="text-tertiary-text mr-2" />
+                    <p className="text-white text-lg font-bold">Notifications</p>
+                </div>
+                <button 
+                    onClick={handleRequestsClick} 
+                    className="flex items-center justify-center space-x-2 bg-main-purple hover:bg-[#6b2bd2] transition-all duration-300 py-2 px-4 rounded-lg"
+                >
+                    <div className="relative">
+                        <User size={18} className="text-white" />
+                        {pendingCount > 0 && (
+                            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                                {pendingCount}
+                            </span>
+                        )}
+                    </div>
+                    <span className="text-white font-semibold text-sm">Property Requests</span>
                 </button>
+                
                 {/* Modal for property requests */}
                 {showModal && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                        <div className="bg-sub-bg rounded-xl p-5 w-3/4 max-h-[80vh]">
-                            <div className="flex justify-between items-center mb-4 h-6 overflow-y-auto">
-                                <p className="text-white text-lg font-bold">Property Requests</p>
+                        <div className="bg-sub-bg rounded-xl p-6 w-3/4 max-h-[80vh]">
+                            <div className="flex justify-between items-center mb-4">
+                                <div className="flex items-center">
+                                    <FileText size={20} className="text-tertiary-text mr-2" />
+                                    <p className="text-white text-lg font-bold">Property Requests</p>
+                                </div>
                                 <button
                                     onClick={closeModal}
-                                    className="text-white text-lg font-bold hover:text-red-500"
+                                    className="text-white p-1 hover:bg-cards-bg rounded-full transition-colors"
                                 >
-                                    &times;
+                                    <X size={20} />
                                 </button>
                             </div>
-                            {notifications.length > 0 ? (
+                            
+                            {notifications.filter(notification => notification.ownerId._id === user_id._id).length > 0 ? (
                                 <div className="flex flex-col space-y-3 overflow-y-auto h-[60vh]">
                                     {[...notifications]
                                         .filter(notification => notification.ownerId._id === user_id._id)
-                                        .reverse()
-                                        .map((notification) => (
-                                            <div
-                                                key={notification._id}
-                                                className="flex flex-col bg-cards-bg rounded-xl p-4 space-y-2"
-                                            >
-                                                <div className="flex justify-between">
-                                                    <p className="text-white text-base font-semibold">
-                                                        {notification.requestorName} is interested in your property.
-                                                    </p>
-                                                    <p
-                                                        className={`text-base font-semibold ${getStatusColor(
-                                                            notification.status
-                                                        )}`}
-                                                    >
-                                                        {notification.status}
-                                                    </p>
-                                                </div>
-
-                                                <p className="text-secondary-text text-sm font-semibold">
-                                                    Property ID: {notification.propertyId._id}
-                                                </p>
-                                                <p className="text-secondary-text text-sm font-semibold">
-                                                    Requested Price: ₹{(notification.requestedPrice.min && notification.requestedPrice.max) ? notification.requestedPrice.min + " - " + notification.requestedPrice.max : (notification.requestedPrice?.fixed)}
-                                                </p>
-                                                {notification.status === 'Pending' && (
-                                                    <div className="flex space-x-3 mt-2">
-                                                        <button
-                                                            onClick={async () => {
-                                                                try {
-                                                                    // Accept the request
-                                                                    await axios.put(
-                                                                        `http://localhost:3000/api/request/${notification._id}`,
-                                                                        { status: 'Accepted' },
-                                                                        {
-                                                                            headers: {
-                                                                                Authorization: `Bearer ${localStorage.getItem('token')}`,
-                                                                            },
-                                                                        }
-                                                                    );
-
-                                                                    // Update the requestor's current rental
-                                                                    await axios.put(
-                                                                        `http://localhost:3000/api/user/updateUser/${notification.requestorId._id}`,
-                                                                        { currentRental: notification.propertyId._id },
-                                                                        {
-                                                                            headers: {
-                                                                                Authorization: `Bearer ${localStorage.getItem('token')}`,
-                                                                            },
-                                                                        }
-                                                                    );
-
-                                                                    // Update the property's availability
+                                        .map((notification) => {
+                                            const statusColors = getStatusColor(notification.status);
+                                            return (
+                                                <div
+                                                    key={notification._id}
+                                                    className="flex flex-col bg-cards-bg rounded-xl p-4 space-y-3 hover:bg-opacity-80 transition-colors"
+                                                >
+                                                    <div className="flex justify-between items-start">
+                                                        <div className="flex">
+                                                            <div className="mr-3">
+                                                                {notification.requestorId.profilePicture ? (
+                                                                    <img 
+                                                                        src={notification.requestorId.profilePicture} 
+                                                                        alt={notification.requestorName}
+                                                                        className="w-12 h-12 rounded-full object-cover" 
+                                                                    />
+                                                                ) : (
+                                                                    <div className="w-12 h-12 bg-main-purple rounded-full flex items-center justify-center">
+                                                                        <User size={24} className="text-white" />
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-white text-base font-semibold">
+                                                                    {notification.requestorName}
+                                                                </p>
+                                                                <p className="text-secondary-text text-sm">
+                                                                    {formatDate(notification.createdAt)}
+                                                                </p>
+                                                                <div className="mt-1">
+                                                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors.bg} ${statusColors.text}`}>
+                                                                        {getStatusIcon(notification.status)}
+                                                                        <span className="ml-1">{notification.status}</span>
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div className="flex flex-col items-end space-y-1">
+                                                            <p className="text-tertiary-text text-sm font-medium">Property</p>
+                                                            <p className="text-white text-sm text-right">{notification.propertyId.title}</p>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div className="bg-sub-bg rounded-lg p-3">
+                                                        <div className="flex justify-between mb-2">
+                                                            <p className="text-secondary-text text-sm">Requested Price:</p>
+                                                            <p className="text-white text-sm font-medium">
+                                                                ₹{(notification.requestedPrice.min && notification.requestedPrice.max) 
+                                                                    ? `${notification.requestedPrice.min.toLocaleString('en-IN')} - ${notification.requestedPrice.max.toLocaleString('en-IN')}` 
+                                                                    : notification.requestedPrice?.fixed?.toLocaleString('en-IN')}
+                                                            </p>
+                                                        </div>
+                                                        <div className="flex justify-between">
+                                                            <p className="text-secondary-text text-sm">Location:</p>
+                                                            <p className="text-white text-sm">{notification.propertyId.location}</p>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    {notification.status === 'Pending' && (
+                                                        <div className="flex space-x-3 mt-2">
+                                                            <button
+                                                                onClick={async () => {
                                                                     try {
-                                                                        const propertyResponse = await axios.get(
-                                                                            `http://localhost:3000/api/property/${notification.propertyId._id}`,
+                                                                        // Accept the request
+                                                                        await axios.put(
+                                                                            `http://localhost:3000/api/request/${notification._id}`,
+                                                                            { status: 'Accepted' },
                                                                             {
                                                                                 headers: {
                                                                                     Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -556,122 +688,295 @@ const Notifications = () => {
                                                                             }
                                                                         );
 
-                                                                        const updatedProperty = {
-                                                                            ...propertyResponse.data.property,
-                                                                            isAvailable: false,
-                                                                        };
-                                                                        console.log(updatedProperty)
+                                                                        // Update the requestor's current rental
                                                                         await axios.put(
-                                                                            `http://localhost:3000/api/property/${notification.propertyId._id}`,
-                                                                            updatedProperty,
+                                                                            `http://localhost:3000/api/user/updateUser/${notification.requestorId._id}`,
+                                                                            { currentRental: notification.propertyId._id },
                                                                             {
                                                                                 headers: {
                                                                                     Authorization: `Bearer ${localStorage.getItem('token')}`,
                                                                                 },
                                                                             }
+                                                                        );
+
+                                                                        // Update the property's availability
+                                                                        try {
+                                                                            const propertyResponse = await axios.get(
+                                                                                `http://localhost:3000/api/property/${notification.propertyId._id}`,
+                                                                                {
+                                                                                    headers: {
+                                                                                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                                                                                    },
+                                                                                }
+                                                                            );
+
+                                                                            const updatedProperty = {
+                                                                                ...propertyResponse.data.property,
+                                                                                isAvailable: false,
+                                                                            };
+                                                                            
+                                                                            await axios.put(
+                                                                                `http://localhost:3000/api/property/${notification.propertyId._id}`,
+                                                                                updatedProperty,
+                                                                                {
+                                                                                    headers: {
+                                                                                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                                                                                    },
+                                                                                }
+                                                                            );
+                                                                        } catch (err) {
+                                                                            console.error('Error updating property availability:', err);
+                                                                        }
+
+                                                                        // Update the notifications state
+                                                                        setNotifications((prev) =>
+                                                                            prev.map((notif) =>
+                                                                                notif._id === notification._id
+                                                                                    ? { ...notif, status: 'Accepted' }
+                                                                                    : notif
+                                                                            )
                                                                         );
                                                                     } catch (err) {
-                                                                        console.error('Error updating property availability:', err);
+                                                                        console.error('Error processing request:', err);
                                                                     }
-
-                                                                    // Update the notifications state
-                                                                    setNotifications((prev) =>
-                                                                        prev.map((notif) =>
-                                                                            notif._id === notification._id
-                                                                                ? { ...notif, status: 'Accepted' }
-                                                                                : notif
-                                                                        )
-                                                                    );
-                                                                } catch (err) {
-                                                                    console.error('Error processing request:', err);
-                                                                }
-                                                            }}
-                                                            className="space-x-2 w-1/5 text-white font-bold bg-main-purple hover:bg-[#6b2bd2] transition-all duration-300 p-2 rounded-lg"
-                                                        >
-                                                            Accept
-                                                        </button>
-                                                        <button
-                                                            onClick={async () => {
-                                                                try {
-                                                                    await axios.put(
-                                                                        `http://localhost:3000/api/request/${notification._id}`,
-                                                                        { status: 'Rejected' },
-                                                                        {
-                                                                            headers: {
-                                                                                Authorization: `Bearer ${localStorage.getItem('token')}`,
-                                                                            },
-                                                                        }
-                                                                    );
-                                                                    setNotifications((prev) =>
-                                                                        prev.map((notif) =>
-                                                                            notif._id === notification._id
-                                                                                ? { ...notif, status: 'Rejected' }
-                                                                                : notif
-                                                                        )
-                                                                    );
-                                                                } catch (err) {
-                                                                    console.error('Error rejecting request:', err);
-                                                                }
-                                                            }}
-                                                            className="bg-secondary-text text-white font-bold px-4 py-2 rounded-lg hover:bg-primary-text hover:text-black"
-                                                        >
-                                                            Reject
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))
-                                    }
+                                                                }}
+                                                                className="flex items-center space-x-1 bg-main-purple hover:bg-[#6b2bd2] transition-all duration-300 py-2 px-4 rounded-lg text-white font-semibold"
+                                                            >
+                                                                <Check size={16} />
+                                                                <span>Accept Request</span>
+                                                            </button>
+                                                            <button
+                                                                onClick={async () => {
+                                                                    try {
+                                                                        await axios.put(
+                                                                            `http://localhost:3000/api/request/${notification._id}`,
+                                                                            { status: 'Rejected' },
+                                                                            {
+                                                                                headers: {
+                                                                                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                                                                                },
+                                                                            }
+                                                                        );
+                                                                        setNotifications((prev) =>
+                                                                            prev.map((notif) =>
+                                                                                notif._id === notification._id
+                                                                                    ? { ...notif, status: 'Rejected' }
+                                                                                    : notif
+                                                                            )
+                                                                        );
+                                                                    } catch (err) {
+                                                                        console.error('Error rejecting request:', err);
+                                                                    }
+                                                                }}
+                                                                className="flex items-center space-x-1 bg-cards-bg hover:bg-gray-700 transition-all text-secondary-text font-semibold py-2 px-4 rounded-lg"
+                                                            >
+                                                                <X size={16} />
+                                                                <span>Decline</span>
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
                                 </div>
                             ) : (
-                                <p className="text-secondary-text text-base font-semibold">
-                                    No requests found for your properties.
-                                </p>
+                                <div className="bg-cards-bg rounded-xl p-8 flex flex-col items-center justify-center">
+                                    <Home size={48} className="text-secondary-text mb-4" />
+                                    <p className="text-white text-lg font-medium mb-2">
+                                        No property requests found
+                                    </p>
+                                    <p className="text-secondary-text text-center">
+                                        When someone sends a request for your property, it will appear here.
+                                    </p>
+                                </div>
                             )}
                         </div>
                     </div>
                 )}
             </div>
-            {notifications.length > 0 ? (
+            
+            {/* Filter tabs */}
+            <div className="flex border-b border-gray-700 mb-4">
+                <button 
+                    className={`py-2 px-4 relative ${activeFilter === 'all' ? 'text-tertiary-text border-b-2 border-tertiary-text' : 'text-secondary-text'}`}
+                    onClick={() => setActiveFilter('all')}
+                >
+                    <span>All</span>
+                    <span className="ml-1.5 bg-cards-bg px-2 py-0.5 text-xs rounded-full">
+                        {notifications.length}
+                    </span>
+                </button>
+                <button 
+                    className={`py-2 px-4 relative ${activeFilter === 'received' ? 'text-tertiary-text border-b-2 border-tertiary-text' : 'text-secondary-text'}`}
+                    onClick={() => setActiveFilter('received')}
+                >
+                    <span>Received</span>
+                    <span className="ml-1.5 bg-cards-bg px-2 py-0.5 text-xs rounded-full">
+                        {receivedCount}
+                    </span>
+                    {pendingCount > 0 && (
+                        <span className="absolute top-1 right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                            {pendingCount}
+                        </span>
+                    )}
+                </button>
+                <button 
+                    className={`py-2 px-4 ${activeFilter === 'sent' ? 'text-tertiary-text border-b-2 border-tertiary-text' : 'text-secondary-text'}`}
+                    onClick={() => setActiveFilter('sent')}
+                >
+                    <span>Sent</span>
+                    <span className="ml-1.5 bg-cards-bg px-2 py-0.5 text-xs rounded-full">
+                        {sentCount}
+                    </span>
+                </button>
+            </div>
+            
+            {filteredNotifications.length > 0 ? (
                 <div className="w-full flex flex-col space-y-3 h-[64vh] overflow-y-auto">
-                    {[...notifications].reverse().map((notification) => (
-                        <div
-                            key={notification._id}
-                            className="flex items-center justify-between bg-cards-bg rounded-xl p-4"
-                        >
-                            <div className="flex flex-col">
-                                <p className="text-white text-base font-semibold">
-                                    {getNotificationMessage(notification, user_id._id)}
-                                </p>
-                                <p className="text-secondary-text text-sm font-semibold">
-                                    Type: {notification.requestorId._id === user_id._id ? 'Sent' : 'Received'}
-                                </p>
-                                <p className="text-secondary-text text-sm font-semibold">
-                                    Requested Price: ₹{(notification.requestedPrice.min && notification.requestedPrice.max)
-                                        ? notification.requestedPrice.min.toLocaleString('en-IN') + " - " + notification.requestedPrice.max.toLocaleString('en-IN')
-                                        : (notification.requestedPrice?.fixed?.toLocaleString('en-IN'))}
-                                </p>
-                            </div>
-                            <p
-                                className={`text-base font-semibold ${getStatusColor(
-                                    notification.status
-                                )}`}
+                    {filteredNotifications.map((notification) => {
+                        const isOutgoing = notification.requestorId._id === user_id._id;
+                        const statusColors = getStatusColor(notification.status);
+                        
+                        return (
+                            <div
+                                key={notification._id}
+                                className="flex flex-col bg-cards-bg rounded-xl p-4 hover:bg-opacity-80 transition-colors"
                             >
-                                {notification.status}
-                            </p>
-                        </div>
-                    ))}
+                                <div className="flex justify-between items-start">
+                                    <div className="flex items-start">
+                                        <div className={`p-2.5 rounded-lg mr-3 ${statusColors.bg}`}>
+                                            {getNotificationIcon(notification, user_id._id)}
+                                        </div>
+                                        
+                                        <div className="flex-1">
+                                            <div className="flex items-center mb-1">
+                                                <span className={`inline-flex items-center mr-2 px-2 py-0.5 rounded-full text-xs font-medium ${isOutgoing ? 'bg-blue-400 bg-opacity-20 text-blue-400' : 'bg-green-400 bg-opacity-20 text-green-400'}`}>
+                                                    {isOutgoing ? 'Sent' : 'Received'}
+                                                </span>
+                                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusColors.bg} ${statusColors.text}`}>
+                                                    {notification.status}
+                                                </span>
+                                            </div>
+                                            
+                                            <p className="text-white text-base font-semibold">
+                                                {getNotificationMessage(notification, user_id._id)}
+                                            </p>
+                                            
+                                            <div className="mt-2 text-sm text-secondary-text">
+                                                <p>Property: <span className="text-tertiary-text">{notification.propertyId.title}</span></p>
+                                                <p className="mt-1">
+                                                    Price: <span className="text-white">
+                                                        ₹{(notification.requestedPrice.min && notification.requestedPrice.max)
+                                                            ? notification.requestedPrice.min.toLocaleString('en-IN') + " - " + notification.requestedPrice.max.toLocaleString('en-IN')
+                                                            : (notification.requestedPrice?.fixed?.toLocaleString('en-IN'))}
+                                                    </span>
+                                                </p>
+                                            </div>
+                                            
+                                            <p className="text-xs text-secondary-text mt-2">
+                                                {formatDate(notification.createdAt || notification.updatedAt)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    
+                                    {notification.status === 'Pending' && !isOutgoing && (
+                                        <div className="flex space-x-2 ml-2">
+                                            <button
+                                                onClick={async () => {
+                                                    try {
+                                                        await axios.put(
+                                                            `http://localhost:3000/api/request/${notification._id}`,
+                                                            { status: 'Accepted' },
+                                                            {
+                                                                headers: {
+                                                                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                                                                },
+                                                            }
+                                                        );
+                                                        setNotifications((prev) =>
+                                                            prev.map((notif) =>
+                                                                notif._id === notification._id
+                                                                    ? { ...notif, status: 'Accepted' }
+                                                                    : notif
+                                                            )
+                                                        );
+                                                    } catch (err) {
+                                                        console.error('Error accepting request:', err);
+                                                    }
+                                                }}
+                                                className="p-2 bg-main-purple rounded-lg hover:bg-[#6b2bd2] transition-colors"
+                                                title="Accept"
+                                            >
+                                                <Check size={16} className="text-white" />
+                                            </button>
+                                            <button
+                                                onClick={async () => {
+                                                    try {
+                                                        await axios.put(
+                                                            `http://localhost:3000/api/request/${notification._id}`,
+                                                            { status: 'Rejected' },
+                                                            {
+                                                                headers: {
+                                                                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                                                                },
+                                                            }
+                                                        );
+                                                        setNotifications((prev) =>
+                                                            prev.map((notif) =>
+                                                                notif._id === notification._id
+                                                                    ? { ...notif, status: 'Rejected' }
+                                                                    : notif
+                                                            )
+                                                        );
+                                                    } catch (err) {
+                                                        console.error('Error rejecting request:', err);
+                                                    }
+                                                }}
+                                                className="p-2 bg-cards-bg rounded-lg hover:bg-gray-700 transition-colors"
+                                                title="Reject"
+                                            >
+                                                <X size={16} className="text-secondary-text" />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                                
+                                {/* Property info for clarity - collapsed by default */}
+                                {notification.propertyId && (
+                                    <details className="mt-2">
+                                        <summary className="text-tertiary-text text-sm cursor-pointer">
+                                            View property details
+                                        </summary>
+                                        <div className="bg-sub-bg mt-2 p-3 rounded-lg">
+                                            <div className="flex items-center">
+                                                <Home size={16} className="text-secondary-text mr-2" />
+                                                <p className="text-white text-sm">{notification.propertyId.title}</p>
+                                            </div>
+                                            <p className="text-secondary-text text-sm mt-1">{notification.propertyId.address}, {notification.propertyId.location}</p>
+                                        </div>
+                                    </details>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
             ) : (
-                <div className="flex flex-col items-center justify-center h-[64vh] space-y-4 w-4/5">
+                <div className="flex flex-col items-center justify-center h-[64vh] space-y-4">
                     <img
-                        src={notification} // Replace with your illustration URL
+                        src={notification}
                         alt="No Notifications"
                         className="w-1/3 h-auto"
                     />
-                    <p className="text-secondary-text text-lg font-semibold text-center">
-                        You have no notifications at the moment. <br />Stay tuned for updates!
-                    </p>
+                    <div className="text-center">
+                        <p className="text-white text-lg font-semibold mb-1">No notifications</p>
+                        <p className="text-secondary-text">
+                            {activeFilter === 'sent' ? 
+                                "You haven't sent any requests yet" :
+                                activeFilter === 'received' ? 
+                                "You haven't received any requests yet" :
+                                "You have no notifications at the moment"}
+                        </p>
+                    </div>
                 </div>
             )}
         </div>
@@ -679,7 +984,6 @@ const Notifications = () => {
 };
 
 const Roommates = () => {
-    // State for search term and results
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
@@ -687,22 +991,22 @@ const Roommates = () => {
     const [loading, setLoading] = useState(true);
     const [pendingInvitations, setPendingInvitations] = useState({ received: [], sent: [] });
     const [loadingInvitations, setLoadingInvitations] = useState(true);
+    const [selectedRoommate, setSelectedRoommate] = useState(null);
+    const [showRoommateModal, setShowRoommateModal] = useState(false);
+    
     // Get current user's information
     const { user: currentUser } = useSelector((state) => state.user);
 
     // Fetch current roommates on component mount
     useEffect(() => {
         const fetchRoommates = async () => {
+            if (!currentUser?.user?.currentRental) {
+                setCurrentRoommates([]);
+                setLoading(false);
+                return;
+            }
             try {
-                // First check if user has a current rental
-                if (!currentUser?.user?.currentRental) {
-                    setCurrentRoommates([]);
-                    setLoading(false);
-                    return;
-                }
-
-                // Fetch property details with populated roommates
-                const propertyResponse = await axios.get(
+                const response = await axios.get(
                     `http://localhost:3000/api/property/${currentUser.user.currentRental}`,
                     {
                         headers: {
@@ -710,20 +1014,8 @@ const Roommates = () => {
                         }
                     }
                 );
-
-                const property = propertyResponse.data.property;
-
-                // Check if property has roomDetails.members
-                if (property && property.roomDetails && Array.isArray(property.roomDetails.members)) {
-                    // Filter out current user from roommates list
-                    const roommates = property.roomDetails.members.filter(
-                        member => member._id !== currentUser.user._id
-                    );
-
-                    setCurrentRoommates(roommates);
-                } else {
-                    setCurrentRoommates([]);
-                }
+                const members = response.data?.property?.roomDetails?.members || [];
+                setCurrentRoommates(members);
             } catch (error) {
                 console.error('Error fetching roommates:', error);
                 setCurrentRoommates([]);
@@ -754,13 +1046,10 @@ const Roommates = () => {
 
         fetchInvitations();
     }, []);
-    console.log('Search results: ', searchResults);
 
     const handleInviteRoommate = async (user) => {
         const loadingToast = toast.loading('Sending invitation...');
-
         try {
-
             // Need to fetch the current property the user is in
             const propertyResponse = await axios.get(
                 `http://localhost:3000/api/property/${currentUser.user.currentRental}`,
@@ -772,7 +1061,6 @@ const Roommates = () => {
             );
 
             const property = propertyResponse.data.property;
-
             if (!property) {
                 toast.dismiss(loadingToast);
                 toast.error("You need to have a property to invite roommates");
@@ -789,8 +1077,6 @@ const Roommates = () => {
                 message: `${currentUser.user.name} has invited you to be their roommate`
             };
 
-            console.log('Invitation data:', invitationData);
-
             const invitationResponse = await axios.post(
                 'http://localhost:3000/api/invitation/create',
                 invitationData,
@@ -800,8 +1086,6 @@ const Roommates = () => {
                     }
                 }
             );
-
-            console.log('Invitation response:', invitationResponse.data);
 
             // If invitation created successfully, send email
             if (invitationResponse.data && invitationResponse.data.invitation) {
@@ -851,7 +1135,7 @@ const Roommates = () => {
     // Handle search input change
     const handleSearchChange = async (e) => {
         setSearchTerm(e.target.value);
-        if (e.target.value.length > 2) { // ? Only search after 2+ characters
+        if (e.target.value.length > 2) { // Only search after 2+ characters
             setIsSearching(true);
             try {
                 const response = await axios.get(`http://localhost:3000/api/user/search/users?query=${e.target.value}`, {
@@ -864,17 +1148,36 @@ const Roommates = () => {
                 if (response.data && Array.isArray(response.data.users)) {
                     setSearchResults(response.data.users);
                 } else {
-                    console.warn("API response missing users array:", response.data);
                     setSearchResults([]);
                 }
             } catch (error) {
                 console.error("Error searching users:", error.response || error);
-                setSearchResults([]); // Ensure searchResults is reset to an empty array on error
+                setSearchResults([]);
             }
         } else {
             setIsSearching(false);
-            setSearchResults([]); // Reset to empty array, not undefined
+            setSearchResults([]);
         }
+    };
+
+    const handleRoommateClick = (roommate) => {
+        setSelectedRoommate(roommate);
+        setShowRoommateModal(true);
+    };
+
+    const closeRoommateModal = () => {
+        setShowRoommateModal(false);
+        setSelectedRoommate(null);
+    };
+
+    const formatDate = (dateString) => {
+        if (!dateString) return 'Not provided';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-IN', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
     };
 
     // If loading, show a loading state
@@ -888,206 +1191,460 @@ const Roommates = () => {
 
     return (
         <div className='flex flex-col w-4/5 max-h-[85vh] overflow-y-auto pr-1'>
-            <div className='flex flex-col pb-6'> {/* Added padding to bottom to ensure content doesn't get cut off */}
-                {/* Empty state illustration - only shown when no roommates */}
-                {currentRoommates.length === 0 && (
-                    <div className='flex flex-col items-center justify-center space-y-4 mb-8'>
-                        <img
-                            src={roommate}
-                            alt='No Roommates'
-                            className='w-1/3 h-auto'
-                        />
-                        <p className='text-secondary-text text-lg font-semibold text-center'>
-                            No roommates have joined the room yet. <br />Search and invite friends below!
-                        </p>
-                    </div>
-                )}
-
-                {/* Current Roommates Section - only shown when there are roommates */}
-                {currentRoommates.length > 0 && (
-                    <div className='bg-sub-bg rounded-xl p-5 w-full mb-4'>
-                        <h2 className='text-white text-lg font-bold mb-4'>Your Roommates</h2>
-                        <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-                            {currentRoommates.map((mate, index) => (
-                                <div key={index} className='flex items-center bg-cards-bg rounded-xl p-3 space-x-3'>
-                                    <img src={mate.profilePicture || 'https://placehold.co/100'} alt="pfp" className='h-12 w-12 rounded-full object-cover' />
-                                    <div className='flex flex-col'>
-                                        <p className='text-white text-base font-semibold'>{mate.name}</p>
-                                        <p className='text-secondary-text text-base font-semibold'>{mate.course}</p>
-                                    </div>
-                                </div>
-                            ))}
+            {/* Current Roommates Section - Always shown with improved UI */}
+            <div className='bg-sub-bg rounded-xl p-5 w-full mb-4'>
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center">
+                        <div className="bg-tertiary-text bg-opacity-20 p-2 rounded-lg mr-3">
+                            <FaUserFriends className="text-tertiary-text" size={20} />
                         </div>
+                        <h2 className='text-white text-lg font-bold'>Your Roommates</h2>
                     </div>
-                )}
+                    <span className="bg-cards-bg text-tertiary-text px-3 py-1 rounded-full text-sm">
+                        {currentRoommates.length} {currentRoommates.length === 1 ? 'Person' : 'People'}
+                    </span>
+                </div>
 
-                {/* Search Section - always shown */}
-                <div className='bg-sub-bg rounded-xl p-5 w-full'>
-                    <h2 className='text-white text-lg font-bold mb-4'>
-                        {currentRoommates.length > 0 ? 'Find More Roommates' : 'Find Roommates'}
-                    </h2>
-
-                    {/* Search Input */}
-                    <div className='relative mb-4'>
-                        <input
-                            type='text'
-                            placeholder='Search by name, email, or username...'
-                            value={searchTerm}
-                            onChange={handleSearchChange}
-                            className='w-full bg-cards-bg text-white rounded-lg py-3 px-4 pl-10 focus:outline-none focus:ring-2 focus:ring-main-purple'
-                        />
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-secondary-text"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
+            {currentRoommates.length > 0 ? (
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                    {currentRoommates.map((mate, index) => (
+                        <div 
+                            key={mate._id} 
+                            className='bg-cards-bg rounded-xl p-4 border border-transparent hover:border-tertiary-text transition-all duration-300 cursor-pointer'
+                            onClick={() => handleRoommateClick(mate)}
                         >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </div>
-
-                    {/* Search Results */}
-                    {isSearching && (
-                        <div className='space-y-4'>
-                            {searchResults && searchResults.length > 0 ? (
-                                <>
-                                    <p className='text-secondary-text font-semibold mb-2'>Search Results</p>
-                                    <div className='space-y-3 max-h-60 overflow-y-auto pr-2'>
-                                        {searchResults.map((user, index) => (
-                                            <div key={index} className='flex items-center justify-between bg-cards-bg rounded-xl p-3'>
-                                                <div className='flex items-center space-x-3'>
-                                                    <img src={user.profilePicture || 'https://placehold.co/100'} alt="Profile" className='h-12 w-12 rounded-full object-cover' />
-                                                    <div>
-                                                        <p className='text-white font-semibold'>{user.name}</p>
-                                                        <p className='text-secondary-text text-sm'>@{user.username}</p>
-                                                    </div>
-                                                </div>
-                                                <button onClick={() => handleInviteRoommate(user)} className='bg-main-purple text-white px-4 py-2 rounded-lg hover:bg-[#6b2bd2] transition-all text-sm'>
-                                                    Invite
-                                                </button>
-                                            </div>
-                                        ))}
+                            <div className='flex items-start'>
+                                <div className="relative flex-shrink-0">
+                                    <img 
+                                        src={mate.profilePicture || 'https://placehold.co/100'} 
+                                        alt={mate.name} 
+                                        className='h-16 w-16 rounded-full object-cover border-2 border-tertiary-text'
+                                    />
+                                    <div className="absolute bottom-0 right-0 bg-green-500 h-3 w-3 rounded-full border-2 border-cards-bg"></div>
+                                </div>
+                                <div className='ml-4 flex-1 overflow-hidden'>
+                                    <div className="flex justify-between items-start">
+                                        <div className="max-w-full overflow-hidden">
+                                            <p className='text-white text-lg font-semibold truncate'>{mate.name}</p>
+                                            <p className='text-secondary-text text-sm truncate'>@{mate.username}</p>
+                                        </div>
                                     </div>
-                                </>
-                            ) : (
-                                <div className='flex flex-col items-center justify-center py-8 bg-cards-bg rounded-xl'>
-                                    <svg className="w-12 h-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                    </svg>
-                                    <p className='text-secondary-text text-center'>No users found matching "{searchTerm}"</p>
-                                    <p className='text-secondary-text text-sm text-center mt-1'>Try a different search term</p>
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {/* Tips for when not searching */}
-                    {!isSearching && (
-                        <div className='bg-cards-bg rounded-xl p-4'>
-                            <p className='text-tertiary-text font-semibold mb-2'>Search Tips</p>
-                            <ul className='text-gray-400 space-y-2 text-sm list-disc pl-5 font-bold'>
-                                <li>Search by full name, username, or email</li>
-                                <li>Users must have an account on NinjaNest to be invited</li>
-                                <li>Invited users will need to accept your invitation</li>
-                                <li>You can invite up to the number of available beds in your room</li>
-                            </ul>
-                        </div>
-                    )}
-                </div>
-
-                {/* Pending Invitations Section */}
-                <div className='bg-sub-bg rounded-xl p-5 w-full mt-4'>
-                    <h2 className='text-white text-lg font-bold mb-2'>Pending Invitations</h2>
-
-                    {loadingInvitations ? (
-                        <div className='bg-cards-bg rounded-xl p-4 flex items-center justify-center'>
-                            <p className='text-secondary-text'>Loading invitations...</p>
-                        </div>
-                    ) : (
-                        <>
-                            {pendingInvitations.received.length > 0 ? (
-                                <div className='space-y-3'>
-                                    <p className='text-secondary-text font-semibold'>Received Invitations</p>
-                                    {pendingInvitations.received.map((invitation) => (
-                                        <div key={invitation._id} className='bg-cards-bg rounded-xl p-4'>
-                                            <div className='flex items-center justify-between'>
-                                                <div className='flex items-center space-x-3'>
-                                                    <img
-                                                        src={invitation.inviterId.profilePicture || 'https://placehold.co/100'}
-                                                        alt="Profile"
-                                                        className='h-10 w-10 rounded-full object-cover'
-                                                    />
-                                                    <div>
-                                                        <p className='text-white font-semibold'>{invitation.inviterId.name}</p>
-                                                        <p className='text-secondary-text text-sm'>@{invitation.inviterId.username}</p>
-                                                    </div>
-                                                </div>
-                                                <div className='flex space-x-2'>
-                                                    <a
-                                                        href={`http://localhost:3000/api/invitation/accept/${invitation._id}`}
-                                                        className='bg-main-purple text-white px-3 py-1 rounded-lg hover:bg-[#6b2bd2] transition-all text-sm'
-                                                    >
-                                                        Accept
-                                                    </a>
-                                                    <a
-                                                        href={`http://localhost:3000/api/invitation/decline/${invitation._id}`}
-                                                        className='bg-gray-600 text-white px-3 py-1 rounded-lg hover:bg-gray-700 transition-all text-sm'
-                                                    >
-                                                        Decline
-                                                    </a>
-                                                </div>
+                                    <div className="flex flex-col mt-2 space-y-1">
+                                        {mate.college && (
+                                            <div className="flex items-start text-secondary-text text-sm">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                                </svg>
+                                                <span className="line-clamp-1">
+                                                    {mate.college || 'No college info'}
+                                                </span>
                                             </div>
-                                            <p className='text-secondary-text text-sm mt-2'>
-                                                Property: {invitation.propertyId.title}, {invitation.propertyId.location}
-                                            </p>
-                                            <p className='text-gray-400 text-xs mt-1'>
-                                                Expires: {new Date(invitation.expiresAt).toLocaleDateString()}
-                                            </p>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : null}
-
-                            {pendingInvitations.sent.length > 0 ? (
-                                <div className='space-y-3 mt-4'>
-                                    <p className='text-secondary-text font-semibold'>Sent Invitations</p>
-                                    {pendingInvitations.sent.map((invitation) => (
-                                        <div key={invitation._id} className='bg-cards-bg rounded-xl p-4'>
-                                            <div className='flex items-center justify-between'>
-                                                <div className='flex items-center space-x-3'>
-                                                    <img
-                                                        src={invitation.inviteeId.profilePicture || 'https://placehold.co/100'}
-                                                        alt="Profile"
-                                                        className='h-10 w-10 rounded-full object-cover'
-                                                    />
-                                                    <div>
-                                                        <p className='text-white font-semibold'>{invitation.inviteeId.name}</p>
-                                                        <p className='text-secondary-text text-sm'>@{invitation.inviteeId.username}</p>
-                                                    </div>
-                                                </div>
-                                                <span className='text-yellow-500 text-sm font-semibold'>Pending</span>
+                                        )}
+                                        {mate.course && (
+                                            <div className="flex items-start text-secondary-text text-sm">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                                <span className="line-clamp-1">
+                                                    {mate.course || 'No course info'}
+                                                </span>
                                             </div>
-                                            <p className='text-secondary-text text-sm mt-2'>
-                                                Property: {invitation.propertyId.title}, {invitation.propertyId.location}
-                                            </p>
-                                            <p className='text-gray-400 text-xs mt-1'>
-                                                Expires: {new Date(invitation.expiresAt).toLocaleDateString()}
-                                            </p>
-                                        </div>
-                                    ))}
+                                        )}
+                                    </div>
                                 </div>
-                            ) : null}
-
-                            {pendingInvitations.received.length === 0 && pendingInvitations.sent.length === 0 && (
-                                <div className='bg-cards-bg rounded-xl p-4 flex flex-col items-center justify-center'>
-                                    <p className='text-secondary-text text-center'>No pending invitations</p>
-                                </div>
-                            )}
-                        </>
-                    )}
+                            </div>
+                        </div>
+                    ))}
                 </div>
+            ) : (
+                <div className='flex flex-col items-center justify-center space-y-4 py-8'>
+                    <img
+                        src={roommate}
+                        alt='No Roommates'
+                        className='w-1/3 h-auto'
+                    />
+                    <p className='text-secondary-text text-lg font-semibold text-center'>
+                        No roommates have joined the room yet. <br />Search and invite friends below!
+                    </p>
+                </div>
+            )}
             </div>
+
+            {/* Search Section - always shown */}
+            <div className='bg-sub-bg rounded-xl p-5 w-full'>
+                <h2 className='text-white text-lg font-bold mb-4'>
+                    {currentRoommates.length > 0 ? 'Find More Roommates' : 'Find Roommates'}
+                </h2>
+
+                {/* Search Input */}
+                <div className='relative mb-4'>
+                    <input
+                        type='text'
+                        placeholder='Search by name, email, or username...'
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                        className='w-full bg-cards-bg text-white rounded-lg py-3 px-4 pl-10 focus:outline-none focus:ring-2 focus:ring-main-purple'
+                    />
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-secondary-text"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+
+                {/* Search Results */}
+                {isSearching && (
+                    <div className='space-y-4'>
+                        {searchResults && searchResults.length > 0 ? (
+                            <>
+                                <div className="flex items-center">
+                                    <div className="bg-tertiary-text bg-opacity-20 p-1 rounded-lg mr-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-tertiary-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                        </svg>
+                                    </div>
+                                    <p className='text-secondary-text font-semibold text-sm'>
+                                        Found {searchResults.length} {searchResults.length === 1 ? 'user' : 'users'} matching "{searchTerm}"
+                                    </p>
+                                </div>
+                                <div className='space-y-3 max-h-60 overflow-y-auto pr-2'>
+                                    {searchResults.map((user) => (
+                                        <div key={user._id} className='flex items-center justify-between bg-cards-bg rounded-xl p-3 hover:bg-opacity-80 transition-colors'>
+                                            <div className='flex items-center space-x-3'>
+                                                <img src={user.profilePicture || 'https://placehold.co/100'} alt="Profile" className='h-12 w-12 rounded-full object-cover border border-gray-700' />
+                                                <div>
+                                                    <p className='text-white font-semibold'>{user.name}</p>
+                                                    <p className='text-secondary-text text-sm'>@{user.username}</p>
+                                                </div>
+                                            </div>
+                                            <button 
+                                                onClick={() => handleInviteRoommate(user)} 
+                                                className='bg-main-purple text-white px-4 py-2 rounded-lg hover:bg-[#6b2bd2] transition-all text-sm flex items-center'
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                                </svg>
+                                                Invite
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        ) : (
+                            <div className='flex flex-col items-center justify-center py-8 bg-cards-bg rounded-xl'>
+                                <svg className="w-12 h-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                                <p className='text-secondary-text text-center'>No users found matching "{searchTerm}"</p>
+                                <p className='text-secondary-text text-sm text-center mt-1'>Try a different search term</p>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Tips for when not searching */}
+                {!isSearching && (
+                    <div className='bg-cards-bg rounded-xl p-4'>
+                        <div className="flex items-center mb-2">
+                            <div className="bg-tertiary-text bg-opacity-20 p-1 rounded-lg mr-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-tertiary-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <p className='text-tertiary-text font-semibold'>Search Tips</p>
+                        </div>
+                        <ul className='text-gray-400 space-y-2 text-sm list-disc pl-5 font-medium'>
+                            <li>Search by full name, username, or email</li>
+                            <li>Users must have an account on NinjaNest to be invited</li>
+                            <li>Invited users will need to accept your invitation</li>
+                            <li>You can invite up to the number of available beds in your room</li>
+                        </ul>
+                    </div>
+                )}
+            </div>
+
+            {/* Pending Invitations Section */}
+            <div className='bg-sub-bg rounded-xl p-5 w-full mt-4'>
+                <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center">
+                        <div className="bg-yellow-500 bg-opacity-20 p-2 rounded-lg mr-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                        </div>
+                        <h2 className='text-white text-lg font-bold'>Pending Invitations</h2>
+                    </div>
+                </div>
+
+                {loadingInvitations ? (
+                    <div className='bg-cards-bg rounded-xl p-4 flex items-center justify-center'>
+                        <p className='text-secondary-text'>Loading invitations...</p>
+                    </div>
+                ) : (
+                    <>
+                        {pendingInvitations.received.length > 0 ? (
+                            <div className='space-y-3 mb-4'>
+                                <div className="flex items-center">
+                                    <div className="bg-green-500 bg-opacity-20 p-1 rounded-lg mr-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                                        </svg>
+                                    </div>
+                                    <p className='text-green-400 font-semibold text-sm'>Received Invitations</p>
+                                </div>
+                                {pendingInvitations.received.map((invitation) => (
+                                    <div key={invitation._id} className='bg-cards-bg rounded-xl p-4 hover:bg-opacity-80 transition-all'>
+                                        <div className='flex items-center justify-between'>
+                                            <div className='flex items-center space-x-3'>
+                                                <img
+                                                    src={invitation.inviterId.profilePicture || 'https://placehold.co/100'}
+                                                    alt="Profile"
+                                                    className='h-12 w-12 rounded-full object-cover border border-main-purple'
+                                                />
+                                                <div>
+                                                    <p className='text-white font-semibold'>{invitation.inviterId.name}</p>
+                                                    <p className='text-secondary-text text-sm'>@{invitation.inviterId.username}</p>
+                                                </div>
+                                            </div>
+                                            <div className='flex space-x-2'>
+                                                <a
+                                                    href={`http://localhost:3000/api/invitation/accept/${invitation._id}`}
+                                                    className='bg-main-purple text-white px-3 py-1 rounded-lg hover:bg-[#6b2bd2] transition-all text-sm flex items-center'
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                    Accept
+                                                </a>
+                                                <a
+                                                    href={`http://localhost:3000/api/invitation/decline/${invitation._id}`}
+                                                    className='bg-gray-600 text-white px-3 py-1 rounded-lg hover:bg-gray-700 transition-all text-sm flex items-center'
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                    Decline
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div className="mt-3 bg-sub-bg p-3 rounded-lg">
+                                            <p className='text-tertiary-text text-sm font-medium'>Property Details</p>
+                                            <div className="flex items-center mt-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-secondary-text mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                                </svg>
+                                                <span className="text-white text-sm">{invitation.propertyId.title}</span>
+                                            </div>
+                                            <div className="flex items-center mt-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-secondary-text mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                </svg>
+                                                <span className="text-secondary-text text-sm">{invitation.propertyId.location}</span>
+                                            </div>
+                                            <div className="flex items-center mt-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-secondary-text mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                <span className="text-secondary-text text-sm">Expires: {new Date(invitation.expiresAt).toLocaleDateString()}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : null}
+
+                        {pendingInvitations.sent.length > 0 ? (
+                            <div className='space-y-3'>
+                                <div className="flex items-center">
+                                    <div className="bg-blue-500 bg-opacity-20 p-1 rounded-lg mr-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                        </svg>
+                                    </div>
+                                    <p className='text-blue-400 font-semibold text-sm'>Sent Invitations</p>
+                                </div>
+                                {pendingInvitations.sent.map((invitation) => (
+                                    <div key={invitation._id} className='bg-cards-bg rounded-xl p-4 hover:bg-opacity-80 transition-all'>
+                                        <div className='flex items-center justify-between'>
+                                            <div className='flex items-center space-x-3'>
+                                                <img
+                                                    src={invitation.inviteeId.profilePicture || 'https://placehold.co/100'}
+                                                    alt="Profile"
+                                                    className='h-12 w-12 rounded-full object-cover border border-gray-700'
+                                                />
+                                                <div>
+                                                    <p className='text-white font-semibold'>{invitation.inviteeId.name}</p>
+                                                    <p className='text-secondary-text text-sm'>@{invitation.inviteeId.username}</p>
+                                                </div>
+                                            </div>
+                                            <span className='text-yellow-500 text-sm font-semibold flex items-center'>
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                Pending
+                                            </span>
+                                        </div>
+                                        <div className="mt-3 bg-sub-bg p-3 rounded-lg">
+                                            <p className='text-tertiary-text text-sm font-medium'>Property Details</p>
+                                            <div className="flex items-center mt-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-secondary-text mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                                </svg>
+                                                <span className="text-white text-sm">{invitation.propertyId.title}</span>
+                                            </div>
+                                            <div className="flex items-center mt-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-secondary-text mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                </svg>
+                                                <span className="text-secondary-text text-sm">{invitation.propertyId.location}</span>
+                                            </div>
+                                            <div className="flex items-center mt-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-secondary-text mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                <span className="text-secondary-text text-sm">Expires: {new Date(invitation.expiresAt).toLocaleDateString()}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : null}
+
+                        {pendingInvitations.received.length === 0 && pendingInvitations.sent.length === 0 && (
+                            <div className='bg-cards-bg rounded-xl p-6 flex flex-col items-center justify-center'>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-secondary-text mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                                </svg>
+                                <p className='text-secondary-text text-center font-medium'>No pending invitations</p>
+                                <p className='text-gray-500 text-sm text-center mt-1'>When you send or receive invitations, they'll appear here</p>
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
+
+            {/* Roommate Detail Modal */}
+            {showRoommateModal && selectedRoommate && (
+                <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-75">
+                    <div className="bg-sub-bg rounded-xl p-6 mx-4 w-full max-w-md max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-white text-xl font-bold">Roommate Details</h3>
+                            <button
+                                onClick={closeRoommateModal}
+                                className="rounded-full bg-cards-bg p-2 text-secondary-text hover:text-white transition-colors"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div className="flex flex-col items-center mb-6">
+                            <div className="relative mb-3">
+                                <img
+                                    src={selectedRoommate.profilePicture || 'https://placehold.co/200'}
+                                    alt={selectedRoommate.name}
+                                    className="w-28 h-28 rounded-full object-cover border-4 border-tertiary-text"
+                                />
+                                <div className="absolute bottom-1 right-1 bg-green-500 h-4 w-4 rounded-full border-2 border-sub-bg"></div>
+                            </div>
+                            <h4 className="text-white text-xl font-bold">{selectedRoommate.name}</h4>
+                            <p className="text-secondary-text">@{selectedRoommate.username}</p>
+                        </div>
+
+                        <div className="bg-cards-bg rounded-xl p-4 mb-4">
+                            <h5 className="text-tertiary-text font-semibold mb-3">Personal Information</h5>
+                            <div className="grid grid-cols-1 gap-3">
+                                <div className="flex items-start">
+                                    <div className="bg-tertiary-text bg-opacity-10 p-2 rounded-lg mr-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-tertiary-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p className="text-secondary-text text-xs">Email</p>
+                                        <p className="text-white">{selectedRoommate.email}</p>
+                                    </div>
+                                </div>
+                                
+                                {selectedRoommate.phone && (
+                                    <div className="flex items-start">
+                                        <div className="bg-tertiary-text bg-opacity-10 p-2 rounded-lg mr-3">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-tertiary-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p className="text-secondary-text text-xs">Phone</p>
+                                            <p className="text-white">{selectedRoommate.phone || 'Not provided'}</p>
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                {selectedRoommate.dob && (
+                                    <div className="flex items-start">
+                                        <div className="bg-tertiary-text bg-opacity-10 p-2 rounded-lg mr-3">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-tertiary-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p className="text-secondary-text text-xs">Date of Birth</p>
+                                            <p className="text-white">{formatDate(selectedRoommate.dob)}</p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        
+                        <div className="bg-cards-bg rounded-xl p-4">
+                            <h5 className="text-tertiary-text font-semibold mb-3">Academic Information</h5>
+                            <div className="grid grid-cols-1 gap-3">
+                                <div className="flex items-start">
+                                    <div className="bg-tertiary-text bg-opacity-10 p-2 rounded-lg mr-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-tertiary-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path d="M12 14l9-5-9-5-9 5 9 5z" />
+                                            <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p className="text-secondary-text text-xs">College</p>
+                                        <p className="text-white">{selectedRoommate.college || 'Not provided'}</p>
+                                    </div>
+                                </div>
+                                
+                                <div className="flex items-start">
+                                    <div className="bg-tertiary-text bg-opacity-10 p-2 rounded-lg mr-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-tertiary-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p className="text-secondary-text text-xs">Course</p>
+                                        <p className="text-white">{selectedRoommate.course || 'Not provided'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="flex justify-end mt-6">
+                            <button
+                                onClick={closeRoommateModal}
+                                className="bg-main-purple text-white px-4 py-2 rounded-lg hover:bg-[#6b2bd2] transition-all"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
