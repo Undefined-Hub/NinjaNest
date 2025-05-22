@@ -22,7 +22,7 @@ import { toast } from 'react-hot-toast';
 import { useLocation } from 'react-router-dom';
 import { FiCamera } from "react-icons/fi";
 import { FiEdit } from "react-icons/fi";
-import { FiUser,FiSave,FiRefreshCw } from "react-icons/fi";
+import { FiUser, FiSave, FiRefreshCw } from "react-icons/fi";
 import api from "../api/axiosInstance";
 import { IoLogOut } from "react-icons/io5";
 
@@ -37,12 +37,12 @@ const menuItems = [
     { label: "Notifications", icon: <AiOutlineBell /> },
     { label: "Roommates", icon: <FaUserFriends /> },
     { label: "Payment", icon: <BiCreditCard /> },
-    {label: "Profile" , icon: <FiUser />},
+    { label: "Profile", icon: <FiUser /> },
     // { label: "Settings", icon: <FiSettings /> },
 ];
 
 const Dashboard = () => {
-      const location = useLocation();
+    const location = useLocation();
     const dispatch = useDispatch();
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -51,7 +51,7 @@ const Dashboard = () => {
 
     const fetchUserData = async () => {
         try {
-               const fetchResult = await dispatch(fetchUser(user?.user?.username));
+            const fetchResult = await dispatch(fetchUser(user?.user?.username));
             console.log('Fetched user data:', fetchResult);
         }
         catch (error) {
@@ -60,11 +60,11 @@ const Dashboard = () => {
     };
 
 
-  const handleLogout = () => {
-  // Set logout flag BEFORE dispatch
-  sessionStorage.setItem("isLoggingOut", "true");
+    const handleLogout = () => {
+        // Set logout flag BEFORE dispatch
+        sessionStorage.setItem("isLoggingOut", "true");
 
-  dispatch(logoutUser());
+        dispatch(logoutUser());
         // Show loading toast first
         const toastId = toast.loading('Logging out...');
 
@@ -74,31 +74,47 @@ const Dashboard = () => {
                 // icon: <FiLogOut className='text-red-500 font-bold text-lg' />,
             });
         }, 200);
-  // Delay navigation to allow PrivateRoute to check isLoggingOut
-  setTimeout(() => {
-    sessionStorage.removeItem("redirectAfterLogin");
-    sessionStorage.removeItem("isLoggingOut");
-    navigate('/');
-  }, 500); // even 50ms might work, but 100ms is safer
-};
+        // Delay navigation to allow PrivateRoute to check isLoggingOut
+        setTimeout(() => {
+            sessionStorage.removeItem("redirectAfterLogin");
+            sessionStorage.removeItem("isLoggingOut");
+            navigate('/');
+        }, 500); // even 50ms might work, but 100ms is safer
+    };
 
 
 
     const [activeTab, setActiveTab] = useState('Overview') // State to hold the active tab
-     useEffect(() => {
-    if (location.state?.activeTab) {
-      setActiveTab(location.state.activeTab);
-    }
-  }, [location.state?.activeTab]);
+    useEffect(() => {
+        if (location.state?.activeTab) {
+            setActiveTab(location.state.activeTab);
+        }
+    }, [location.state?.activeTab]);
 
     let navigate = useNavigate()
     const { user, loading, error } = useSelector((state) => state.user);
     user.user && console.log(`User Details: (ProfilePage) `, user);
     const [dashboardProperty, setDashboardProperty] = useState(null);
-const [dashboardNextRent, setDashboardNextRent] = useState(null);
-const [dashboardLeaseEnd, setDashboardLeaseEnd] = useState(null);
-const [dashboardRoommates, setDashboardRoommates] = useState([]);
-const [dashboardLoading, setDashboardLoading] = useState(true);
+    const [dashboardNextRent, setDashboardNextRent] = useState(null);
+    const [dashboardLeaseEnd, setDashboardLeaseEnd] = useState(null);
+    const [dashboardRoommates, setDashboardRoommates] = useState([]);
+    const [dashboardLoading, setDashboardLoading] = useState(true);
+
+
+    const fetchUserBooking = async (propertyId) => {
+        try {
+            const response = await axios.get(
+                `http://localhost:3000/api/booking/bookings/user/${user.user._id}/property/${propertyId}`,
+                { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+            );
+            return response.data.booking;
+        } catch (err) {
+            console.error('Error fetching user booking:', err);
+            return null;
+        }
+    };
+
+
     useEffect(() => {
         const fetchDashboardData = async () => {
             if (!user?.user?.currentRental) {
@@ -107,52 +123,74 @@ const [dashboardLoading, setDashboardLoading] = useState(true);
             }
             try {
                 // Fetch property
-                const propRes = await axios.get(`http://localhost:3000/api/property/${user.user.currentRental}`, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-                });
-                setDashboardProperty(propRes.data.property);
-
-                // Fetch booking
-                const bookingRes = await axios.get(
-                    `http://localhost:3000/api/booking/bookings/property/${user.user.currentRental}`,
+                const propRes = await axios.get(
+                    `http://localhost:3000/api/property/${user.user.currentRental}`,
                     { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
                 );
-                const booking = bookingRes.data.booking || bookingRes.data;
-                let bookingId = Array.isArray(booking) ? booking[0]?._id : booking?._id;
-                if (booking[0]) {
-                    // Lease end
-                    const moveIn = new Date(booking[0].moveInDate);
-                    const leaseMonths = booking[0].durationMonths || 12;
+
+                // Get user-specific booking
+                const userBooking = await fetchUserBooking(user.user.currentRental);
+
+                if (userBooking) {
+                    // Calculate lease end date
+                    const moveIn = new Date(userBooking.moveInDate);
+                    const leaseMonths = userBooking.durationMonths || 12;
                     const leaseEnd = new Date(moveIn.setMonth(moveIn.getMonth() + leaseMonths));
                     setDashboardLeaseEnd(leaseEnd);
 
-                    // Roommates (from property)
+                    // Get roommates from property
                     setDashboardRoommates(propRes.data.property?.roomDetails?.members || []);
-                }
 
-                // Fetch rents
-                if (bookingId) {
+                    // Fetch user's rent entries
                     const rentRes = await axios.get(
-                        `http://localhost:3000/api/rents/${bookingId}`,
+                        `http://localhost:3000/api/rents/${userBooking._id}`,
                         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
                     );
-                    const rents = Array.isArray(rentRes.data) ? rentRes.data : (rentRes.data.monthRents || []);
-                    // Find next unpaid rent
-                    const unpaidRents = rents.filter(r => r.payment_status !== "paid");
+
+                    const rents = Array.isArray(rentRes.data) ? rentRes.data : [];
+                    const currentDate = new Date();
+
+                    // Find unpaid rents that are due (including current month)
+                    const unpaidRents = rents.filter(r => {
+                        const dueDate = new Date(r.due_date);
+                        // Include rents that are unpaid and either:
+                        // 1. Due in current month OR
+                        // 2. Overdue from previous months
+                        return r.payment_status !== "paid" &&
+                            dueDate.getMonth() <= currentDate.getMonth() &&
+                            dueDate.getFullYear() <= currentDate.getFullYear();
+                    });
+
                     if (unpaidRents.length > 0) {
+                        // Sort by due date to get the earliest unpaid rent
                         unpaidRents.sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
                         setDashboardNextRent(unpaidRents[0]);
                     } else {
-                        setDashboardNextRent(null);
+                        // If no unpaid rents found for current or previous months
+                        // Find the next upcoming rent payment
+                        const futureRents = rents.filter(r => {
+                            const dueDate = new Date(r.due_date);
+                            return r.payment_status !== "paid" &&
+                                dueDate > currentDate;
+                        });
+
+                        if (futureRents.length > 0) {
+                            futureRents.sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
+                            setDashboardNextRent(futureRents[0]);
+                        } else {
+                            setDashboardNextRent(null);
+                        }
                     }
                 }
-                setDashboardLoading(false);
-            } catch (err) {
-                setDashboardLoading(false);
-            }
-        };
-        fetchDashboardData();
-    }, [user?.user?.currentRental]);
+                    setDashboardLoading(false);
+                } catch (err) {
+                    console.error('Error fetching dashboard data:', err);
+                    setDashboardLoading(false);
+                }
+            };
+
+            fetchDashboardData();
+        }, [user?.user?.currentRental]);
     return (
         <>
             <div className='flex justify-center items-center bg-main-bg p-3'> {/* Main container for profile page */}
@@ -163,7 +201,7 @@ const [dashboardLoading, setDashboardLoading] = useState(true);
                             <div className='flex items-start space-x-3 w-full'>
                                 <div className='flex-shrink-0'>
                                     <img
-                                        src={user?.user?.profilePicture||pfp}
+                                        src={user?.user?.profilePicture || pfp}
                                         alt='profile'
                                         className='h-14 w-14 rounded-full object-cover'
                                     />
@@ -348,7 +386,7 @@ const [dashboardLoading, setDashboardLoading] = useState(true);
                         //         Settings functionality is coming soon. <br />Stay tuned for updates!
                         //     </p>
                         // </div>
-                        <Profile/>
+                        <Profile />
                     }
 
 
@@ -763,8 +801,8 @@ const Profile = () => {
         },
     });
 
-    
-    const { register, formState: { errors }, handleSubmit ,reset} = methods;
+
+    const { register, formState: { errors }, handleSubmit, reset } = methods;
     const { user } = useSelector((state) => state.user);
     const [showPasswordFields, setShowPasswordFields] = useState(false);
     const [currentPassword, setCurrentPassword] = useState("");
@@ -788,7 +826,7 @@ const Profile = () => {
     // };
     useEffect(() => {
         const fetchUserDetails = async () => {
-             const username =  user?.user?.username;
+            const username = user?.user?.username;
             try {
                 const response = await api.get(`/user/getUser/${username}`);
                 const userData = response.data.user;
@@ -939,7 +977,7 @@ const Profile = () => {
             toast.success("Profile picture updated successfully!");
         } catch (err) {
             setUploading(false);
-                  toast.error("Failed to upload image. Please try again.");
+            toast.error("Failed to upload image. Please try again.");
         }
     };
 
@@ -951,129 +989,129 @@ const Profile = () => {
     return (
         <div className='flex flex-col items-center overflow-scroll h-[85vh] space-y-4 w-4/5'>
             {/* Profile Picture Section */}
-                        <div className='w-full h-60 bg-sub-bg rounded-xl p-5 flex items-center justify-center'>
-                            <div className='relative'>
-                                <img
-                                    src={profilePic}
-                                    alt="Profile"
-                                    className="w-24 h-24 rounded-full object-cover cursor-pointer"
-                                    onClick={handleOpenPicModal}
-                                />
-                                <label
-                                    htmlFor="profile-pic-upload"
-                                    className="absolute bottom-0 right-0 bg-main-purple p-1 rounded-full cursor-pointer"
-                                    onClick={handleOpenPicModal}
-                                >
-                                    <FiCamera className="text-white" />
-                                </label>
-                            </div>
-                        </div>
+            <div className='w-full h-60 bg-sub-bg rounded-xl p-5 flex items-center justify-center'>
+                <div className='relative'>
+                    <img
+                        src={profilePic}
+                        alt="Profile"
+                        className="w-24 h-24 rounded-full object-cover cursor-pointer"
+                        onClick={handleOpenPicModal}
+                    />
+                    <label
+                        htmlFor="profile-pic-upload"
+                        className="absolute bottom-0 right-0 bg-main-purple p-1 rounded-full cursor-pointer"
+                        onClick={handleOpenPicModal}
+                    >
+                        <FiCamera className="text-white" />
+                    </label>
+                </div>
+            </div>
 
-                       {/* Profile Picture Modal */}
-                       
-                        {/* Rest of the profile form */}
-                        <div className='w-full bg-sub-bg rounded-xl p-5'>
-                            <div className='flex items-center justify-between'>
-                                <p className='text-white text-lg font-semibold'>Personal Information</p>
-                                {!isEditing && (
-                                    <button
-                                        onClick={() => setIsEditing(true)}
-                                        className="bg-main-purple text-white px-4 py-2 rounded-lg hover:bg-[#6b2bd2] transition-all"
-                                    >
-                                        <FiEdit className="inline mr-2" /> Edit Info
-                                    </button>
-                                )}
-                            </div>
-                            <FormProvider {...methods}>
-                                <form className="grid grid-cols-2 gap-3 mt-3" onSubmit={handleSubmit(onSubmit)}>
-                                    <div className="flex flex-col gap-1">
-                                        <label className="text-sm text-secondary-text">Full Name</label>
-                                        <input
-                                            {...register("name", { required: "Full Name is required" })}
-                                            placeholder="Enter your full name"
-                                            className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text ${!isEditing ? 'cursor-not-allowed' : ''}`}
-                                            defaultValue={user?.user?.name || ""}
-                                            disabled={!isEditing}
-                                        />
-                                        {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
-                                    </div>
-                                    <div className="flex flex-col gap-1">
-                                        <label className="text-sm text-secondary-text">Username</label>
-                                        <input
-                                            {...register("username", { required: "Full Name is required" })}
-                                            placeholder="Enter your full name"
-                                            className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-secondary-text ${!isEditing ? 'cursor-not-allowed' : 'cursor-not-allowed'}`}
-                                            defaultValue={user?.user?.username || ""}
-                                            disabled
-                                        />
-                                        {errors.username && <p className="text-red-500 text-sm">{errors.username.message}</p>}
-                                    </div>
-                                    <div className="flex flex-col gap-1">
-                                        <label className="text-sm text-secondary-text">Email</label>
-                                        <input
-                                            {...register("email")}
-                                            placeholder="Enter your email"
-                                            className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-secondary-text ${!isEditing ? 'cursor-not-allowed' : 'cursor-not-allowed'}`}
-                                            defaultValue={user?.user?.email || ""}
-                                            disabled
-                                        />
-                                    </div>
-                                    <div className="flex flex-col gap-1">
-                                        <label className="text-sm text-secondary-text">Phone Number</label>
-                                        <input
-                                            {...register("phone", { required: "Phone number is required" })}
-                                            placeholder="Enter your phone number"
-                                            className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text ${!isEditing ? 'cursor-not-allowed' : ''}`}
-                                            defaultValue={user?.user?.phone || ""}
-                                            disabled={!isEditing}
-                                        />
-                                        {errors.phone && <p className="text-red-500 text-sm">{errors.phone.message}</p>}
-                                    </div>
-                                    <div className="flex flex-col gap-1">
-                                        <label className="text-sm text-secondary-text">Date of Birth</label>
-                                        <input
-                                            {...register("dob", { required: "Date of Birth is required" })}
-                                            type="date"
-                                            className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text ${!isEditing ? 'cursor-not-allowed' : ''}`}
-                                            defaultValue={user?.user?.dob || ""}
-                                            disabled={!isEditing}
-                                        />
-                                        {errors.dob && <p className="text-red-500 text-sm">{errors.dob.message}</p>}
-                                    </div>
-                                    <div className="flex flex-col gap-1">
-                                        <label className="text-sm text-secondary-text">College Name</label>
-                                        <input
-                                            {...register("college", { required: "College name is required" })}
-                                            placeholder="Enter your college name"
-                                            className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text ${!isEditing ? 'cursor-not-allowed' : ''}`}
-                                            defaultValue={user?.user?.college || ""}
-                                            disabled={!isEditing}
-                                        />
-                                        {errors.college && <p className="text-red-500 text-sm">{errors.college.message}</p>}
-                                    </div>
-                                    <div className="flex flex-col gap-1">
-                                        <label className="text-sm text-secondary-text">Course Name</label>
-                                        <input
-                                            {...register("course", { required: "Course name is required" })}
-                                            placeholder="Enter your course name"
-                                            className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text ${!isEditing ? 'cursor-not-allowed' : ''}`}
-                                            defaultValue={user?.user?.course || ""}
-                                            disabled={!isEditing}
-                                        />
-                                        {errors.course && <p className="text-red-500 text-sm">{errors.course.message}</p>}
-                                    </div>
-                                    {isEditing && (
-                                        <div className="col-span-2 flex justify-end gap-3 mt-4">
-                                            <button
-                                                type="submit"
-                                                className="bg-main-purple text-white px-4 py-2 rounded-lg hover:bg-[#6b2bd2] transition-all"
-                                            >
-                                                Save Changes
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-all"
-                                                onClick={() => {
+            {/* Profile Picture Modal */}
+
+            {/* Rest of the profile form */}
+            <div className='w-full bg-sub-bg rounded-xl p-5'>
+                <div className='flex items-center justify-between'>
+                    <p className='text-white text-lg font-semibold'>Personal Information</p>
+                    {!isEditing && (
+                        <button
+                            onClick={() => setIsEditing(true)}
+                            className="bg-main-purple text-white px-4 py-2 rounded-lg hover:bg-[#6b2bd2] transition-all"
+                        >
+                            <FiEdit className="inline mr-2" /> Edit Info
+                        </button>
+                    )}
+                </div>
+                <FormProvider {...methods}>
+                    <form className="grid grid-cols-2 gap-3 mt-3" onSubmit={handleSubmit(onSubmit)}>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm text-secondary-text">Full Name</label>
+                            <input
+                                {...register("name", { required: "Full Name is required" })}
+                                placeholder="Enter your full name"
+                                className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text ${!isEditing ? 'cursor-not-allowed' : ''}`}
+                                defaultValue={user?.user?.name || ""}
+                                disabled={!isEditing}
+                            />
+                            {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm text-secondary-text">Username</label>
+                            <input
+                                {...register("username", { required: "Full Name is required" })}
+                                placeholder="Enter your full name"
+                                className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-secondary-text ${!isEditing ? 'cursor-not-allowed' : 'cursor-not-allowed'}`}
+                                defaultValue={user?.user?.username || ""}
+                                disabled
+                            />
+                            {errors.username && <p className="text-red-500 text-sm">{errors.username.message}</p>}
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm text-secondary-text">Email</label>
+                            <input
+                                {...register("email")}
+                                placeholder="Enter your email"
+                                className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-secondary-text ${!isEditing ? 'cursor-not-allowed' : 'cursor-not-allowed'}`}
+                                defaultValue={user?.user?.email || ""}
+                                disabled
+                            />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm text-secondary-text">Phone Number</label>
+                            <input
+                                {...register("phone", { required: "Phone number is required" })}
+                                placeholder="Enter your phone number"
+                                className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text ${!isEditing ? 'cursor-not-allowed' : ''}`}
+                                defaultValue={user?.user?.phone || ""}
+                                disabled={!isEditing}
+                            />
+                            {errors.phone && <p className="text-red-500 text-sm">{errors.phone.message}</p>}
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm text-secondary-text">Date of Birth</label>
+                            <input
+                                {...register("dob", { required: "Date of Birth is required" })}
+                                type="date"
+                                className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text ${!isEditing ? 'cursor-not-allowed' : ''}`}
+                                defaultValue={user?.user?.dob || ""}
+                                disabled={!isEditing}
+                            />
+                            {errors.dob && <p className="text-red-500 text-sm">{errors.dob.message}</p>}
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm text-secondary-text">College Name</label>
+                            <input
+                                {...register("college", { required: "College name is required" })}
+                                placeholder="Enter your college name"
+                                className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text ${!isEditing ? 'cursor-not-allowed' : ''}`}
+                                defaultValue={user?.user?.college || ""}
+                                disabled={!isEditing}
+                            />
+                            {errors.college && <p className="text-red-500 text-sm">{errors.college.message}</p>}
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm text-secondary-text">Course Name</label>
+                            <input
+                                {...register("course", { required: "Course name is required" })}
+                                placeholder="Enter your course name"
+                                className={`bg-cards-bg px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text ${!isEditing ? 'cursor-not-allowed' : ''}`}
+                                defaultValue={user?.user?.course || ""}
+                                disabled={!isEditing}
+                            />
+                            {errors.course && <p className="text-red-500 text-sm">{errors.course.message}</p>}
+                        </div>
+                        {isEditing && (
+                            <div className="col-span-2 flex justify-end gap-3 mt-4">
+                                <button
+                                    type="submit"
+                                    className="bg-main-purple text-white px-4 py-2 rounded-lg hover:bg-[#6b2bd2] transition-all"
+                                >
+                                    Save Changes
+                                </button>
+                                <button
+                                    type="button"
+                                    className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-all"
+                                    onClick={() => {
                                         setIsEditing(false);
                                         // Reset form to original user data
                                         const userData = user?.user;
@@ -1092,7 +1130,7 @@ const Profile = () => {
                                 </button>
                             </div>
                         )}
-                         {showPicModal && (
+                        {showPicModal && (
                             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
                                 <div className="bg-sub-bg rounded-xl p-6 flex flex-col items-center w-[90vw] max-w-md relative">
                                     <button
@@ -1351,24 +1389,24 @@ const Profile = () => {
         </div>
     )
 
-// Helper component to auto-hide error/success messages
-function AutoHideMessage({ passwordError, passwordSuccess, setPasswordError, setPasswordSuccess }) {
-    useEffect(() => {
-        if (passwordError || passwordSuccess) {
-            const timer = setTimeout(() => {
-                setPasswordError("");
-                setPasswordSuccess("");
-            }, 3000);
-            return () => clearTimeout(timer);
-        }
-    }, [passwordError, passwordSuccess, setPasswordError, setPasswordSuccess]);
-    return (
-        <>
-            {passwordError && <p className="text-red-500 text-sm">{passwordError}</p>}
-            {passwordSuccess && <p className="text-green-500 text-sm">{passwordSuccess}</p>}
-        </>
-    );
-}
+    // Helper component to auto-hide error/success messages
+    function AutoHideMessage({ passwordError, passwordSuccess, setPasswordError, setPasswordSuccess }) {
+        useEffect(() => {
+            if (passwordError || passwordSuccess) {
+                const timer = setTimeout(() => {
+                    setPasswordError("");
+                    setPasswordSuccess("");
+                }, 3000);
+                return () => clearTimeout(timer);
+            }
+        }, [passwordError, passwordSuccess, setPasswordError, setPasswordSuccess]);
+        return (
+            <>
+                {passwordError && <p className="text-red-500 text-sm">{passwordError}</p>}
+                {passwordSuccess && <p className="text-green-500 text-sm">{passwordSuccess}</p>}
+            </>
+        );
+    }
 };
 
 

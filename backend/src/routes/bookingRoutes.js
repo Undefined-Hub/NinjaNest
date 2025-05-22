@@ -8,6 +8,7 @@ const {
   getBookingById,
   deleteBooking,
   updateBooking,
+  getUserBooking,
 } = require("../controllers/bookingController");
 
 router.post("/bookings", authMiddleware(), addBooking); // Add new Booking
@@ -19,5 +20,6 @@ router.get("/bookings/:bid", authMiddleware(), getBookingById); // Get a specifi
 router.put("/bookings/:id", authMiddleware(), updateBooking); // Update Booking
 
 router.delete("/bookings/:id", authMiddleware(), deleteBooking); // Delete Booking
-
+// Add this new route
+router.get("/bookings/user/:userId/property/:propertyId", authMiddleware(), getUserBooking);
 module.exports = router;

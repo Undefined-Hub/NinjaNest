@@ -63,11 +63,25 @@ const deleteBooking = async (req, res, next) => {
         next(error);
     }
 };
-
+const getUserBooking = async (req, res, next) => {
+    try {
+        const { userId, propertyId } = req.params;
+        const booking = await Booking.findOne({ 
+            user_id: userId,
+            property_id: propertyId
+        }).populate("user_id", "_id name")
+          .populate("landlord_id", "_id name");
+        
+        res.status(200).json({ booking });
+    } catch (error) {
+        next(error);
+    }
+};
 module.exports = {
     addBooking,
     getBookings, 
     getBookingById, 
     deleteBooking, 
-    updateBooking 
+    updateBooking,
+    getUserBooking 
 };
