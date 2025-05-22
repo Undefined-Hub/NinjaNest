@@ -66,7 +66,11 @@ const PropertyCard = ({ property }) => {
                 <span className="text-green-500">
                   <IoShieldCheckmark />
                 </span>
-                {property?.landlord_id?.trustScore} Trust
+                <span className="text-green-500 font-bold">
+                  {property?.landlord_id?.trustScore !== undefined
+                    ? Number(property.landlord_id.trustScore).toFixed(1)
+                    : "0.0"}{" "}
+                </span>
               </p>
             </div>
           </div>
