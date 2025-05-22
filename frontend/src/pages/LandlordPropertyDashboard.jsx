@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { MapContainer, TileLayer, Marker, Popup, LayersControl } from 'react-leaflet';
 import { useRef } from 'react';
 import { Star, Upload, Check, Calendar, FileText, User, Home, Bell, DollarSign, Clock, BarChart } from 'lucide-react';
+import PaymentHistorySection from '../components/PaymentHistorySection';
 
 // SVG imports
 import agreement_svg from '../assets/agreement_svg.svg';
@@ -286,14 +287,14 @@ function LandlordPropertyDashboard() {
 
                 {/* Analytics Overview */}
                 <div className='w-full flex flex-col bg-sub-bg p-4 rounded-xl'>
-                    <div className="flex items-center mb-4">
+                    {/* <div className="flex items-center mb-4">
                         <DollarSign size={20} className="text-tertiary-text mr-2" />
                         <p className='font-semibold text-lg text-tertiary-text'>Payment Analytics</p>
                     </div>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                     */}
+                    {/* <div className="grid grid-cols-1 sm:grid-cols-3 gap-4"> */}
                         {/* Payments Made */}
-                        <div className="bg-cards-bg rounded-xl p-4">
+                        {/* <div className="bg-cards-bg rounded-xl p-4">
                             <p className="text-secondary-text mb-2">Payments Made</p>
                             <div className="flex items-end justify-between">
                                 <p className="text-2xl font-bold text-green-400">{paymentStats.paid}</p>
@@ -301,10 +302,10 @@ function LandlordPropertyDashboard() {
                                     <Check size={20} className="text-green-400" />
                                 </div>
                             </div>
-                        </div>
+                        </div> */}
                         
                         {/* Payments Pending */}
-                        <div className="bg-cards-bg rounded-xl p-4">
+                        {/* <div className="bg-cards-bg rounded-xl p-4">
                             <p className="text-secondary-text mb-2">Payments Pending</p>
                             <div className="flex items-end justify-between">
                                 <p className="text-2xl font-bold text-yellow-400">{paymentStats.pending}</p>
@@ -312,10 +313,10 @@ function LandlordPropertyDashboard() {
                                     <Clock size={20} className="text-yellow-400" />
                                 </div>
                             </div>
-                        </div>
+                        </div> */}
                         
                         {/* Total Residents */}
-                        <div className="bg-cards-bg rounded-xl p-4">
+                        {/* <div className="bg-cards-bg rounded-xl p-4">
                             <p className="text-secondary-text mb-2">Total Residents</p>
                             <div className="flex items-end justify-between">
                                 <p className="text-2xl font-bold text-logo-blue">{paymentStats.total}</p>
@@ -324,7 +325,7 @@ function LandlordPropertyDashboard() {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> */}
                     
                     {/* Payment Chart/Timeline */}
                     <div className="mt-6 bg-cards-bg rounded-xl p-4">
@@ -382,8 +383,33 @@ function LandlordPropertyDashboard() {
                             </div>
                         </div>
                     </div>
-                </div>
 
+
+
+
+                </div>
+            <div className='w-full flex flex-col bg-sub-bg p-4 rounded-xl'>
+                    <PaymentHistorySection 
+                        propertyId={propertyId} 
+                        landlordId={property?.landlord_id?._id}
+                        mode="landlord"
+                        title="Payment History"
+                    />
+                    </div>
+                             {/* <div className='w-full flex flex-col bg-sub-bg p-4 rounded-xl'>
+                    <PaymentHistorySection 
+                        propertyId={propertyId} 
+                        userId={user?._id}
+                        mode="tenant" 
+                    />
+                        </div>
+                    <div className='w-full flex flex-col bg-sub-bg p-4 rounded-xl'>
+                    <PaymentHistorySection 
+                        userId={user?._id}
+                        mode="user"
+                        title="My Payment History"
+                    />
+                    </div> */}
                  <div className='w-full flex flex-col lg:flex-row gap-6'> {/* Changed space-x-6 to gap-6 for better responsiveness */}
                     {/* Property Details */}
                     <div className='flex flex-col bg-sub-bg w-full text-white rounded-xl p-4'>
