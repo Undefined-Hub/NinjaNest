@@ -76,7 +76,7 @@ const PropertyCard = ({ property }) => {
           </div>
           <div className="flex flex-col p-2 justify-center">
             <p className="text-right text-lg text-[#727986] font-bold">
-              <span className="text-yellow-400 mx-1">★ {property.averageRating}</span>
+              <span className="text-yellow-400 mx-1">★ {property.averageRating ? property.averageRating.toFixed(1) : "0.0"}{" "}</span>
             </p>
           </div>
         </div>
