@@ -33,7 +33,7 @@ router.get(
 
 router.post("/members/:id", authMiddleware(), addRoomMember);
 
-router.delete("/members/:id", authMiddleware(), removeRoomMember);
+router.put("/members/:id", removeRoomMember);
 
 router.put("/roomdetails/:id", authMiddleware(), updateRoomDetails);
 

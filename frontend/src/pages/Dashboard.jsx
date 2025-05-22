@@ -30,7 +30,7 @@ import payment from '/images/payment.svg'
 import profile from '/images/profile.svg'
 import CurrentRental from '../components/CurrentRental'
 import { setHydrated, fetchUser } from "../features/User/userSlice";
-import PaymentHistorySection  from '../components/PaymentHistorySection'
+import PaymentHistorySection from '../components/PaymentHistorySection'
 const menuItems = [
     { label: "Overview", icon: <AiOutlineHome /> },
     { label: "My Properties", icon: <FaRegBuilding /> },
@@ -363,7 +363,7 @@ const Dashboard = () => {
                             <p className='text-secondary-text text-lg font-semibold text-center'>
                                 No payment history is available yet. <br />Stay tuned for updates or make your first payment!
                             </p>  */}
-                            <PaymentHistorySection 
+                            <PaymentHistorySection
                                 userId={user?.user?._id}
                                 mode="user"
                                 title="My Payment History"
@@ -406,7 +406,7 @@ const Notifications = () => {
     const [activeFilter, setActiveFilter] = useState('all'); // 'all', 'sent', 'received'
     const { user } = useSelector((state) => state.user)
     const user_id = user.user;
-    
+
     useEffect(() => {
         const fetchNotifications = async () => {
             try {
@@ -415,12 +415,12 @@ const Notifications = () => {
                         Authorization: `Bearer ${localStorage.getItem('token')}`,
                     },
                 });
-                
+
                 // Filter requests where the user is either the requestor or the owner
                 const userRequests = response.data.filter(
                     (request) => request.requestorId._id === user_id._id || request.ownerId._id === user_id._id
                 );
-                
+
                 setNotifications(userRequests);
                 console.log('Fetched notifications:', userRequests);
                 setLoading(false);
@@ -446,7 +446,7 @@ const Notifications = () => {
                 return <AlertTriangle size={18} className="text-secondary-text" />;
         }
     };
-    
+
     const getStatusColor = (status) => {
         switch (status) {
             case 'Pending':
@@ -474,7 +474,19 @@ const Notifications = () => {
 
     const getNotificationMessage = (notification, userId) => {
         if (notification.requestorId._id === userId) {
+            if (notification.requestType === 'Maintenance Request' || notification.requestType === 'Leave Request') {
+                if (notification.status === 'Accepted' && notification.requestType === 'Leave Request') {
+                    return `Your leave request has been accepted by the property owner. You can leave the property.`;
+                }
+                switch (notification.requestType) {
+                    case 'Maintenance Request':
+                        return `Your request has been accepted by the property owner.`;
+                    case 'Leave Request':
+                        return 'Your leave request has been sent to the property owner.';
+                }
+            }
             switch (notification.status) {
+
                 case 'Accepted':
                     return 'Your request has been accepted by the property owner.';
                 case 'Rejected':
@@ -483,10 +495,17 @@ const Notifications = () => {
                     return 'Your request is pending review by the property owner.';
             }
         } else {
-            return `${notification.requestorName} is interested in your property.`;
+            if (notification.requestType === 'Leave Request') {
+                return `${notification.requestorName} has sent a leave request.`;
+            } else if (notification.requestType === 'Maintenance Request') {
+                return `${notification.requestorName} has sent a maintenance request.`;
+            }
+            else {
+                return `${notification.requestorName} is interested in your property.`;
+            }
         }
     };
-    
+
     const getNotificationIcon = (notification, userId) => {
         if (notification.requestorId._id === userId) {
             // Outgoing notification
@@ -503,18 +522,18 @@ const Notifications = () => {
             return <MessageCircle className="text-tertiary-text" />;
         }
     };
-    
+
     const formatDate = (dateString) => {
         const date = new Date(dateString);
-        return date.toLocaleDateString('en-IN', { 
-            day: 'numeric', 
-            month: 'short', 
+        return date.toLocaleDateString('en-IN', {
+            day: 'numeric',
+            month: 'short',
             year: 'numeric',
             hour: '2-digit',
             minute: '2-digit'
         });
     };
-    
+
     const handleRequestsClick = () => {
         setShowModal(true);
     };
@@ -522,7 +541,7 @@ const Notifications = () => {
     const closeModal = () => {
         setShowModal(false);
     };
-    
+
     const getFilteredNotifications = () => {
         if (activeFilter === 'sent') {
             return notifications.filter(notification => notification.requestorId._id === user_id._id);
@@ -532,9 +551,9 @@ const Notifications = () => {
             return notifications;
         }
     };
-    
+
     const filteredNotifications = getFilteredNotifications();
-    
+
     const sentCount = notifications.filter(n => n.requestorId._id === user_id._id).length;
     const receivedCount = notifications.filter(n => n.ownerId._id === user_id._id).length;
     const pendingCount = notifications.filter(n => n.status === 'Pending' && n.ownerId._id === user_id._id).length;
@@ -560,7 +579,7 @@ const Notifications = () => {
                 <div className="bg-cards-bg rounded-xl p-6 text-center">
                     <AlertTriangle size={48} className="text-red-400 mx-auto mb-3" />
                     <p className="text-red-400 mb-2">{error}</p>
-                    <button 
+                    <button
                         className="bg-main-purple text-white py-2 px-6 rounded-lg mt-4"
                         onClick={() => window.location.reload()}
                     >
@@ -578,8 +597,8 @@ const Notifications = () => {
                     <Bell size={20} className="text-tertiary-text mr-2" />
                     <p className="text-white text-lg font-bold">Notifications</p>
                 </div>
-                <button 
-                    onClick={handleRequestsClick} 
+                <button
+                    onClick={handleRequestsClick}
                     className="flex items-center justify-center space-x-2 bg-main-purple hover:bg-[#6b2bd2] transition-all duration-300 py-2 px-4 rounded-lg"
                 >
                     <div className="relative">
@@ -592,7 +611,7 @@ const Notifications = () => {
                     </div>
                     <span className="text-white font-semibold text-sm">Property Requests</span>
                 </button>
-                
+
                 {/* Modal for property requests */}
                 {showModal && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
@@ -609,7 +628,7 @@ const Notifications = () => {
                                     <X size={20} />
                                 </button>
                             </div>
-                            
+
                             {notifications.filter(notification => notification.ownerId._id === user_id._id).length > 0 ? (
                                 <div className="flex flex-col space-y-3 overflow-y-auto h-[60vh]">
                                     {[...notifications]
@@ -625,10 +644,10 @@ const Notifications = () => {
                                                         <div className="flex">
                                                             <div className="mr-3">
                                                                 {notification.requestorId.profilePicture ? (
-                                                                    <img 
-                                                                        src={notification.requestorId.profilePicture} 
+                                                                    <img
+                                                                        src={notification.requestorId.profilePicture}
                                                                         alt={notification.requestorName}
-                                                                        className="w-12 h-12 rounded-full object-cover" 
+                                                                        className="w-12 h-12 rounded-full object-cover"
                                                                     />
                                                                 ) : (
                                                                     <div className="w-12 h-12 bg-main-purple rounded-full flex items-center justify-center">
@@ -651,19 +670,19 @@ const Notifications = () => {
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        
+
                                                         <div className="flex flex-col items-end space-y-1">
                                                             <p className="text-tertiary-text text-sm font-medium">Property</p>
                                                             <p className="text-white text-sm text-right">{notification.propertyId.title}</p>
                                                         </div>
                                                     </div>
-                                                    
+
                                                     <div className="bg-sub-bg rounded-lg p-3">
                                                         <div className="flex justify-between mb-2">
                                                             <p className="text-secondary-text text-sm">Requested Price:</p>
                                                             <p className="text-white text-sm font-medium">
-                                                                ₹{(notification.requestedPrice.min && notification.requestedPrice.max) 
-                                                                    ? `${notification.requestedPrice.min.toLocaleString('en-IN')} - ${notification.requestedPrice.max.toLocaleString('en-IN')}` 
+                                                                ₹{(notification.requestedPrice.min && notification.requestedPrice.max)
+                                                                    ? `${notification.requestedPrice.min.toLocaleString('en-IN')} - ${notification.requestedPrice.max.toLocaleString('en-IN')}`
                                                                     : notification.requestedPrice?.fixed?.toLocaleString('en-IN')}
                                                             </p>
                                                         </div>
@@ -672,7 +691,7 @@ const Notifications = () => {
                                                             <p className="text-white text-sm">{notification.propertyId.location}</p>
                                                         </div>
                                                     </div>
-                                                    
+
                                                     {notification.status === 'Pending' && (
                                                         <div className="flex space-x-3 mt-2">
                                                             <button
@@ -715,7 +734,7 @@ const Notifications = () => {
                                                                                 ...propertyResponse.data.property,
                                                                                 isAvailable: false,
                                                                             };
-                                                                            
+
                                                                             await axios.put(
                                                                                 `http://localhost:3000/api/property/${notification.propertyId._id}`,
                                                                                 updatedProperty,
@@ -795,10 +814,10 @@ const Notifications = () => {
                     </div>
                 )}
             </div>
-            
+
             {/* Filter tabs */}
             <div className="flex border-b border-gray-700 mb-4">
-                <button 
+                <button
                     className={`py-2 px-4 relative ${activeFilter === 'all' ? 'text-tertiary-text border-b-2 border-tertiary-text' : 'text-secondary-text'}`}
                     onClick={() => setActiveFilter('all')}
                 >
@@ -807,7 +826,7 @@ const Notifications = () => {
                         {notifications.length}
                     </span>
                 </button>
-                <button 
+                <button
                     className={`py-2 px-4 relative ${activeFilter === 'received' ? 'text-tertiary-text border-b-2 border-tertiary-text' : 'text-secondary-text'}`}
                     onClick={() => setActiveFilter('received')}
                 >
@@ -821,7 +840,7 @@ const Notifications = () => {
                         </span>
                     )}
                 </button>
-                <button 
+                <button
                     className={`py-2 px-4 ${activeFilter === 'sent' ? 'text-tertiary-text border-b-2 border-tertiary-text' : 'text-secondary-text'}`}
                     onClick={() => setActiveFilter('sent')}
                 >
@@ -831,13 +850,13 @@ const Notifications = () => {
                     </span>
                 </button>
             </div>
-            
+
             {filteredNotifications.length > 0 ? (
                 <div className="w-full flex flex-col space-y-3 h-[64vh] overflow-y-auto">
                     {filteredNotifications.map((notification) => {
                         const isOutgoing = notification.requestorId._id === user_id._id;
                         const statusColors = getStatusColor(notification.status);
-                        
+
                         return (
                             <div
                                 key={notification._id}
@@ -848,7 +867,7 @@ const Notifications = () => {
                                         <div className={`p-2.5 rounded-lg mr-3 ${statusColors.bg}`}>
                                             {getNotificationIcon(notification, user_id._id)}
                                         </div>
-                                        
+
                                         <div className="flex-1">
                                             <div className="flex items-center mb-1">
                                                 <span className={`inline-flex items-center mr-2 px-2 py-0.5 rounded-full text-xs font-medium ${isOutgoing ? 'bg-blue-400 bg-opacity-20 text-blue-400' : 'bg-green-400 bg-opacity-20 text-green-400'}`}>
@@ -858,33 +877,37 @@ const Notifications = () => {
                                                     {notification.status}
                                                 </span>
                                             </div>
-                                            
+
                                             <p className="text-white text-base font-semibold">
                                                 {getNotificationMessage(notification, user_id._id)}
                                             </p>
-                                            
+                                            <p className="text-sm text-secondary-text mt-2 font-semibold">
+                                                {notification.requestType === 'Leave Request' ? "Reason: "+notification.message : ""}
+                                            </p>
+
                                             <div className="mt-2 text-sm text-secondary-text">
                                                 <p>Property: <span className="text-tertiary-text">{notification.propertyId.title}</span></p>
-                                                <p className="mt-1">
+                                                {!(notification.requestType === 'Leave Request') ? (<p className="mt-1">
                                                     Price: <span className="text-white">
                                                         ₹{(notification.requestedPrice.min && notification.requestedPrice.max)
                                                             ? notification.requestedPrice.min.toLocaleString('en-IN') + " - " + notification.requestedPrice.max.toLocaleString('en-IN')
                                                             : (notification.requestedPrice?.fixed?.toLocaleString('en-IN'))}
                                                     </span>
-                                                </p>
+                                                </p>) : ""}
                                             </div>
-                                            
+
                                             <p className="text-xs text-secondary-text mt-2">
                                                 {formatDate(notification.createdAt || notification.updatedAt)}
                                             </p>
                                         </div>
                                     </div>
-                                    
+
                                     {notification.status === 'Pending' && !isOutgoing && (
                                         <div className="flex space-x-2 ml-2">
                                             <button
                                                 onClick={async () => {
                                                     try {
+
                                                         await axios.put(
                                                             `http://localhost:3000/api/request/${notification._id}`,
                                                             { status: 'Accepted' },
@@ -901,6 +924,33 @@ const Notifications = () => {
                                                                     : notif
                                                             )
                                                         );
+                                                        if (notification.requestType === 'Leave Request') {
+                                                            // First update user's current rental to null
+                                                            await axios.put(
+                                                                `http://localhost:3000/api/user/updateUser/${notification.requestorId._id}`,
+                                                                { currentRental: null },
+                                                                {
+                                                                    headers: {
+                                                                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                                                                    }
+                                                                }
+                                                            );
+
+                                                            // Then remove user from property members
+                                                            // Fixed: Changed to match the API endpoint structure
+                                                            await axios.put(
+                                                                `http://localhost:3000/api/property/members/${notification.propertyId._id}`,
+                                                                {
+                                                                    userId: notification.requestorId._id,
+                                                                    action: 'remove'
+                                                                },
+                                                                {
+                                                                    headers: {
+                                                                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                                                                    }
+                                                                }
+                                                            );
+                                                        }
                                                     } catch (err) {
                                                         console.error('Error accepting request:', err);
                                                     }
@@ -941,7 +991,7 @@ const Notifications = () => {
                                         </div>
                                     )}
                                 </div>
-                                
+
                                 {/* Property info for clarity - collapsed by default */}
                                 {notification.propertyId && (
                                     <details className="mt-2">
@@ -971,11 +1021,11 @@ const Notifications = () => {
                     <div className="text-center">
                         <p className="text-white text-lg font-semibold mb-1">No notifications</p>
                         <p className="text-secondary-text">
-                            {activeFilter === 'sent' ? 
+                            {activeFilter === 'sent' ?
                                 "You haven't sent any requests yet" :
-                                activeFilter === 'received' ? 
-                                "You haven't received any requests yet" :
-                                "You have no notifications at the moment"}
+                                activeFilter === 'received' ?
+                                    "You haven't received any requests yet" :
+                                    "You have no notifications at the moment"}
                         </p>
                     </div>
                 </div>
@@ -994,7 +1044,7 @@ const Roommates = () => {
     const [loadingInvitations, setLoadingInvitations] = useState(true);
     const [selectedRoommate, setSelectedRoommate] = useState(null);
     const [showRoommateModal, setShowRoommateModal] = useState(false);
-    
+
     // Get current user's information
     const { user: currentUser } = useSelector((state) => state.user);
 
@@ -1174,10 +1224,10 @@ const Roommates = () => {
     const formatDate = (dateString) => {
         if (!dateString) return 'Not provided';
         const date = new Date(dateString);
-        return date.toLocaleDateString('en-IN', { 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
+        return date.toLocaleDateString('en-IN', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
         });
     };
 
@@ -1206,69 +1256,69 @@ const Roommates = () => {
                     </span>
                 </div>
 
-            {currentRoommates.length > 0 ? (
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                    {currentRoommates.map((mate, index) => (
-                        <div 
-                            key={mate._id} 
-                            className='bg-cards-bg rounded-xl p-4 border border-transparent hover:border-tertiary-text transition-all duration-300 cursor-pointer'
-                            onClick={() => handleRoommateClick(mate)}
-                        >
-                            <div className='flex items-start'>
-                                <div className="relative flex-shrink-0">
-                                    <img 
-                                        src={mate.profilePicture || 'https://placehold.co/100'} 
-                                        alt={mate.name} 
-                                        className='h-16 w-16 rounded-full object-cover border-2 border-tertiary-text'
-                                    />
-                                    <div className="absolute bottom-0 right-0 bg-green-500 h-3 w-3 rounded-full border-2 border-cards-bg"></div>
-                                </div>
-                                <div className='ml-4 flex-1 overflow-hidden'>
-                                    <div className="flex justify-between items-start">
-                                        <div className="max-w-full overflow-hidden">
-                                            <p className='text-white text-lg font-semibold truncate'>{mate.name}</p>
-                                            <p className='text-secondary-text text-sm truncate'>@{mate.username}</p>
-                                        </div>
+                {currentRoommates.length > 0 ? (
+                    <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                        {currentRoommates.map((mate, index) => (
+                            <div
+                                key={mate._id}
+                                className='bg-cards-bg rounded-xl p-4 border border-transparent hover:border-tertiary-text transition-all duration-300 cursor-pointer'
+                                onClick={() => handleRoommateClick(mate)}
+                            >
+                                <div className='flex items-start'>
+                                    <div className="relative flex-shrink-0">
+                                        <img
+                                            src={mate.profilePicture || 'https://placehold.co/100'}
+                                            alt={mate.name}
+                                            className='h-16 w-16 rounded-full object-cover border-2 border-tertiary-text'
+                                        />
+                                        <div className="absolute bottom-0 right-0 bg-green-500 h-3 w-3 rounded-full border-2 border-cards-bg"></div>
                                     </div>
-                                    <div className="flex flex-col mt-2 space-y-1">
-                                        {mate.college && (
-                                            <div className="flex items-start text-secondary-text text-sm">
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                                                </svg>
-                                                <span className="line-clamp-1">
-                                                    {mate.college || 'No college info'}
-                                                </span>
+                                    <div className='ml-4 flex-1 overflow-hidden'>
+                                        <div className="flex justify-between items-start">
+                                            <div className="max-w-full overflow-hidden">
+                                                <p className='text-white text-lg font-semibold truncate'>{mate.name}</p>
+                                                <p className='text-secondary-text text-sm truncate'>@{mate.username}</p>
                                             </div>
-                                        )}
-                                        {mate.course && (
-                                            <div className="flex items-start text-secondary-text text-sm">
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                </svg>
-                                                <span className="line-clamp-1">
-                                                    {mate.course || 'No course info'}
-                                                </span>
-                                            </div>
-                                        )}
+                                        </div>
+                                        <div className="flex flex-col mt-2 space-y-1">
+                                            {mate.college && (
+                                                <div className="flex items-start text-secondary-text text-sm">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                                    </svg>
+                                                    <span className="line-clamp-1">
+                                                        {mate.college || 'No college info'}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {mate.course && (
+                                                <div className="flex items-start text-secondary-text text-sm">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                    </svg>
+                                                    <span className="line-clamp-1">
+                                                        {mate.course || 'No course info'}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
-            ) : (
-                <div className='flex flex-col items-center justify-center space-y-4 py-8'>
-                    <img
-                        src={roommate}
-                        alt='No Roommates'
-                        className='w-1/3 h-auto'
-                    />
-                    <p className='text-secondary-text text-lg font-semibold text-center'>
-                        No roommates have joined the room yet. <br />Search and invite friends below!
-                    </p>
-                </div>
-            )}
+                        ))}
+                    </div>
+                ) : (
+                    <div className='flex flex-col items-center justify-center space-y-4 py-8'>
+                        <img
+                            src={roommate}
+                            alt='No Roommates'
+                            className='w-1/3 h-auto'
+                        />
+                        <p className='text-secondary-text text-lg font-semibold text-center'>
+                            No roommates have joined the room yet. <br />Search and invite friends below!
+                        </p>
+                    </div>
+                )}
             </div>
 
             {/* Search Section - always shown */}
@@ -1322,8 +1372,8 @@ const Roommates = () => {
                                                     <p className='text-secondary-text text-sm'>@{user.username}</p>
                                                 </div>
                                             </div>
-                                            <button 
-                                                onClick={() => handleInviteRoommate(user)} 
+                                            <button
+                                                onClick={() => handleInviteRoommate(user)}
                                                 className='bg-main-purple text-white px-4 py-2 rounded-lg hover:bg-[#6b2bd2] transition-all text-sm flex items-center'
                                             >
                                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1573,7 +1623,7 @@ const Roommates = () => {
                                         <p className="text-white">{selectedRoommate.email}</p>
                                     </div>
                                 </div>
-                                
+
                                 {selectedRoommate.phone && (
                                     <div className="flex items-start">
                                         <div className="bg-tertiary-text bg-opacity-10 p-2 rounded-lg mr-3">
@@ -1587,7 +1637,7 @@ const Roommates = () => {
                                         </div>
                                     </div>
                                 )}
-                                
+
                                 {selectedRoommate.dob && (
                                     <div className="flex items-start">
                                         <div className="bg-tertiary-text bg-opacity-10 p-2 rounded-lg mr-3">
@@ -1603,7 +1653,7 @@ const Roommates = () => {
                                 )}
                             </div>
                         </div>
-                        
+
                         <div className="bg-cards-bg rounded-xl p-4">
                             <h5 className="text-tertiary-text font-semibold mb-3">Academic Information</h5>
                             <div className="grid grid-cols-1 gap-3">
@@ -1620,7 +1670,7 @@ const Roommates = () => {
                                         <p className="text-white">{selectedRoommate.college || 'Not provided'}</p>
                                     </div>
                                 </div>
-                                
+
                                 <div className="flex items-start">
                                     <div className="bg-tertiary-text bg-opacity-10 p-2 rounded-lg mr-3">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-tertiary-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1634,7 +1684,7 @@ const Roommates = () => {
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div className="flex justify-end mt-6">
                             <button
                                 onClick={closeRoommateModal}

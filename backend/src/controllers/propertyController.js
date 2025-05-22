@@ -332,11 +332,11 @@ const removeRoomMember = async (req, res, next) => {
     if (!property) {
       return res.status(404).json({ message: "Property not found" });
     }
-    if (property.propertyType !== "Room") {
-      return res.status(400).json({
-        message: "Members can only be removed from Room type properties",
-      });
-    }
+    // if (property.propertyType !== "Room") {
+    //   return res.status(400).json({
+    //     message: "Members can only be removed from Room type properties",
+    //   });
+    // }
     if (!property.roomDetails || !property.roomDetails.members) {
       return res.status(400).json({ message: "No members to remove" });
     }

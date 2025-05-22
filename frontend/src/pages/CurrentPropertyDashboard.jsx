@@ -60,49 +60,45 @@ const [leaveRequestStatus, setLeaveRequestStatus] = useState(null);
 // Add this function to handle the leave property request
 const handleLeavePropertyRequest = async () => {
     try {
-        const userBooking = await fetchUserBooking();
-        
-        if (!userBooking) {
-            toast.error('No active booking found for this property');
-            setShowLeavePropertyModal(false);
-            return;
-        }
+        const requestData = {
+            propertyId,
+            requestedPrice: { fixed: 0 }, // since this is not a rent request
+            requestorName: user.user?.name,
+            ownerName: property?.landlord_id.name,
+            ownerId: property?.landlord_id._id,
+            requestorId: user.user?._id,
+            status: 'Pending',
+            requestType: 'Leave Request',
+            message: leaveReason, // using the leave reason as the message
+        };
 
-        // Calculate months remaining in lease
-        const moveInDate = new Date(userBooking.moveInDate);
-        const leaseEndDate = new Date(moveInDate);
-        leaseEndDate.setMonth(leaseEndDate.getMonth() + userBooking.durationMonths);
-        const today = new Date();
-        const monthsRemaining = (leaseEndDate.getFullYear() - today.getFullYear()) * 12 + 
-                               (leaseEndDate.getMonth() - today.getMonth());
-        
+        const loadingToast = toast.loading('Sending leave request...');
+
         const response = await axios.post(
-            `http://localhost:3000/api/property/${propertyId}/leave-request`,
+            'http://localhost:3000/api/request',
+            requestData,
             {
-                user_id: user.user._id,
-                booking_id: userBooking._id,
-                reason: leaveReason,
-                requested_date: today.toISOString(),
-                months_remaining: monthsRemaining > 0 ? monthsRemaining : 0
-            },
-            {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
             }
         );
-        
+
+        toast.dismiss(loadingToast);
         setLeaveRequestStatus('success');
-        toast.success('Leave request submitted successfully!');
-        
-        // Reset after 5 seconds
+        toast.success('Leave request sent successfully!');
+
+        // Reset form after 5 seconds
         setTimeout(() => {
             setShowLeavePropertyModal(false);
             setLeaveRequestStatus(null);
             setLeaveReason('');
         }, 5000);
+
     } catch (error) {
-        console.error('Error submitting leave request:', error);
+        console.error('Error sending leave request:', error);
+        toast.error('Failed to send leave request. Please try again.');
         setLeaveRequestStatus('error');
-        toast.error(error.response?.data?.message || 'Failed to submit leave request');
     }
 };
     const addMemberToProperty = async () => {
