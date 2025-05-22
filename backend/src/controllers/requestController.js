@@ -15,12 +15,10 @@ exports.createRequest = async (req, res) => {
       ) {
         // Valid structure
       } else {
-        return res
-          .status(400)
-          .json({
-            error:
-              "Invalid requestedPrice: Provide either a range (min and max) or a fixed price.",
-          });
+        return res.status(400).json({
+          error:
+            "Invalid requestedPrice: Provide either a range (min and max) or a fixed price.",
+        });
       }
     }
 
@@ -71,12 +69,10 @@ exports.updateRequest = async (req, res) => {
       ) {
         // Valid structure
       } else {
-        return res
-          .status(400)
-          .json({
-            error:
-              "Invalid requestedPrice: Provide either a range (min and max) or a fixed price.",
-          });
+        return res.status(400).json({
+          error:
+            "Invalid requestedPrice: Provide either a range (min and max) or a fixed price.",
+        });
       }
     }
 
@@ -107,5 +103,49 @@ exports.deleteRequest = async (req, res) => {
     res.status(200).json({ message: "Request deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+// Add to requestController.js
+exports.handleInvitationResponse = async (req, res) => {
+  try {
+    const { invitationId, action } = req.params;
+
+    if (!invitationId || !action || !["accept", "decline"].includes(action)) {
+      return res.status(400).json({ message: "Invalid parameters" });
+    }
+
+    // Find the invitation details (stored as a Request with a special status)
+    const invitation = await Request.findById(invitationId)
+      .populate("requestorId", "name email")
+      .populate("ownerId", "name email")
+      .populate("propertyId");
+
+    if (!invitation) {
+      return res.status(404).json({ message: "Invitation not found" });
+    }
+
+    // Update the status based on the action
+    invitation.status = action === "accept" ? "Accepted" : "Rejected";
+    invitation.updatedAt = Date.now();
+
+    await invitation.save();
+
+    // For accepted invitations - add additional processing here if needed
+    // Such as adding the user to property residents, etc.
+
+    // Redirect to appropriate page
+    if (action === "accept") {
+      return res.redirect(
+        `${process.env.FRONTEND_URL}/invitation-success/${invitation.propertyId._id}`
+      );
+    } else {
+      return res.redirect(`${process.env.FRONTEND_URL}/invitation-declined`);
+    }
+  } catch (error) {
+    console.error("Error handling invitation:", error);
+    return res
+      .status(500)
+      .json({ message: "Error processing invitation", error: error.message });
   }
 };

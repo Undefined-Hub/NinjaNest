@@ -32,6 +32,8 @@ const propertySchema = z.object({
   averageTrustScore: z.number().optional(), // new
 });
 
+const partialPropertySchema = propertySchema.partial();
+
 // ! Create a new property
 const createProperty = async (req, res, next) => {
   try {
@@ -231,7 +233,7 @@ const updateProperty = async (req, res, next) => {
     const landlord_id = req.user.user.id;
     const propertyId = req.params.id;
 
-    const validatedData = validateInput(propertySchema, req.body);
+    const validatedData = validateInput(partialPropertySchema, req.body);
 
     const property = await Property.findById(propertyId);
     if (!property) {

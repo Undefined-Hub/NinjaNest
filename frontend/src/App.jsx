@@ -13,6 +13,8 @@ import AddProperty from './pages/AddProperty';
 import CurrentPropertyDashboard from './pages/CurrentPropertyDashboard';
 import { Toaster } from 'react-hot-toast';
 import EditProperty from './pages/EditProperty';
+import InvitationSuccessPage from './pages/InvitationSuccessPage';
+import InvitationDeclinedPage from './pages/InvitationDeclinedPage';
 import LandlordPropertyDashboard from './pages/LandlordPropertyDashboard';
 function App() {
   return (
@@ -22,17 +24,19 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/auth" element={<AuthPage />} />
-          <Route path="/dashboard" element={   <PrivateRoute><Dashboard /></PrivateRoute>} />
+          <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/explore/property/:propertyId" element={
-               <PrivateRoute>
-                 <DetailsPage />
-               </PrivateRoute>
-           } />
+            <PrivateRoute>
+              <DetailsPage />
+            </PrivateRoute>
+          } />
           <Route path="/explore" element={<ExplorePage />} />
           <Route path="/add-property" element={<AddProperty />} />
           <Route path="/edit-property/:propertyId" element={<EditProperty />} />
           <Route path="/property-stats/:propertyId" element={<LandlordPropertyDashboard />} />
           <Route path="/currentpropertydashboard/:propertyId" element={<CurrentPropertyDashboard />} />
+          <Route path="/invitation-success/:invitationId" element={<InvitationSuccessPage />} />
+          <Route path="/invitation-declined/:invitationId" element={<InvitationDeclinedPage />} />
         </Routes>
         <Footer />
       </Router>

@@ -19,4 +19,8 @@ router.put('/:id', authMiddleware(),requestController.updateRequest);
 // DELETE route to delete a request by ID
 router.delete('/:id', authMiddleware(),requestController.deleteRequest);
 
+// GET route perform invitation acceptance operation
+router.get('/invitation/:invitationId/:action', requestController.handleInvitationResponse);
+
+
 module.exports = router;

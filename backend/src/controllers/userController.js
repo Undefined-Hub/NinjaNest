@@ -19,6 +19,45 @@ const fetchUser = async (req, res) => {
   }
 };
 
+// ! Search users by query
+const searchUsers = async (req, res) => {
+  try {
+    const { query } = req.query;
+    
+    if (!query || query.trim() === '') {
+      return res.status(400).json({ message: "Search query is required" });
+    }
+    
+    // Skip the currently logged in user
+    const currentUserId = req.user._id;
+    
+    // Create a regex for case-insensitive search
+    const searchRegex = new RegExp(query.trim(), 'i');
+    
+    // Find users matching the search query by name, email, or username
+    // Don't include the current user in results
+    const users = await User.find({
+      $and: [
+        { _id: { $ne: currentUserId } }, // Exclude the current user
+        {
+          $or: [
+            { name: searchRegex },
+            { email: searchRegex },
+            { username: searchRegex }
+          ]
+        }
+      ]
+    })
+    .select("name username email profilePicture course") // Only return necessary fields
+    .limit(10); // Limit results to prevent performance issues
+    
+    res.status(200).json({ users });
+  } catch (error) {
+    console.error("Search users error:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 // ! Update user details
 const updateUser = async (req, res) => {
   const id = req.params.id;
@@ -50,4 +89,5 @@ const updateUser = async (req, res) => {
 module.exports = {
   fetchUser,
   updateUser,
+  searchUsers,
 };

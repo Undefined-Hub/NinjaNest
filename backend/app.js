@@ -5,7 +5,7 @@ const cookieParser = require("cookie-parser");
 const connectToMongo = require("./src/config/db");
 const authRoutes = require("./src/routes/authRoutes");
 const userRoutes = require("./src/routes/userRoutes");
-
+const matcherRoutes = require("./roommateMatcher/matcherRoutes");
 const mailRoutes = require("./src/routes/mailRoutes");
 const propertyRoutes = require("./src/routes/propertyRoutes");
 const requestRoutes = require("./src/routes/requestRoutes");
@@ -13,7 +13,9 @@ const rentRoutes = require("./src/routes/monthRentRoutes");
 const reviewRoutes = require("./src/routes/reviewRoutes");
 const bookingRoutes = require("./src/routes/bookingRoutes");
 const paymentRoutes = require("./src/routes/paymentRoutes");
+const invitationRoutes = require("./src/routes/invitationRoutes");
 const app = express();
+
 
 // Middleware
 app.use(cors());
@@ -46,10 +48,8 @@ app.use("/api/rents", rentRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/request", requestRoutes);
-
-
-const matcherRoutes = require("./roommateMatcher/matcherRoutes");
 app.use("/api/roommates", matcherRoutes);
+app.use('/api/invitation', invitationRoutes);
 
 // Error handling middleware
 const { errorHandler } = require("./src/middlewares/errorHandler");

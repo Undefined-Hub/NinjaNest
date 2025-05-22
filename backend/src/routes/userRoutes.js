@@ -1,11 +1,17 @@
 const express = require("express");
 const router = express.Router();
-const authMiddleware = require('../middlewares/authMiddleware');
+const authMiddleware = require("../middlewares/authMiddleware");
 
-const { fetchUser, updateUser } = require("../controllers/userController");
+const {
+  fetchUser,
+  updateUser,
+  searchUsers,
+} = require("../controllers/userController");
 
-router.get("/getUser/:username",authMiddleware(),  fetchUser);
+router.get("/getUser/:username", authMiddleware(), fetchUser);
 
-router.put("/updateUser/:id",authMiddleware(),  updateUser);
+router.get("/search/users", authMiddleware(), searchUsers);
+
+router.put("/updateUser/:id", authMiddleware(), updateUser);
 
 module.exports = router;

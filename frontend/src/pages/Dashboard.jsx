@@ -23,9 +23,9 @@ import { useLocation } from 'react-router-dom';
 import { FiCamera } from "react-icons/fi";
 import { FiEdit } from "react-icons/fi";
 import { FiUser, FiSave, FiRefreshCw } from "react-icons/fi";
+import { FiUser, FiSave, FiRefreshCw } from "react-icons/fi";
 import api from "../api/axiosInstance";
 import { IoLogOut } from "react-icons/io5";
-
 import roommate from '/images/roommate.svg'
 import payment from '/images/payment.svg'
 import profile from '/images/profile.svg'
@@ -81,7 +81,6 @@ const Dashboard = () => {
             navigate('/');
         }, 500); // even 50ms might work, but 100ms is safer
     };
-
 
 
     const [activeTab, setActiveTab] = useState('Overview') // State to hold the active tab
@@ -342,22 +341,14 @@ const Dashboard = () => {
                     {activeTab === 'My Properties' &&
                         <MyProperties /> // Call the MyProperties component here
                     }
+
                     {activeTab === 'Notifications' &&
                         <Notifications />
 
                     }
 
                     {activeTab === 'Roommates' &&
-                        <div className='flex flex-col items-center justify-center h-[64vh] space-y-4 w-4/5'>
-                            <img
-                                src={roommate} // Replace with your illustration URL
-                                alt='No Roommates'
-                                className='w-1/2 h-auto'
-                            />
-                            <p className='text-secondary-text text-lg font-semibold text-center'>
-                                No roommates have joined the room yet. <br />Stay tuned for updates!
-                            </p>
-                        </div>
+                        <Roommates />
                     }
 
 
@@ -686,6 +677,387 @@ const Notifications = () => {
     );
 };
 
+const Roommates = () => {
+    // State for search term and results
+    const [searchTerm, setSearchTerm] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [currentRoommates, setCurrentRoommates] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [pendingInvitations, setPendingInvitations] = useState({ received: [], sent: [] });
+    const [loadingInvitations, setLoadingInvitations] = useState(true);
+    // Get current user's information
+    const { user: currentUser } = useSelector((state) => state.user);
+
+    // Fetch current roommates on component mount
+    useEffect(() => {
+        // Simulating API call to fetch roommates
+        // Replace with actual API call when ready
+        setTimeout(() => {
+            // Example data - replace with real data from API
+            setCurrentRoommates([]);
+            setLoading(false);
+        }, 1000);
+    }, []);
+
+    useEffect(() => {
+        const fetchInvitations = async () => {
+            try {
+                const response = await axios.get('http://localhost:3000/api/invitation/user', {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                setPendingInvitations(response.data);
+            } catch (error) {
+                console.error('Error fetching invitations:', error);
+            } finally {
+                setLoadingInvitations(false);
+            }
+        };
+
+        fetchInvitations();
+    }, []);
+    console.log('Search results: ', searchResults);
+
+    const handleInviteRoommate = async (user) => {
+        const loadingToast = toast.loading('Sending invitation...');
+
+        try {
+
+            // Need to fetch the current property the user is in
+            const propertyResponse = await axios.get(
+                `http://localhost:3000/api/property/${currentUser.user.currentRental}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                    }
+                }
+            );
+
+            const property = propertyResponse.data.property;
+
+            if (!property) {
+                toast.dismiss(loadingToast);
+                toast.error("You need to have a property to invite roommates");
+                return;
+            }
+
+            // Create the invitation
+            const invitationData = {
+                inviterId: currentUser.user._id,
+                inviteeId: user._id,
+                propertyId: property._id,
+                inviterName: currentUser.user.name,
+                inviteeName: user.name,
+                message: `${currentUser.user.name} has invited you to be their roommate`
+            };
+
+            console.log('Invitation data:', invitationData);
+
+            const invitationResponse = await axios.post(
+                'http://localhost:3000/api/invitation/create',
+                invitationData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                    }
+                }
+            );
+
+            console.log('Invitation response:', invitationResponse.data);
+
+            // If invitation created successfully, send email
+            if (invitationResponse.data && invitationResponse.data.invitation) {
+                const { invitation } = invitationResponse.data;
+
+                // Prepare email data
+                const emailData = {
+                    inviteeEmail: user.email,
+                    inviterName: currentUser.user.name,
+                    inviterUsername: currentUser.user.username,
+                    inviteeFirstName: user.name.split(' ')[0],
+                    propertyName: property.title,
+                    propertyLocation: property.location,
+                    propertyType: property.propertyType,
+                    propertyImage: property.mainImage || (property.images && property.images.length > 0 ? property.images[0] : null),
+                    invitationId: invitation._id,
+                    invitationExpiry: invitation.expiresAt
+                };
+
+                // Send invitation email
+                await axios.post(
+                    'http://localhost:3000/api/mail/invite',
+                    emailData,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem('token')}`
+                        }
+                    }
+                );
+
+                toast.dismiss(loadingToast);
+                toast.success(`Invitation sent to ${user.name}`);
+            }
+        } catch (error) {
+            console.error('Error sending invitation:', error);
+            toast.dismiss(loadingToast);
+
+            // Show appropriate error message
+            if (error.response && error.response.data.message) {
+                toast.error(error.response.data.message);
+            } else {
+                toast.error('Failed to send invitation. Please try again.');
+            }
+        }
+    };
+
+    // Handle search input change
+    const handleSearchChange = async (e) => {
+        setSearchTerm(e.target.value);
+        if (e.target.value.length > 2) { // ? Only search after 2+ characters
+            setIsSearching(true);
+            try {
+                const response = await axios.get(`http://localhost:3000/api/user/search/users?query=${e.target.value}`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                // Make sure searchResults is always an array
+                if (response.data && Array.isArray(response.data.users)) {
+                    setSearchResults(response.data.users);
+                } else {
+                    console.warn("API response missing users array:", response.data);
+                    setSearchResults([]);
+                }
+            } catch (error) {
+                console.error("Error searching users:", error.response || error);
+                setSearchResults([]); // Ensure searchResults is reset to an empty array on error
+            }
+        } else {
+            setIsSearching(false);
+            setSearchResults([]); // Reset to empty array, not undefined
+        }
+    };
+
+    // If loading, show a loading state
+    if (loading) {
+        return (
+            <div className='flex justify-center items-center h-[64vh] w-4/5'>
+                <div className='animate-pulse text-secondary-text'>Loading roommates...</div>
+            </div>
+        );
+    }
+
+    return (
+        <div className='flex flex-col w-4/5 max-h-[85vh] overflow-y-auto pr-1'>
+            <div className='flex flex-col pb-6'> {/* Added padding to bottom to ensure content doesn't get cut off */}
+                {/* Empty state illustration - only shown when no roommates */}
+                {currentRoommates.length === 0 && (
+                    <div className='flex flex-col items-center justify-center space-y-4 mb-8'>
+                        <img
+                            src={roommate}
+                            alt='No Roommates'
+                            className='w-1/3 h-auto'
+                        />
+                        <p className='text-secondary-text text-lg font-semibold text-center'>
+                            No roommates have joined the room yet. <br />Search and invite friends below!
+                        </p>
+                    </div>
+                )}
+
+                {/* Current Roommates Section - only shown when there are roommates */}
+                {currentRoommates.length > 0 && (
+                    <div className='bg-sub-bg rounded-xl p-5 w-full mb-4'>
+                        <h2 className='text-white text-lg font-bold mb-4'>Your Roommates</h2>
+                        <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+                            {currentRoommates.map((mate, index) => (
+                                <div key={index} className='flex items-center bg-cards-bg rounded-xl p-3 space-x-3'>
+                                    <img src={mate.profilePicture || 'https://placehold.co/100'} alt="pfp" className='h-12 w-12 rounded-full' />
+                                    <div className='flex flex-col'>
+                                        <p className='text-white text-base font-semibold'>{mate.name}</p>
+                                        <p className='text-secondary-text text-base font-semibold'>{mate.course}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Search Section - always shown */}
+                <div className='bg-sub-bg rounded-xl p-5 w-full'>
+                    <h2 className='text-white text-lg font-bold mb-4'>
+                        {currentRoommates.length > 0 ? 'Find More Roommates' : 'Find Roommates'}
+                    </h2>
+
+                    {/* Search Input */}
+                    <div className='relative mb-4'>
+                        <input
+                            type='text'
+                            placeholder='Search by name, email, or username...'
+                            value={searchTerm}
+                            onChange={handleSearchChange}
+                            className='w-full bg-cards-bg text-white rounded-lg py-3 px-4 pl-10 focus:outline-none focus:ring-2 focus:ring-main-purple'
+                        />
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-secondary-text"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+
+                    {/* Search Results */}
+                    {isSearching && (
+                        <div className='space-y-4'>
+                            {searchResults && searchResults.length > 0 ? (
+                                <>
+                                    <p className='text-secondary-text font-semibold mb-2'>Search Results</p>
+                                    <div className='space-y-3 max-h-60 overflow-y-auto pr-2'>
+                                        {searchResults.map((user, index) => (
+                                            <div key={index} className='flex items-center justify-between bg-cards-bg rounded-xl p-3'>
+                                                <div className='flex items-center space-x-3'>
+                                                    <img src={user.profilePicture || 'https://placehold.co/100'} alt="Profile" className='h-12 w-12 rounded-full object-cover' />
+                                                    <div>
+                                                        <p className='text-white font-semibold'>{user.name}</p>
+                                                        <p className='text-secondary-text text-sm'>@{user.username}</p>
+                                                    </div>
+                                                </div>
+                                                <button onClick={() => handleInviteRoommate(user)} className='bg-main-purple text-white px-4 py-2 rounded-lg hover:bg-[#6b2bd2] transition-all text-sm'>
+                                                    Invite
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </>
+                            ) : (
+                                <div className='flex flex-col items-center justify-center py-8 bg-cards-bg rounded-xl'>
+                                    <svg className="w-12 h-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                    <p className='text-secondary-text text-center'>No users found matching "{searchTerm}"</p>
+                                    <p className='text-secondary-text text-sm text-center mt-1'>Try a different search term</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Tips for when not searching */}
+                    {!isSearching && (
+                        <div className='bg-cards-bg rounded-xl p-4'>
+                            <p className='text-tertiary-text font-semibold mb-2'>Search Tips</p>
+                            <ul className='text-gray-400 space-y-2 text-sm list-disc pl-5 font-bold'>
+                                <li>Search by full name, username, or email</li>
+                                <li>Users must have an account on NinjaNest to be invited</li>
+                                <li>Invited users will need to accept your invitation</li>
+                                <li>You can invite up to the number of available beds in your room</li>
+                            </ul>
+                        </div>
+                    )}
+                </div>
+
+                {/* Pending Invitations Section */}
+                <div className='bg-sub-bg rounded-xl p-5 w-full mt-4'>
+                    <h2 className='text-white text-lg font-bold mb-2'>Pending Invitations</h2>
+
+                    {loadingInvitations ? (
+                        <div className='bg-cards-bg rounded-xl p-4 flex items-center justify-center'>
+                            <p className='text-secondary-text'>Loading invitations...</p>
+                        </div>
+                    ) : (
+                        <>
+                            {pendingInvitations.received.length > 0 ? (
+                                <div className='space-y-3'>
+                                    <p className='text-secondary-text font-semibold'>Received Invitations</p>
+                                    {pendingInvitations.received.map((invitation) => (
+                                        <div key={invitation._id} className='bg-cards-bg rounded-xl p-4'>
+                                            <div className='flex items-center justify-between'>
+                                                <div className='flex items-center space-x-3'>
+                                                    <img
+                                                        src={invitation.inviterId.profilePicture || 'https://placehold.co/100'}
+                                                        alt="Profile"
+                                                        className='h-10 w-10 rounded-full object-cover'
+                                                    />
+                                                    <div>
+                                                        <p className='text-white font-semibold'>{invitation.inviterId.name}</p>
+                                                        <p className='text-secondary-text text-sm'>@{invitation.inviterId.username}</p>
+                                                    </div>
+                                                </div>
+                                                <div className='flex space-x-2'>
+                                                    <a
+                                                        href={`http://localhost:3000/api/invitation/accept/${invitation._id}`}
+                                                        className='bg-main-purple text-white px-3 py-1 rounded-lg hover:bg-[#6b2bd2] transition-all text-sm'
+                                                    >
+                                                        Accept
+                                                    </a>
+                                                    <a
+                                                        href={`http://localhost:3000/api/invitation/decline/${invitation._id}`}
+                                                        className='bg-gray-600 text-white px-3 py-1 rounded-lg hover:bg-gray-700 transition-all text-sm'
+                                                    >
+                                                        Decline
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <p className='text-secondary-text text-sm mt-2'>
+                                                Property: {invitation.propertyId.title}, {invitation.propertyId.location}
+                                            </p>
+                                            <p className='text-gray-400 text-xs mt-1'>
+                                                Expires: {new Date(invitation.expiresAt).toLocaleDateString()}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : null}
+
+                            {pendingInvitations.sent.length > 0 ? (
+                                <div className='space-y-3 mt-4'>
+                                    <p className='text-secondary-text font-semibold'>Sent Invitations</p>
+                                    {pendingInvitations.sent.map((invitation) => (
+                                        <div key={invitation._id} className='bg-cards-bg rounded-xl p-4'>
+                                            <div className='flex items-center justify-between'>
+                                                <div className='flex items-center space-x-3'>
+                                                    <img
+                                                        src={invitation.inviteeId.profilePicture || 'https://placehold.co/100'}
+                                                        alt="Profile"
+                                                        className='h-10 w-10 rounded-full object-cover'
+                                                    />
+                                                    <div>
+                                                        <p className='text-white font-semibold'>{invitation.inviteeId.name}</p>
+                                                        <p className='text-secondary-text text-sm'>@{invitation.inviteeId.username}</p>
+                                                    </div>
+                                                </div>
+                                                <span className='text-yellow-500 text-sm font-semibold'>Pending</span>
+                                            </div>
+                                            <p className='text-secondary-text text-sm mt-2'>
+                                                Property: {invitation.propertyId.title}, {invitation.propertyId.location}
+                                            </p>
+                                            <p className='text-gray-400 text-xs mt-1'>
+                                                Expires: {new Date(invitation.expiresAt).toLocaleDateString()}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : null}
+
+                            {pendingInvitations.received.length === 0 && pendingInvitations.sent.length === 0 && (
+                                <div className='bg-cards-bg rounded-xl p-4 flex flex-col items-center justify-center'>
+                                    <p className='text-secondary-text text-center'>No pending invitations</p>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
 import not_found from '/images/not_found.svg'
 import { useForm, FormProvider } from "react-hook-form";
 
@@ -786,8 +1158,6 @@ const MyProperties = () => {
         </div>
     );
 };
-
-
 
 const Profile = () => {
     const methods = useForm({
