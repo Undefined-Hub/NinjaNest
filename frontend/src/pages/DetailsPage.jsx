@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { IoShieldCheckmark } from "react-icons/io5";
 import { toast } from 'react-hot-toast';
 import house from '../assets/house.jpg';
 import house1 from '../assets/house1.jpg';
@@ -23,9 +24,9 @@ import api from "../api/axiosInstance";
 // Fix default icon issue
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png',
+    iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon-2x.png',
+    iconUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png',
+    shadowUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png',
 });
 
 const DetailsPage = () => {
@@ -93,7 +94,7 @@ const DetailsPage = () => {
                     }
                 });
                 console.log("Response Data:", response.data);
-                
+
                 setPropertyData(response.data?.property);
                 // console.log(propertyData?.property?.landlord_id?.profilePicture);
             } catch (err) {
@@ -315,34 +316,34 @@ const DetailsPage = () => {
                                     <p className='text-white text-xl font-semibold'>Reviews & Feedback</p>
                                 </div>
                                 <div className='flex flex-col space-y-3'>
-                                            {propertyData?.reviews && propertyData.reviews.length > 0 ? (
-                                                propertyData.reviews.map((review, index) => (
-                                                    <div key={index} className='bg-cards-bg p-4 rounded-lg flex items-start gap-4 shadow hover:shadow-lg transition-shadow duration-200'>
-                                                        <div className="flex-shrink-0">
-                                                            <img
-                                                                src={review.user_id?.profilePicture || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(review.user_id?.name || 'User')}
-                                                                alt={review.user_id?.name}
-                                                                className="w-12 h-12 rounded-full object-cover border-2 border-main-purple"
-                                                            />
-                                                        </div>
-                                                        <div className="flex flex-col flex-grow">
-                                                            <div className="flex items-center justify-between">
-                                                                <p className='text-primary-text text-base font-semibold'>{review.user_id?.name || 'Anonymous'}</p>
-                                                                <span className='flex items-center gap-1 text-yellow-400 font-bold text-base'>
-                                                                  ★
-                                                                    {review.rating}.0
-                                                                </span>
-                                                            </div>
-                                                            <p className='text-secondary-text text-sm mt-1 font-medium'>{review.comment}</p>
-                                                        </div>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <div className='bg-cards-bg p-4 rounded-lg text-center'>
-                                                    <p className='text-slate-300 font-medium'>No reviews yet. Be the first to leave feedback!</p>
+                                    {propertyData?.reviews && propertyData.reviews.length > 0 ? (
+                                        propertyData.reviews.map((review, index) => (
+                                            <div key={index} className='bg-cards-bg p-4 rounded-lg flex items-start gap-4 shadow hover:shadow-lg transition-shadow duration-200'>
+                                                <div className="flex-shrink-0">
+                                                    <img
+                                                        src={review.user_id?.profilePicture || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(review.user_id?.name || 'User')}
+                                                        alt={review.user_id?.name}
+                                                        className="w-12 h-12 rounded-full object-cover border-2 border-main-purple"
+                                                    />
                                                 </div>
-                                            )}
+                                                <div className="flex flex-col flex-grow">
+                                                    <div className="flex items-center justify-between">
+                                                        <p className='text-primary-text text-base font-semibold'>{review.user_id?.name || 'Anonymous'}</p>
+                                                        <span className='flex items-center gap-1 text-yellow-400 font-bold text-base'>
+                                                            ★
+                                                            {review.rating}.0
+                                                        </span>
+                                                    </div>
+                                                    <p className='text-secondary-text text-sm mt-1 font-medium'>{review.comment}</p>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className='bg-cards-bg p-4 rounded-lg text-center'>
+                                            <p className='text-slate-300 font-medium'>No reviews yet. Be the first to leave feedback!</p>
                                         </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -362,13 +363,21 @@ const DetailsPage = () => {
                             <div className='flex flex-col w-full rounded-lg space-y-3'> {/* Contact Card */}
                                 <div className='flex items-center w-full space-x-3 border-b border-secondary-text pb-4'> {/* Contain profile picture and name of landlord */}
                                     <div className='w-14 h-14 flex items-center justify-center'> {/* Profile Picture */}
-                                        <img src={ propertyData?.landlord_id?.profilePicture} alt='Profile' className='w-14 h-14 object-cover rounded-full' />
+                                        <img src={propertyData?.landlord_id?.profilePicture} alt='Profile' className='w-14 h-14 object-cover rounded-full' />
                                     </div>
                                     <div className='flex flex-col justify-center'> {/* Name Section */}
                                         <p className='text-white font-semibold text-base'>{propertyData?.landlord_id?.name}</p>
                                         <div className='flex w-full items-center space-x-2'> {/* Rating Section */}
                                             {/* <img src={review_star_full} alt='Rating' className='w-4 h-4 object-contain' /> */}
-                                            <p className='text-slate-400 font-semibold text-base'><span className='text-yellow-400'>★ {propertyData?.landlord_id?.trustScore}</span>  • <span className='text-tertiary-text'>Verified Landlord</span></p>
+                                            {/* <p className='text-slate-400 font-semibold text-base'><span className='text-yellow-400'>★ {propertyData?.landlord_id?.trustScore}</span>  • <span className='text-tertiary-text'>Verified Landlord</span></p> */}
+                                            <p className='text-slate-400 font-semibold text-base flex items-center gap-1'>
+                                                <span className="text-green-500">
+                                                    <IoShieldCheckmark />
+                                                </span>
+                                                <p className='text-green-500 font-bold'>
+                                                    {propertyData?.landlord_id?.trustScore !== undefined ? Number(propertyData.landlord_id.trustScore).toFixed(1) : "0.0"}
+                                                </p>
+                                                • <span className='text-tertiary-text'>Verified Landlord</span></p>
                                         </div>
                                     </div>
                                 </div>
@@ -493,15 +502,15 @@ const DetailsPage = () => {
                         )}
 
                         {/* custom map */}
-                   <PropertyMap
-                        latitude={propertyData?.latitude}
-                        longitude={propertyData?.longitude}
-                        propertyName={propertyData?.title}
-                        
+                        <PropertyMap
+                            latitude={propertyData?.latitude}
+                            longitude={propertyData?.longitude}
+                            propertyName={propertyData?.title}
+
                         />
 
                         {/* google map */}
-                {/* <div className="relative w-full h-[80vh] rounded-lg overflow-hidden">
+                        {/* <div className="relative w-full h-[80vh] rounded-lg overflow-hidden">
                     <iframe
                         width="100%"
                         height="100%"
@@ -525,35 +534,35 @@ const DetailsPage = () => {
 
 
 const PropertyMap = ({ latitude, longitude, propertyName }) => {
-  if (!latitude || !longitude) return null;
+    if (!latitude || !longitude) return null;
 
-  return (
-    <div className="w-full h-[80vh] rounded-lg overflow-hidden">
-      <MapContainer center={[latitude, longitude]} zoom={16} scrollWheelZoom={false} className="w-full h-full z-0">
-        <LayersControl position="topright">
-          {/* Default OSM Layer */}
-          <BaseLayer checked name="Street View">
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-          </BaseLayer>
+    return (
+        <div className="w-full h-[80vh] rounded-lg overflow-hidden">
+            <MapContainer center={[latitude, longitude]} zoom={16} scrollWheelZoom={false} className="w-full h-full z-0">
+                <LayersControl position="topright">
+                    {/* Default OSM Layer */}
+                    <BaseLayer checked name="Street View">
+                        <TileLayer
+                            attribution='&copy; <a href="https://www.openstreetmap.org">OpenStreetMap</a> contributors'
+                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        />
+                    </BaseLayer>
 
-          {/* Satellite Layer (Esri) */}
-          <BaseLayer name="Satellite View">
-            <TileLayer
-              attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, etc.'
-              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-            />
-          </BaseLayer>
-        </LayersControl>
+                    {/* Satellite Layer (Esri) */}
+                    <BaseLayer name="Satellite View">
+                        <TileLayer
+                            attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, etc.'
+                            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                        />
+                    </BaseLayer>
+                </LayersControl>
 
-        <Marker position={[latitude, longitude]}>
-          <Popup>{propertyName || "This property is located here!"}</Popup>
-        </Marker>
-      </MapContainer>
-    </div>
-  );
+                <Marker position={[latitude, longitude]}>
+                    <Popup>{propertyName || "This property is located here!"}</Popup>
+                </Marker>
+            </MapContainer>
+        </div>
+    );
 };
 
 export default DetailsPage
