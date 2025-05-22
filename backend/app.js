@@ -44,7 +44,9 @@ app.use("/api/review", reviewRoutes);
 app.use("/api/booking", bookingRoutes);
 app.use("/api/rents", rentRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/payments", paymentRoutes);
 app.use("/api/request", requestRoutes);
+
 
 const matcherRoutes = require("./roommateMatcher/matcherRoutes");
 app.use("/api/roommates", matcherRoutes);
