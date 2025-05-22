@@ -491,8 +491,9 @@ const Notifications = () => {
                             </div>
                             {notifications.length > 0 ? (
                                 <div className="flex flex-col space-y-3 overflow-y-auto h-[60vh]">
-                                    {notifications
+                                    {[...notifications]
                                         .filter(notification => notification.ownerId._id === user_id._id)
+                                        .reverse()
                                         .map((notification) => (
                                             <div
                                                 key={notification._id}
@@ -619,7 +620,8 @@ const Notifications = () => {
                                                     </div>
                                                 )}
                                             </div>
-                                        ))}
+                                        ))
+                                    }
                                 </div>
                             ) : (
                                 <p className="text-secondary-text text-base font-semibold">
@@ -632,7 +634,7 @@ const Notifications = () => {
             </div>
             {notifications.length > 0 ? (
                 <div className="w-full flex flex-col space-y-3 h-[64vh] overflow-y-auto">
-                    {notifications.map((notification) => (
+                    {[...notifications].reverse().map((notification) => (
                         <div
                             key={notification._id}
                             className="flex items-center justify-between bg-cards-bg rounded-xl p-4"
