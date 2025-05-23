@@ -31,10 +31,10 @@ function App() {
             </PrivateRoute>
           } />
           <Route path="/explore" element={<ExplorePage />} />
-          <Route path="/add-property" element={<AddProperty />} />
-          <Route path="/edit-property/:propertyId" element={<EditProperty />} />
-          <Route path="/property-stats/:propertyId" element={<LandlordPropertyDashboard />} />
-          <Route path="/currentpropertydashboard/:propertyId" element={<CurrentPropertyDashboard />} />
+          <Route path="/add-property" element={<PrivateRoute><AddProperty /></PrivateRoute>} />
+          <Route path="/edit-property/:propertyId" element={<PrivateRoute><EditProperty /></PrivateRoute>} />
+          <Route path="/property-stats/:propertyId" element={<PrivateRoute><LandlordPropertyDashboard /></PrivateRoute>} />
+          <Route path="/currentpropertydashboard/:propertyId" element={<PrivateRoute><CurrentPropertyDashboard /></PrivateRoute>} />
           <Route path="/invitation-success/:invitationId" element={<InvitationSuccessPage />} />
           <Route path="/invitation-declined/:invitationId" element={<InvitationDeclinedPage />} />
         </Routes>

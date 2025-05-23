@@ -16,7 +16,17 @@ import { useSelector } from 'react-redux';
 import { FiEdit3 } from 'react-icons/fi';
 import { BsBarChartLine } from 'react-icons/bs'
 import { MapContainer, TileLayer, Marker, Popup, LayersControl } from 'react-leaflet';
-
+// Import these at the top of your file
+import { 
+  FiWifi, FiBriefcase, FiSun, FiDroplet, FiHome, 
+  FiArchive, FiMonitor, FiRefreshCw, FiCpu, FiEye, 
+  FiLock, FiMoon, FiTruck, FiWind, FiTv, FiCoffee, 
+  FiUmbrella 
+} from 'react-icons/fi';
+import { 
+  FaBed, FaChair, FaToilet, FaShower, FaTshirt, 
+  FaRegSnowflake, FaFaucet 
+} from 'react-icons/fa';
 const { BaseLayer } = LayersControl;
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -252,24 +262,77 @@ const DetailsPage = () => {
                                     <p className='text-secondary-text font-semibold text-base'>per month</p>
                                 </div>
                             </div>
-                            <div className='flex flex-wrap w-full gap-2 sm:gap-3 mt-5'> {/* Responsive wrapper */}
-                                {
-                                    [
-                                        { icon: wifi_svg, text: 'Wifi' },
-                                        { icon: parking_svg, text: 'Parking' },
-                                        { icon: water_supply_svg, text: 'Water Supply' },
-                                        { icon: garden_svg, text: 'Garden' }
-                                    ].map((amenity, index) => (
-                                        <div key={index} className='flex bg-cards-bg px-2 py-2 rounded-xl items-center w-[45%] sm:w-auto'> {/* Keep shape, adjust size */}
-                                            <div className='w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center shrink-0'> {/* Adjust icon size */}
-                                                <img src={amenity.icon} alt={amenity.text} className='w-full h-full object-contain' />
-                                            </div>
-                                            <div className='flex-grow flex items-center justify-center px-1 sm:px-3'> {/* Adjust padding for text */}
-                                                <p className='text-white font-medium text-xs sm:text-base text-center'>{amenity.text}</p> {/* Responsive text size */}
-                                            </div>
-                                        </div>
-                                    ))
+                          <div className='flex flex-wrap w-full gap-2 sm:gap-3 mt-5'> {/* Responsive wrapper */}
+                            {propertyData?.amenities && propertyData.amenities.map((amenity, index) => {
+                                // Determine icon based on amenity name
+                                let Icon;
+                                switch(amenity) {
+                                case "Wi-Fi":
+                                    Icon = FiWifi;
+                                    break;
+                                case "Bed":
+                                    Icon = FaBed;
+                                    break;
+                                case "Study Table":
+                                    Icon = FiMonitor;
+                                    break;
+                                case "Wardrobe":
+                                    Icon = FiArchive;
+                                    break;
+                                case "Ceiling Fan":
+                                    Icon = FiWind;
+                                    break;
+                                case "Air Conditioning":
+                                    Icon = FaRegSnowflake;
+                                    break;
+                                case "Attached Bathroom":
+                                    Icon = FaToilet;
+                                    break;
+                                case "Geyser":
+                                    Icon = FiSun;
+                                    break;
+                                case "24/7 Water Supply":
+                                    Icon = FiDroplet;
+                                    break;
+                                case "Washing Machine":
+                                    Icon = FaTshirt;
+                                    break;
+                                case "Refrigerator":
+                                    Icon = FiHome;
+                                    break;
+                                case "Kitchen Access":
+                                    Icon = FiCoffee;
+                                    break;
+                                case "Power Backup":
+                                    Icon = FiCpu;
+                                    break;
+                                case "Two-Wheeler Parking":
+                                    Icon = FiTruck;
+                                    break;
+                                case "CCTV Surveillance":
+                                    Icon = FiEye;
+                                    break;
+                                case "Drinking Water (RO)":
+                                    Icon = FaFaucet;
+                                    break;
+                                case "Electricity Included":
+                                    Icon = FiRefreshCw;
+                                    break;
+                                default:
+                                    Icon = FiUmbrella; // Default icon for any other amenity
                                 }
+                                
+                                return (
+                                <div key={index} className='flex bg-cards-bg px-2 py-2 rounded-xl items-center w-[45%] sm:w-auto'> {/* Keep shape, adjust size */}
+                                    <div className='w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center shrink-0 text-tertiary-text'> {/* Adjust icon size */}
+                                    <Icon size={24} />
+                                    </div>
+                                    <div className='flex-grow flex items-center justify-center px-1 sm:px-3'> {/* Adjust padding for text */}
+                                    <p className='text-white font-medium text-xs sm:text-base text-center'>{amenity}</p> {/* Responsive text size */}
+                                    </div>
+                                </div>
+                                );
+                            })}
                             </div>
 
                             <div className='flex flex-col space-y-3 mt-8'> {/* Description Section */}
@@ -293,12 +356,12 @@ const DetailsPage = () => {
                                 </div>
                                 <div className='grid grid-cols-2 sm:grid-cols-3 gap-3'> {/* Grid layout for details */}
                                     {[
-                                        { label: 'Property Type', value: 'Flat' },
-                                        { label: 'Type', value: propertyData?.flatType },
+                                        { label: 'Property Type', value:  propertyData?.propertyType },
+                                        { label: 'Type', value: propertyData?.flatType || "N/A" },
                                         { label: 'Area', value: '1250 sq. ft' },
                                         { label: 'Address', value: propertyData?.address },
                                         { label: 'Initial Deposit', value: '₹' + propertyData?.deposit?.toLocaleString('en-IN') },
-                                        { label: 'Furnishing', value: 'Semi-Furnished' },
+                                        // { label: 'Furnishing', value: 'Semi-Furnished' },
                                     ].map((item, index) => (
                                         <div key={index} className='bg-cards-bg p-3 rounded-lg flex flex-col space-y-1'>
                                             <p className='text-tertiary-text font-semibold'>{item.label}</p>

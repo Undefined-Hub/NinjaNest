@@ -267,16 +267,23 @@ const PricingSection = () => {
 
 
 const amenitiesList = [
-  'WiFi',
-  'AC',
-  'Parking',
-  'Geyser',
-  'TV',
-  'Study Tables',
-  'Food Included',
-  'Power Backup',
-  'Security',
-  'Laundry',
+  "Wi-Fi",
+    "Bed",
+    "Study Table",
+    "Wardrobe",
+    "Ceiling Fan",
+    "Air Conditioning",
+    "Attached Bathroom",
+    "Geyser",
+    "24/7 Water Supply",
+    "Washing Machine",
+    "Refrigerator",
+    "Kitchen Access",
+    "Power Backup",
+    "Two-Wheeler Parking",
+    "CCTV Surveillance",
+    "Drinking Water (RO)",
+    "Electricity Included"
 ];
 
 const FeaturesSection = () => {

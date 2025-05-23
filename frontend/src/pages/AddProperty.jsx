@@ -190,10 +190,13 @@ const AddProperty = () => {
                     <strong>Address:</strong> <span className="text-gray-300">{methods.getValues('address')}</span>
                   </div>
                   <div className="bg-cards-bg px-6 py-4 rounded shadow focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text">
-                    <strong>Rent:</strong> <span className="text-gray-300">{methods.getValues('rent')}</span>
+                    <strong>Description:</strong> <span className="text-gray-300">{methods.getValues('description')}</span>
                   </div>
                   <div className="bg-cards-bg px-6 py-4 rounded shadow focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text">
-                    <strong>Deposit:</strong> <span className="text-gray-300">{methods.getValues('deposit')}</span>
+                    <strong>Rent:</strong> <span className="text-gray-300">₹ {methods.getValues('rent')}</span>
+                  </div>
+                  <div className="bg-cards-bg px-6 py-4 rounded shadow focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text">
+                    <strong>Deposit:</strong> <span className="text-gray-300">₹ {methods.getValues('deposit')}</span>
                   </div>
                   <div className="bg-cards-bg px-6 py-4 rounded shadow focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text">
                     <strong>Amenities:</strong> <span className="text-gray-300">{methods.getValues('amenities').join(', ')}</span>
@@ -224,7 +227,7 @@ const AddProperty = () => {
                     <strong>Property Type:</strong> <span className="text-gray-300">{methods.getValues('propertyType')}</span>
                   </div>
                   <div className="bg-cards-bg px-6 py-4 rounded shadow focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text">
-                    <strong>Flat Type:</strong> <span className="text-gray-300">{methods.getValues('flatType')}</span>
+                    <strong>Flat Type:</strong> <span className="text-gray-300">{methods.getValues('flatType') || "N/A"}</span>
                   </div>
                   <div className="bg-cards-bg px-6 py-4 rounded shadow focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text">
                     <strong>Room Details:</strong>
@@ -237,9 +240,9 @@ const AddProperty = () => {
                   <div className="bg-cards-bg px-6 py-4 rounded shadow focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text">
                     <strong>Verified:</strong> <span className="text-gray-300">{methods.getValues('isVerified') ? 'Yes' : 'No'}</span>
                   </div>
-                  <div className="bg-cards-bg px-6 py-4 rounded shadow focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text">
+                  {/* <div className="bg-cards-bg px-6 py-4 rounded shadow focus:outline-none focus:ring-2 focus:ring-main-purple text-primary-text">
                     <strong>Average Rating:</strong> <span className="text-gray-300">{methods.getValues('averageRating')}</span>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             )}
