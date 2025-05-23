@@ -76,6 +76,7 @@ const InvitationSuccessPage = () => {
                 ownerName: propertyData.landlord_id?.name || 'Property Owner',
                 landlord_name: propertyData.landlord_id?.name || 'Property Owner', // Make sure this is included
                 ownerId: propertyData.landlord_id?._id || propertyData.landlord_id,
+                requestType: 'Rent Request',
                 requestorId: userData._id,
                 status: 'Pending',
                 message: `${userData.name} has accepted an invitation and wants to join this property`,

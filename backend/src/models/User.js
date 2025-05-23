@@ -17,7 +17,7 @@ const UserSchema = new Schema(
       required: true,
       unique: true,
     },
-    dob:{
+    dob: {
       type: Date,
     },
     password: {
@@ -79,6 +79,59 @@ const UserSchema = new Schema(
     refreshToken: {
       type: String,
       default: "",
+    },
+
+    // Fields required to implement roommate matacher
+    smoking: { type: String, enum: ["yes", "no"], default: "no" },
+    sleepSchedule: { type: String, enum: ["early", "late"], default: "early" },
+    cleanliness: {
+      type: String,
+      enum: ["low", "medium", "high"],
+      default: "medium",
+    },
+    guests: {
+      type: String,
+      enum: ["never", "rarely", "often"],
+      default: "rarely",
+    },
+    noiseTolerance: {
+      type: String,
+      enum: ["low", "medium", "high"],
+      default: "medium",
+    },
+    budget: { type: Number, default: 5000 },
+    studyHabits: {
+      type: String,
+      enum: ["regular", "occasional", "cramming"],
+      default: "regular",
+    },
+    interests: { type: String, default: "" }, // Stored as pipe-separated values like "coding|gaming|reading"
+    dietaryPreference: {
+      type: String,
+      enum: ["vegetarian", "non-vegetarian"],
+      default: "non-vegetarian",
+    },
+    personalityType: {
+      type: String,
+      enum: ["introvert", "ambivert", "extrovert"],
+      default: "ambivert",
+    },
+    musicPreference: { type: String, default: "" }, // Stored as pipe-separated values
+    gymFrequency: {
+      type: String,
+      enum: ["never", "rarely", "weekly", "daily"],
+      default: "rarely",
+    },
+    sharedItems: { type: String, default: "kitchen" }, // What they're willing to share, pipe-separated
+    alcoholConsumption: {
+      type: String,
+      enum: ["never", "rarely", "often"],
+      default: "rarely",
+    },
+    partying: {
+      type: String,
+      enum: ["never", "rarely", "monthly", "weekly"],
+      default: "rarely",
     },
   },
   { timestamps: true }

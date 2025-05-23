@@ -882,7 +882,7 @@ const Notifications = () => {
                                                 {getNotificationMessage(notification, user_id._id)}
                                             </p>
                                             <p className="text-sm text-secondary-text mt-2 font-semibold">
-                                                {notification.requestType === 'Leave Request' ? "Reason: "+notification.message : ""}
+                                                {notification.requestType === 'Leave Request' ? "Reason: " + notification.message : ""}
                                             </p>
 
                                             <div className="mt-2 text-sm text-secondary-text">
@@ -1045,8 +1045,49 @@ const Roommates = () => {
     const [selectedRoommate, setSelectedRoommate] = useState(null);
     const [showRoommateModal, setShowRoommateModal] = useState(false);
 
+    // New state for roommate recommendations
+    const [recommendedMatches, setRecommendedMatches] = useState([]);
+    const [loadingRecommendations, setLoadingRecommendations] = useState(true);
+    const [recommendationError, setRecommendationError] = useState(null);
+
     // Get current user's information
     const { user: currentUser } = useSelector((state) => state.user);
+
+    useEffect(() => {
+        const fetchRecommendedMatches = async () => {
+            if (!currentUser?.user?._id) {
+                setLoadingRecommendations(false);
+                return;
+            }
+
+            setLoadingRecommendations(true);
+            setRecommendationError(null);
+
+            try {
+                const response = await axios.get(
+                    `http://localhost:3000/api/roommates/match/${currentUser.user._id}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem('token')}`
+                        }
+                    }
+                );
+
+                if (response.data && response.data.matches) {
+                    setRecommendedMatches(response.data.matches);
+                } else {
+                    setRecommendedMatches([]);
+                }
+                setLoadingRecommendations(false);
+            } catch (error) {
+                console.error('Error fetching roommate recommendations:', error);
+                setRecommendationError('Failed to load roommate recommendations');
+                setLoadingRecommendations(false);
+            }
+        };
+
+        fetchRecommendedMatches();
+    }, [currentUser?.user?._id]);
 
     // Fetch current roommates on component mount
     useEffect(() => {
@@ -1317,6 +1358,164 @@ const Roommates = () => {
                         <p className='text-secondary-text text-lg font-semibold text-center'>
                             No roommates have joined the room yet. <br />Search and invite friends below!
                         </p>
+                    </div>
+                )}
+            </div>
+
+            <div className='bg-sub-bg rounded-xl p-5 w-full mb-4'>
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center">
+                        <div className="bg-main-purple bg-opacity-20 p-2 rounded-lg mr-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-main-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                        </div>
+                        <h2 className='text-white text-lg font-bold'>Compatible Roommates</h2>
+                    </div>
+                    <div className="bg-cards-bg px-3 py-1 rounded-full">
+                        <span className="text-tertiary-text text-sm font-medium">AI Powered</span>
+                    </div>
+                </div>
+
+                {loadingRecommendations ? (
+                    <div className="flex items-center justify-center py-12 bg-cards-bg rounded-xl">
+                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-main-purple"></div>
+                        <p className="ml-3 text-secondary-text">Finding your perfect matches...</p>
+                    </div>
+                ) : recommendationError ? (
+                    <div className="bg-cards-bg rounded-xl p-6 text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-red-500 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <p className="text-secondary-text">{recommendationError}</p>
+                        <button
+                            className="mt-3 bg-main-purple text-white px-4 py-2 rounded-lg text-sm"
+                            onClick={() => {
+                                setLoadingRecommendations(true);
+                                setRecommendationError(null);
+                                // Retry fetching recommendations
+                                fetchRecommendedMatches();
+                            }}
+                        >
+                            Try Again
+                        </button>
+                    </div>
+                ) : recommendedMatches.length === 0 ? (
+                    <div className="bg-cards-bg rounded-xl p-8 text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-secondary-text mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        <p className="text-white text-lg font-medium mb-2">No matches found</p>
+                        <p className="text-secondary-text">Complete your profile to help us find compatible roommates for you.</p>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            {recommendedMatches.map((match) => (
+                                <div
+                                    key={match._id}
+                                    className="bg-cards-bg rounded-xl p-4 border border-transparent hover:border-main-purple transition-all duration-300"
+                                >
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div className="flex items-center space-x-3">
+                                            <div className="relative">
+                                                {match.profilePicture ? (
+                                                    <img
+                                                        src={match.profilePicture}
+                                                        alt={match.name}
+                                                        className="h-14 w-14 rounded-full object-cover border-2 border-main-purple"
+                                                    />
+                                                ) : (
+                                                    <div className="h-14 w-14 rounded-full bg-main-purple/20 flex items-center justify-center">
+                                                        <span className="text-main-purple text-xl font-bold">
+                                                            {match.name.charAt(0).toUpperCase()}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                <div className="absolute -bottom-1 -right-1 flex items-center justify-center h-6 w-6 rounded-full bg-main-purple text-white text-xs font-bold border-2 border-cards-bg">
+                                                    {Math.round(match.score)}%
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h3 className="text-white font-semibold">{match.name}</h3>
+                                                <p className="text-secondary-text text-sm">
+                                                    {match.course && `${match.course}, `}
+                                                    {match.year && `Year ${match.year}`}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <button
+                                                onClick={() => handleInviteRoommate({
+                                                    _id: match._id,
+                                                    name: match.name,
+                                                    email: match.email,
+                                                    username: match.username,
+                                                    profilePicture: match.profilePicture
+                                                })}
+                                                className="bg-main-purple text-white px-4 py-2 rounded-lg hover:bg-[#6b2bd2] transition-all text-sm flex items-center space-x-1"
+                                                disabled={!currentUser?.user?.currentRental}
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                                                </svg>
+                                                <span>Invite</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-3">
+                                        <p className="text-tertiary-text text-xs uppercase tracking-wider mb-2 font-semibold">Compatibility Strengths</p>
+                                        <div className="flex flex-wrap gap-2 mb-3">
+                                            {match.compatibilityDetails?.strengths?.slice(0, 3).map((strength, idx) => (
+                                                <span key={idx} className="bg-green-900 bg-opacity-20 text-green-400 text-xs px-2 py-1 rounded-full">
+                                                    {strength}
+                                                </span>
+                                            ))}
+                                            {match.compatibilityDetails?.strengths?.length > 3 && (
+                                                <span className="bg-gray-700 text-gray-300 text-xs px-2 py-1 rounded-full">
+                                                    +{match.compatibilityDetails.strengths.length - 3} more
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {match.interests && match.interests.length > 0 && (
+                                        <div>
+                                            <p className="text-tertiary-text text-xs uppercase tracking-wider mb-2 font-semibold">Interests</p>
+                                            <div className="flex flex-wrap gap-2">
+                                                {match.interests.slice(0, 4).map((interest, idx) => (
+                                                    <span key={idx} className="bg-blue-900 bg-opacity-20 text-blue-400 text-xs px-2 py-1 rounded-full">
+                                                        {interest}
+                                                    </span>
+                                                ))}
+                                                {match.interests.length > 4 && (
+                                                    <span className="bg-gray-700 text-gray-300 text-xs px-2 py-1 rounded-full">
+                                                        +{match.interests.length - 4} more
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="mt-3 pt-3 border-t border-gray-700 flex justify-between items-center">
+                                        <div className="text-sm">
+                                            <span className="text-secondary-text">Budget: </span>
+                                            <span className="text-white">₹{match.budget?.toLocaleString('en-IN') || 'Not specified'}</span>
+                                        </div>
+                                        <div className="flex items-center">
+                                            <span className="text-sm text-secondary-text mr-2">Compatibility</span>
+                                            <div className="w-24 h-2 bg-gray-700 rounded-full overflow-hidden">
+                                                <div
+                                                    className="h-full rounded-full bg-gradient-to-r from-blue-500 to-main-purple"
+                                                    style={{ width: `${match.score}%` }}
+                                                ></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 )}
             </div>

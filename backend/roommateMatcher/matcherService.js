@@ -1,5 +1,4 @@
-const fs = require("fs");
-const csv = require("csv-parser");
+const User = require("../src/models/User");
 
 // Helper: convert categorical fields to numerical score
 const encode = (val, map) => map[val] || 0;
@@ -15,7 +14,7 @@ const calculateInterestScore = (userAInterests, userBInterests) => {
   
   // Score based on percentage of common interests
   return (commonInterests.length / Math.max(interestsA.length, interestsB.length)) * 3;
-}; // Added missing closing curly brace here
+};
 
 // Helper: calculate common music preferences
 const calculateMusicScore = (userAMusic, userBMusic) => {
@@ -42,7 +41,7 @@ const calculateSimilarity = (userA, userB) => {
   const noiseMap = { low: 0, medium: 1, high: 2 };
   const studyMap = { regular: 2, occasional: 1, cramming: 0 };
   const personalityMap = { introvert: 0, ambivert: 1, extrovert: 2 };
-  const dietaryMap = { vegetarian: 0, non_vegetarian: 1 };
+  const dietaryMap = { vegetarian: 0, "non-vegetarian": 1 }; // Fixed hyphen in key
   const frequencyMap = { never: 0, rarely: 1, monthly: 2, weekly: 3, daily: 4 };
   const sharedItemsMap = { none: 0, kitchen: 1, bathroom: 1, "kitchen|bathroom": 2, all: 3 };
   
@@ -171,35 +170,52 @@ const calculateSimilarity = (userA, userB) => {
   return Math.round((score / maxScore) * 100);
 };
 
-const findMatches = (targetUserId, callback) => {
-  const users = [];
+// New findMatches function that uses the database
+const findMatches = async (targetUserId) => {
+  try {
+    // Find the target user
+    const targetUser = await User.findById(targetUserId);
+    if (!targetUser) {
+      return [];
+    }
 
-  fs.createReadStream("./roommateMatcher/sampleUsers.csv")
-    .pipe(csv())
-    .on("data", (data) => {
-      users.push({
-        ...data,
-        year: Number(data.year),
-        budget: Number(data.budget),
-      });
-    })
-    .on("end", () => {
-      const targetUser = users.find((u) => u.userId === targetUserId);
-      if (!targetUser) return callback([]);
+    // Find all other users (excluding the target user)
+    const allUsers = await User.find({ _id: { $ne: targetUserId } });
+    
+    // Calculate compatibility and sort by score
+    const matches = allUsers
+      .map(user => ({
+        _id: user._id,
+        name: user.name,
+        username: user.username,
+        email: user.email,
+        profilePicture: user.profilePicture,
+        course: user.course || 'Not specified',
+        year: user.year || 1,
+        college: user.college || 'Not specified',
+        score: calculateSimilarity(targetUser, user),
+        compatibilityDetails: generateCompatibilityDetails(targetUser, user),
+        interests: user.interests ? user.interests.split('|') : [],
+        lifestyle: {
+          smoking: user.smoking || 'no',
+          sleepSchedule: user.sleepSchedule || 'early',
+          cleanliness: user.cleanliness || 'medium',
+          guests: user.guests || 'rarely',
+          noiseTolerance: user.noiseTolerance || 'medium',
+          dietaryPreference: user.dietaryPreference || 'non-vegetarian',
+          alcoholConsumption: user.alcoholConsumption || 'rarely',
+          partying: user.partying || 'rarely'
+        },
+        budget: user.budget || 5000
+      }))
+      .sort((a, b) => b.score - a.score);
 
-      const matches = users
-        .filter(
-          (u) => u.userId !== targetUserId && u.college === targetUser.college
-        )
-        .map((u) => ({
-          ...u,
-          score: calculateSimilarity(targetUser, u),
-          compatibilityDetails: generateCompatibilityDetails(targetUser, u)
-        }))
-        .sort((a, b) => b.score - a.score);
-
-      callback(matches.slice(0, 5));
-    });
+    // Return top 5 matches
+    return matches.slice(0, 5);
+  } catch (error) {
+    console.error('Error finding matches:', error);
+    return [];
+  }
 };
 
 // Generate detailed compatibility information
@@ -234,7 +250,7 @@ const generateCompatibilityDetails = (userA, userB) => {
     details.strengths.push("Same course of study");
   }
   
-  if (Math.abs(Number(userA.year) - Number(userB.year)) <= 1) {
+  if (Math.abs(Number(userA.year || 1) - Number(userB.year || 1)) <= 1) {
     details.strengths.push("Similar academic year");
   }
   
@@ -250,12 +266,12 @@ const generateCompatibilityDetails = (userA, userB) => {
   }
   
   // Check budget compatibility
-  const budgetDiff = Math.abs(Number(userA.budget) - Number(userB.budget));
-  const budgetAvg = (Number(userA.budget) + Number(userB.budget)) / 2;
+  const budgetDiff = Math.abs(Number(userA.budget || 0) - Number(userB.budget || 0));
+  const budgetAvg = (Number(userA.budget || 0) + Number(userB.budget || 0)) / 2;
   
-  if (budgetDiff / budgetAvg <= 0.2) {
+  if (budgetAvg > 0 && budgetDiff / budgetAvg <= 0.2) {
     details.strengths.push("Compatible budget expectations");
-  } else if (budgetDiff / budgetAvg > 0.4) {
+  } else if (budgetAvg > 0 && budgetDiff / budgetAvg > 0.4) {
     details.differences.push("Significant budget difference");
   }
   

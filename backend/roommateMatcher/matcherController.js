@@ -1,42 +1,32 @@
-const { findMatches } = require("./matcherService");
+const { findMatches } = require('./matcherService');
 
-const getMatches = (req, res) => {
-  const { userId } = req.params;
-
-  findMatches(userId, (matches) => {
-    if (matches.length === 0)
-      return res
-        .status(404)
-        .json({ message: "User not found or no matches available" });
-
-    // Format the response to include compatibility score and details
-    const formattedMatches = matches.map((match) => ({
-      userId: match.userId,
-      name: match.name,
-      course: match.course,
-      year: match.year,
-      college: match.college,
-      compatibilityScore: match.score,
-      compatibilityDetails: match.compatibilityDetails,
-      interests: match.interests ? match.interests.split("|") : [],
-      lifestyle: {
-        smoking: match.smoking,
-        sleepSchedule: match.sleepSchedule,
-        cleanliness: match.cleanliness,
-        guests: match.guests,
-        noiseTolerance: match.noiseTolerance,
-        dietaryPreference: match.dietaryPreference,
-        alcoholConsumption: match.alcoholConsumption,
-        partying: match.partying,
-      },
-      budget: match.budget,
-    }));
-
-    res.status(200).json({
-      matches: formattedMatches,
-      totalMatches: formattedMatches.length,
+const getMatches = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    // Call the updated findMatches function that returns a promise
+    const matches = await findMatches(userId);
+    
+    if (!matches || matches.length === 0) {
+      return res.status(404).json({ 
+        message: 'User not found or no matches available',
+        matches: [],
+        totalMatches: 0
+      });
+    }
+    
+    // Return the matches
+    res.status(200).json({ 
+      matches,
+      totalMatches: matches.length 
     });
-  });
+  } catch (error) {
+    console.error('Error in getMatches controller:', error);
+    res.status(500).json({ 
+      message: 'Server error when finding matches',
+      error: error.message
+    });
+  }
 };
 
 module.exports = { getMatches };
