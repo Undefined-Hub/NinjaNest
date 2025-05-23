@@ -112,10 +112,10 @@ const AuthPage = () => {
                 <div className="w-full md:w-1/2 p-8 flex flex-col justify-center">
                     <form className="flex flex-col space-y-5" onSubmit={handleSubmit}>
                         <p className="text-2xl font-bold text-primary-text text-center">{auth ? 'Log In' : 'Sign Up'}</p>
-                        <div className="flex items-center justify-center w-full border border-gray-500 bg-cards-bg rounded-full p-2 hover:shadow-lg transition duration-200 cursor-pointer">
+                        {/* <div className="flex items-center justify-center w-full border border-gray-500 bg-cards-bg rounded-full p-2 hover:shadow-lg transition duration-200 cursor-pointer">
                             <img src={google} alt="Google" className="w-6 h-6 mr-2" />
                             <span className="text-sm font-semibold text-primary-text">{auth ? 'Log in with Google' : 'Sign up with Google'}</span>
-                        </div>
+                        </div> */}
                         <p className="text-secondary-text text-sm text-center">or use your email</p>
 
                         {!auth ? (
