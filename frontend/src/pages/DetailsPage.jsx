@@ -530,9 +530,9 @@ const DetailsPage = () => {
                                         </div>
                                     </div>
                                 )} */}
-                                <button className='flex w-full bg-slate-600 p-3 rounded-lg justify-center items-center hover:bg-slate-700'> {/* Contact Button */}
+                                {/* <button className='flex w-full bg-slate-600 p-3 rounded-lg justify-center items-center hover:bg-slate-700'> 
                                     <p className='text-white font-bold text-base'>Contact Landlord</p>
-                                </button>
+                                </button> */}
                             </div>
 
                         </div>
