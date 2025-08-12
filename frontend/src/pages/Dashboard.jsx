@@ -103,7 +103,7 @@ const Dashboard = () => {
     const fetchUserBooking = async (propertyId) => {
         try {
             const response = await axios.get(
-                `http://localhost:3000/api/booking/bookings/user/${user.user._id}/property/${propertyId}`,
+                `${import.meta.env.VITE_SERVER_URL}/api/booking/bookings/user/${user.user._id}/property/${propertyId}`,
                 { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
             );
             return response.data.booking;
@@ -123,7 +123,7 @@ const Dashboard = () => {
             try {
                 // Fetch property
                 const propRes = await axios.get(
-                    `http://localhost:3000/api/property/${user.user.currentRental}`,
+                    `${import.meta.env.VITE_SERVER_URL}/api/property/${user.user.currentRental}`,
                     { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
                 );
 
@@ -142,7 +142,7 @@ const Dashboard = () => {
 
                     // Fetch user's rent entries
                     const rentRes = await axios.get(
-                        `http://localhost:3000/api/rents/${userBooking._id}`,
+                        `${import.meta.env.VITE_SERVER_URL}/api/api/rents/${userBooking._id}`,
                         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
                     );
 
@@ -410,7 +410,7 @@ const Notifications = () => {
     useEffect(() => {
         const fetchNotifications = async () => {
             try {
-                const response = await axios.get('http://localhost:3000/api/request', {
+                const response = await axios.get('${import.meta.env.VITE_SERVER_URL}/api/request', {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`,
                     },
@@ -699,7 +699,7 @@ const Notifications = () => {
                                                                     try {
                                                                         // Accept the request
                                                                         await axios.put(
-                                                                            `http://localhost:3000/api/request/${notification._id}`,
+                                                                            `${import.meta.env.VITE_SERVER_URL}/api/request/${notification._id}`,
                                                                             { status: 'Accepted' },
                                                                             {
                                                                                 headers: {
@@ -710,7 +710,7 @@ const Notifications = () => {
 
                                                                         // Update the requestor's current rental
                                                                         await axios.put(
-                                                                            `http://localhost:3000/api/user/updateUser/${notification.requestorId._id}`,
+                                                                            `${import.meta.env.VITE_SERVER_URL}/api/user/updateUser/${notification.requestorId._id}`,
                                                                             { currentRental: notification.propertyId._id },
                                                                             {
                                                                                 headers: {
@@ -722,7 +722,7 @@ const Notifications = () => {
                                                                         // Update the property's availability
                                                                         try {
                                                                             const propertyResponse = await axios.get(
-                                                                                `http://localhost:3000/api/property/${notification.propertyId._id}`,
+                                                                                `${import.meta.env.VITE_SERVER_URL}/api/property/${notification.propertyId._id}`,
                                                                                 {
                                                                                     headers: {
                                                                                         Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -736,7 +736,7 @@ const Notifications = () => {
                                                                             };
 
                                                                             await axios.put(
-                                                                                `http://localhost:3000/api/property/${notification.propertyId._id}`,
+                                                                                `${import.meta.env.VITE_SERVER_URL}/api/property/${notification.propertyId._id}`,
                                                                                 updatedProperty,
                                                                                 {
                                                                                     headers: {
@@ -769,7 +769,7 @@ const Notifications = () => {
                                                                 onClick={async () => {
                                                                     try {
                                                                         await axios.put(
-                                                                            `http://localhost:3000/api/request/${notification._id}`,
+                                                                            `${import.meta.env.VITE_SERVER_URL}/api/request/${notification._id}`,
                                                                             { status: 'Rejected' },
                                                                             {
                                                                                 headers: {
@@ -909,7 +909,7 @@ const Notifications = () => {
                                                     try {
 
                                                         await axios.put(
-                                                            `http://localhost:3000/api/request/${notification._id}`,
+                                                            `${import.meta.env.VITE_SERVER_URL}/api/request/${notification._id}`,
                                                             { status: 'Accepted' },
                                                             {
                                                                 headers: {
@@ -927,7 +927,7 @@ const Notifications = () => {
                                                         if (notification.requestType === 'Leave Request') {
                                                             // First update user's current rental to null
                                                             await axios.put(
-                                                                `http://localhost:3000/api/user/updateUser/${notification.requestorId._id}`,
+                                                                `${import.meta.env.VITE_SERVER_URL}/api/user/updateUser/${notification.requestorId._id}`,
                                                                 { currentRental: null },
                                                                 {
                                                                     headers: {
@@ -939,7 +939,7 @@ const Notifications = () => {
                                                             // Then remove user from property members
                                                             // Fixed: Changed to match the API endpoint structure
                                                             await axios.put(
-                                                                `http://localhost:3000/api/property/members/${notification.propertyId._id}`,
+                                                                `${import.meta.env.VITE_SERVER_URL}/api/property/members/${notification.propertyId._id}`,
                                                                 {
                                                                     userId: notification.requestorId._id,
                                                                     action: 'remove'
@@ -964,7 +964,7 @@ const Notifications = () => {
                                                 onClick={async () => {
                                                     try {
                                                         await axios.put(
-                                                            `http://localhost:3000/api/request/${notification._id}`,
+                                                            `${import.meta.env.VITE_SERVER_URL}/api/request/${notification._id}`,
                                                             { status: 'Rejected' },
                                                             {
                                                                 headers: {
@@ -1065,7 +1065,7 @@ const Roommates = () => {
 
             try {
                 const response = await axios.get(
-                    `http://localhost:3000/api/roommates/match/${currentUser.user._id}`,
+                    `${import.meta.env.VITE_SERVER_URL}/api/roommates/match/${currentUser.user._id}`,
                     {
                         headers: {
                             Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -1099,7 +1099,7 @@ const Roommates = () => {
             }
             try {
                 const response = await axios.get(
-                    `http://localhost:3000/api/property/${currentUser.user.currentRental}`,
+                    `${import.meta.env.VITE_SERVER_URL}/api/property/${currentUser.user.currentRental}`,
                     {
                         headers: {
                             Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -1122,7 +1122,7 @@ const Roommates = () => {
     useEffect(() => {
         const fetchInvitations = async () => {
             try {
-                const response = await axios.get('http://localhost:3000/api/invitation/user', {
+                const response = await axios.get('${import.meta.env.VITE_SERVER_URL}/api/invitation/user', {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`
                     }
@@ -1144,7 +1144,7 @@ const Roommates = () => {
         try {
             // Need to fetch the current property the user is in
             const propertyResponse = await axios.get(
-                `http://localhost:3000/api/property/${currentUser.user.currentRental}`,
+                `${import.meta.env.VITE_SERVER_URL}/api/property/${currentUser.user.currentRental}`,
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -1170,7 +1170,7 @@ const Roommates = () => {
             };
 
             const invitationResponse = await axios.post(
-                'http://localhost:3000/api/invitation/create',
+                '${import.meta.env.VITE_SERVER_URL}/api/invitation/create',
                 invitationData,
                 {
                     headers: {
@@ -1199,7 +1199,7 @@ const Roommates = () => {
 
                 // Send invitation email
                 await axios.post(
-                    'http://localhost:3000/api/mail/invite',
+                    '${import.meta.env.VITE_SERVER_URL}/api/mail/invite',
                     emailData,
                     {
                         headers: {
@@ -1230,7 +1230,7 @@ const Roommates = () => {
         if (e.target.value.length > 2) { // Only search after 2+ characters
             setIsSearching(true);
             try {
-                const response = await axios.get(`http://localhost:3000/api/user/search/users?query=${e.target.value}`, {
+                const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/user/search/users?query=${e.target.value}`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`
                     }
@@ -1662,7 +1662,7 @@ const Roommates = () => {
                                             </div>
                                             <div className='flex space-x-2'>
                                                 <a
-                                                    href={`http://localhost:3000/api/invitation/accept/${invitation._id}`}
+                                                    href={`${import.meta.env.VITE_SERVER_URL}/api/invitation/accept/${invitation._id}`}
                                                     className='bg-main-purple text-white px-3 py-1 rounded-lg hover:bg-[#6b2bd2] transition-all text-sm flex items-center'
                                                 >
                                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1671,7 +1671,7 @@ const Roommates = () => {
                                                     Accept
                                                 </a>
                                                 <a
-                                                    href={`http://localhost:3000/api/invitation/decline/${invitation._id}`}
+                                                    href={`${import.meta.env.VITE_SERVER_URL}/api/invitation/decline/${invitation._id}`}
                                                     className='bg-gray-600 text-white px-3 py-1 rounded-lg hover:bg-gray-700 transition-all text-sm flex items-center'
                                                 >
                                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -2104,7 +2104,7 @@ const Profile = () => {
             }
             console.log(data);
             const response = await axios.put(
-                `http://localhost:3000/api/user/updateUser/${userId}`,
+                `${import.meta.env.VITE_SERVER_URL}/api/user/updateUser/${userId}`,
                 data,
                 {
                     headers: {
@@ -2174,7 +2174,7 @@ const Profile = () => {
             // 2. Update backend user profile
             const userId = user?.user?._id;
             await axios.put(
-                `http://localhost:3000/api/user/updateUser/${userId}`,
+                `${import.meta.env.VITE_SERVER_URL}/api/user/updateUser/${userId}`,
                 { profilePicture: imageUrl },
                 {
                     headers: {
@@ -2430,7 +2430,7 @@ const Profile = () => {
                             }
                             try {
                                 await axios.post(
-                                    "http://localhost:3000/api/auth/change-password",
+                                    "${import.meta.env.VITE_SERVER_URL}/api/auth/change-password",
                                     {
                                         email: user?.user?.email,
                                         oldPassword,

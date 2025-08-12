@@ -1,0 +1,15 @@
+{
+    
+    "rewrites": [
+        {
+            
+            "source": "/:path*",
+            "destination": "https://ninjanest-backend.onrender.com/:path*"
+        },
+        {
+            
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ]
+}

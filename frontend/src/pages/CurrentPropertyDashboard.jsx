@@ -75,7 +75,7 @@ const handleLeavePropertyRequest = async () => {
         const loadingToast = toast.loading('Sending leave request...');
 
         const response = await axios.post(
-            'http://localhost:3000/api/request',
+            '${import.meta.env.VITE_SERVER_URL}/api/request',
             requestData,
             {
                 headers: {
@@ -103,7 +103,7 @@ const handleLeavePropertyRequest = async () => {
 };
     const addMemberToProperty = async () => {
         try {
-            await axios.post(`http://localhost:3000/api/property/members/${propertyId}/`, {
+            await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/property/members/${propertyId}/`, {
                 userId: user.user._id
             }, {
                 headers: {
@@ -125,7 +125,7 @@ const handleLeavePropertyRequest = async () => {
             }
 
             const bookingResponse = await axios.post(
-                `http://localhost:3000/api/booking/bookings`,
+                `${import.meta.env.VITE_SERVER_URL}/api/booking/bookings`,
                 {
                     property_id: propertyId,
                     user_id: user.user._id,
@@ -182,7 +182,7 @@ const handleLeavePropertyRequest = async () => {
             };
 
             await axios.post(
-                `http://localhost:3000/api/rents/`,
+                `${import.meta.env.VITE_SERVER_URL}/api/rents/`,
                 monthRentPayload,
                 {
                     headers: {
@@ -237,7 +237,7 @@ const handleLeavePropertyRequest = async () => {
 };
 const initiatePayment = async (paymentType) => {
     try {
-        const response = await axios.post('http://localhost:3000/api/payment/initiate', {
+        const response = await axios.post('${import.meta.env.VITE_SERVER_URL}/api/payment/initiate', {
             user_id: user.user._id,
             price: paymentType === 'deposit' ? property.deposit : property.rent,
             phone: '9876543210',
@@ -262,7 +262,7 @@ const initiatePayment = async (paymentType) => {
     const fetchUserBooking = async () => {
         try {
             const response = await axios.get(
-                `http://localhost:3000/api/booking/bookings/user/${user.user._id}/property/${propertyId}`,
+                `${import.meta.env.VITE_SERVER_URL}/api/booking/bookings/user/${user.user._id}/property/${propertyId}`,
                 { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
             );
             return response.data.booking;
@@ -297,7 +297,7 @@ const initiatePayment = async (paymentType) => {
             };
 
             await axios.post(
-                `http://localhost:3000/api/rents/`,
+                `${import.meta.env.VITE_SERVER_URL}/api/rents/`,
                 monthRentPayload,
                 { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
             );
@@ -310,7 +310,7 @@ const initiatePayment = async (paymentType) => {
     useEffect(() => {
         const txnId = localStorage.getItem('lastTxnId');
         if (txnId && property) {
-            axios.get(`http://localhost:3000/api/payment/status/${txnId}`)
+            axios.get(`${import.meta.env.VITE_SERVER_URL}/api/payment/status/${txnId}`)
                 .then(async res => {
                     if (res.data.paymentDetails && res.data.paymentDetails[0].state === "COMPLETED") {
                         try {
@@ -325,7 +325,7 @@ const initiatePayment = async (paymentType) => {
                                 } else if (userBooking.paymentStatus !== "completed") {
                                     // Update existing booking's deposit status
                                     await axios.put(
-                                        `http://localhost:3000/api/booking/bookings/${userBooking._id}`,
+                                        `${import.meta.env.VITE_SERVER_URL}/api/booking/bookings/${userBooking._id}`,
                                         { paymentStatus: "completed" },
                                         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
                                     );
@@ -338,7 +338,7 @@ const initiatePayment = async (paymentType) => {
 
                                 // Handle rent payment
                                 const monthRentRes = await axios.get(
-                                    `http://localhost:3000/api/rents/${userBooking._id}`,
+                                    `${import.meta.env.VITE_SERVER_URL}/api/rents/${userBooking._id}`,
                                     { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
                                 );
 
@@ -346,7 +346,7 @@ const initiatePayment = async (paymentType) => {
                                 if (unpaidRents.length > 0) {
                                     const currentRent = unpaidRents[0];
                                     await axios.put(
-                                        `http://localhost:3000/api/rents/rent/${currentRent._id}`,
+                                        `${import.meta.env.VITE_SERVER_URL}/api/rents/rent/${currentRent._id}`,
                                         {
                                             payment_status: "paid",
                                             amount_paid: currentRent.amount_due,
@@ -379,7 +379,7 @@ const initiatePayment = async (paymentType) => {
 
     const fetchPropertyAndNextRent = async () => {
         try {
-            const response = await axios.get(`http://localhost:3000/api/property/${propertyId}`, {
+            const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/property/${propertyId}`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
             });
             setProperty(response.data.property);
@@ -393,7 +393,7 @@ const initiatePayment = async (paymentType) => {
 
                 // Fetch month rents for user's booking
                 const monthRentRes = await axios.get(
-                    `http://localhost:3000/api/rents/${userBooking._id}`,
+                    `${import.meta.env.VITE_SERVER_URL}/api/rents/${userBooking._id}`,
                     { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
                 );
                 const rents = Array.isArray(monthRentRes.data)
@@ -439,7 +439,7 @@ const initiatePayment = async (paymentType) => {
         });
 
         try {
-            const response = await axios.post(`http://localhost:3000/api/review/${propertyId}/review`, {
+            const response = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/review/${propertyId}/review`, {
                 user_id: user?.user?._id,
                 property_id: propertyId,
                 landlord_id: property?.landlord_id?._id,
@@ -472,7 +472,7 @@ const initiatePayment = async (paymentType) => {
         });
 
         try {
-            const response = await axios.post(`http://localhost:3000/api/review/${propertyId}/landlord-rating`, {
+            const response = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/review/${propertyId}/landlord-rating`, {
                 user_id: user?.user?._id,
                 property_id: propertyId,
                 landlord_id: property?.landlord_id?._id,

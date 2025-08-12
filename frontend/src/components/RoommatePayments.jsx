@@ -17,7 +17,7 @@ const RoommatePayments = ({ property, isPrimaryTenant }) => {
     const loadPayments = async () => {
         try {
             const response = await axios.get(
-                `http://localhost:3000/api/roommate-payments/property/${property._id}`,
+                `${import.meta.env.VITE_SERVER_URL}/api/roommate-payments/property/${property._id}`,
                 { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
             );
             setPayments(response.data);
@@ -31,7 +31,7 @@ const RoommatePayments = ({ property, isPrimaryTenant }) => {
     const initiatePayment = async (payment) => {
         try {
             const response = await axios.post(
-                'http://localhost:3000/api/payment/initiate',
+                '${import.meta.env.VITE_SERVER_URL}/api/payment/initiate',
                 {
                     user_id: user.user._id,
                     price: payment.amount,
@@ -54,7 +54,7 @@ const RoommatePayments = ({ property, isPrimaryTenant }) => {
     const handlePaymentComplete = async (payment) => {
         try {
             await axios.patch(
-                `http://localhost:3000/api/roommate-payments/${payment._id}`,
+                `${import.meta.env.VITE_SERVER_URL}/api/roommate-payments/${payment._id}`,
                 {
                     status: 'completed',
                     payment_method: 'UPI',

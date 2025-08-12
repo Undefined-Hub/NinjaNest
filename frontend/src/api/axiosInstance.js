@@ -6,7 +6,7 @@ import { toast } from "react-hot-toast";
 
 // Create an Axios instance
 const api = axios.create({
-    baseURL: "http://localhost:3000/api", // Change this to your real backend API URL
+    baseURL: "${import.meta.env.VITE_SERVER_URL}/api", // Change this to your real backend API URL
 });
 
 // Request Interceptor: Add token to headers
