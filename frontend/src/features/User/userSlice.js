@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 // Fetch user details
 export const fetchUser = createAsyncThunk("user/fetchDetails", async (data) => {
-    const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/user/getUser/${data}`, {
+    const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/user/getUser/${data}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -17,7 +17,7 @@ export const fetchUser = createAsyncThunk("user/fetchDetails", async (data) => {
 
 // Post new user
 export const postUser = createAsyncThunk("user/postUser", async (data) => {
-    const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/user/createUser`, {
+    const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/user/createUser`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -31,7 +31,7 @@ export const postUser = createAsyncThunk("user/postUser", async (data) => {
 
 // Put (update) user
 export const updateUser = createAsyncThunk("user/updateUser", async (data) => {
-    const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/user/updateUser/${data.id}`, {
+    const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/user/updateUser/${data.id}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json",
@@ -45,7 +45,7 @@ export const updateUser = createAsyncThunk("user/updateUser", async (data) => {
 
 // Delete user
 export const deleteUser = createAsyncThunk("user/deleteUser", async (id) => {
-    const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/user/deleteUser/${id}`, {
+    const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/user/deleteUser/${id}`, {
         method: "DELETE",
         headers: {
             "Content-Type": "application/json",
