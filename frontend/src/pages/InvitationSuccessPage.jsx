@@ -84,7 +84,7 @@ const InvitationSuccessPage = () => {
 
             console.log("Sending rent request with data:", requestData);
 
-            const response = await axios.post('${import.meta.env.VITE_SERVER_URL}/api/request', requestData, {
+            const response = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/request`, requestData, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },

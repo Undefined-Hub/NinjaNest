@@ -1122,7 +1122,7 @@ const Roommates = () => {
     useEffect(() => {
         const fetchInvitations = async () => {
             try {
-                const response = await axios.get('${import.meta.env.VITE_SERVER_URL}/api/invitation/user', {
+                const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/invitation/user`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`
                     }
@@ -1170,7 +1170,7 @@ const Roommates = () => {
             };
 
             const invitationResponse = await axios.post(
-                '${import.meta.env.VITE_SERVER_URL}/api/invitation/create',
+                `${import.meta.env.VITE_SERVER_URL}/api/invitation/create`,
                 invitationData,
                 {
                     headers: {

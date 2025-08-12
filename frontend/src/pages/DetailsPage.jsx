@@ -75,7 +75,7 @@ const DetailsPage = () => {
 
         const loadingToast = toast.loading('Sending rent request...');
 
-        axios.post('${import.meta.env.VITE_SERVER_URL}/api/request', requestData, {
+        axios.post(`${import.meta.env.VITE_SERVER_URL}/api/request`, requestData, {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('token')}`,
             },

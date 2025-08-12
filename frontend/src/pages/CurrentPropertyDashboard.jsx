@@ -75,7 +75,7 @@ const handleLeavePropertyRequest = async () => {
         const loadingToast = toast.loading('Sending leave request...');
 
         const response = await axios.post(
-            '${import.meta.env.VITE_SERVER_URL}/api/request',
+            `${import.meta.env.VITE_SERVER_URL}/api/request`,
             requestData,
             {
                 headers: {
@@ -237,7 +237,7 @@ const handleLeavePropertyRequest = async () => {
 };
 const initiatePayment = async (paymentType) => {
     try {
-        const response = await axios.post('${import.meta.env.VITE_SERVER_URL}/api/payment/initiate', {
+        const response = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/payment/initiate`, {
             user_id: user.user._id,
             price: paymentType === 'deposit' ? property.deposit : property.rent,
             phone: '9876543210',
