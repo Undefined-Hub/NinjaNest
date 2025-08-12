@@ -68,7 +68,7 @@ function ExplorePage() {
     if (filters.minRating) queryParams.append("minRating", filters.minRating);
     if (filters.minTrustScore) queryParams.append("minTrustScore", filters.minTrustScore);
 
-    const url = `${import.meta.env.VITE_SERVER_URL}/property/?${queryParams.toString()}`;
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/property/?${queryParams.toString()}`;
     setNoResults(false);
     fetch(url)
       .then((res) => res.json())
