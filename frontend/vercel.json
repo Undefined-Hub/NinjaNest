@@ -3,7 +3,7 @@
     "rewrites": [
         {
             
-            "source": "/:path*",
+            "source": ":path*",
             "destination": "https://ninjanest-backend.onrender.com/:path*"
         },
         {
