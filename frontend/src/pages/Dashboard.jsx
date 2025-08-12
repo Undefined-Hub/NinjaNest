@@ -2039,7 +2039,7 @@ const Profile = () => {
         const fetchUserDetails = async () => {
             const username = user?.user?.username;
             try {
-                const response = await api.get(`/user/getUser/${username}`);
+                const response = await api.get(`/api/user/getUser/${username}`);
                 const userData = response.data.user;
                 methods.reset({
                     name: userData.name || "",
