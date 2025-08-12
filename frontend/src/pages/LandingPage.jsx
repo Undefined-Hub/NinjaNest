@@ -120,108 +120,138 @@ const LandingPage = () => {
         {/* Hero Section 1*/}
         {/* Hero Section */}
         {/* Hero Section */}
-        <div className="relative w-[90vw] md:w-[60vw] flex flex-col justify-center items-center text-center text-white mx-auto">
-          <div className="flex flex-col md:flex-row items-center rounded-xl bg-gray-500/10 backdrop-blur-sm p-3 gap-3 mt-6 w-full md:w-[85%] justify-center border border-gray-700/30 hover:border-[#7c3bf1]/30 transition-all duration-300">
+        <div className="relative w-[95vw] md:w-[70vw] lg:w-[60vw] flex flex-col justify-center items-center text-center text-white mx-auto">
+          {/* Search Container with Enhanced Glass Morphism */}
+          <div className="flex flex-col lg:flex-row items-stretch rounded-2xl bg-gradient-to-br from-gray-500/15 via-gray-400/10 to-gray-600/15 backdrop-blur-xl shadow-2xl p-4 md:p-6 gap-4 mt-8 w-full justify-center border border-gray-500/30 hover:border-[#7c3bf1]/50 transition-all duration-500 hover:shadow-[0_0_40px_rgba(124,59,241,0.15)]">
 
-            {/* Location Input with Autocomplete */}
-            <div className="relative flex items-center gap-2 h-11 px-3 rounded-lg bg-cards-bg w-full md:w-[35%] border border-gray-700/30 hover:border-[#7c3bf1]/30 transition-all duration-300">
-              <img src={locationPin} alt="location" className="w-4 h-4 opacity-70" />
-              <input
-                type="text"
-                placeholder="Enter location"
-                className="bg-transparent outline-none w-full text-white placeholder:text-gray-400 text-sm"
-                value={locationInput}
-                onChange={handleLocationInputChange}
-              />
-              {/* Suggestions Dropdown */}
+            {/* Location Input with Enhanced Autocomplete */}
+            <div className="relative flex-1 lg:flex-[2] group">
+              <div className="relative flex items-center gap-3 h-14 px-4 rounded-xl bg-gradient-to-br from-[#1a2332]/80 to-[#222b39]/60 backdrop-blur-sm border border-gray-600/40 hover:border-[#7c3bf1]/60 focus-within:border-[#7c3bf1]/80 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-[#7c3bf1]/10">
+                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-[#7c3bf1]/20">
+                  <img src={locationPin} alt="location" className="w-4 h-4 opacity-80" />
+                </div>
+                <div className="flex flex-col flex-1">
+                  <label className="text-[11px] text-gray-400 font-medium mb-0.5">Location</label>
+                  <input
+                    type="text"
+                    placeholder="Enter your city or area"
+                    className="bg-transparent outline-none w-full text-white placeholder:text-gray-500 text-sm font-medium"
+                    value={locationInput}
+                    onChange={handleLocationInputChange}
+                  />
+                </div>
+              </div>
+              
+              {/* Enhanced Suggestions Dropdown */}
               {showSuggestions && suggestions.length > 0 && (
                 <div 
                   ref={suggestionRef}
-                  className="absolute left-0 right-0 top-full mt-1 bg-cards-bg border border-gray-700/30 rounded-lg overflow-hidden z-10"
+                  className="absolute left-0 right-0 top-full mt-2 bg-gradient-to-br from-[#1a2332]/95 to-[#222b39]/90 backdrop-blur-xl border border-gray-600/50 rounded-xl overflow-hidden z-20 shadow-2xl animate-in slide-in-from-top-2 duration-200"
                 >
                   {suggestions.map((suggestion, index) => (
                     <div
                       key={index}
-                      className="px-4 py-2 text-left text-sm text-gray-300 hover:bg-[#222b39] cursor-pointer transition-colors duration-200"
+                      className="px-4 py-3 text-left text-sm text-gray-300 hover:bg-gradient-to-r hover:from-[#7c3bf1]/20 hover:to-[#2761e9]/20 cursor-pointer transition-all duration-200 border-b border-gray-700/30 last:border-b-0 hover:text-white"
                       onClick={() => handleSuggestionClick(suggestion)}
                     >
-                      {suggestion}
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-[#7c3bf1]/60"></div>
+                        {suggestion}
+                      </div>
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* Rent Range Slider */}
-            <div className="flex items-center h-11 px-3 rounded-lg bg-cards-bg w-full md:w-[35%] border border-gray-700/30 hover:border-[#7c3bf1]/30 transition-all duration-300">
-              <div className="flex flex-col w-full">
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center">
-                    <img src={rupees} alt="rupees" className="w-3.5 h-3.5 opacity-70" />
-                    <span className="text-[10px] text-gray-400 ml-1">Range</span>
+            {/* Enhanced Rent Range Slider */}
+            <div className="flex-1 lg:flex-[2] group">
+              <div className="flex items-center h-14 px-4 rounded-xl bg-gradient-to-br from-[#1a2332]/80 to-[#222b39]/60 backdrop-blur-sm border border-gray-600/40 hover:border-[#7c3bf1]/60 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-[#7c3bf1]/10">
+                <div className="flex flex-col w-full">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-[#7c3bf1]/20">
+                        <img src={rupees} alt="rupees" className="w-3.5 h-3.5 opacity-80" />
+                      </div>
+                      <span className="text-[11px] text-gray-400 font-medium">Budget Range</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center bg-gradient-to-r from-[#7c3bf1]/20 to-[#2761e9]/20 rounded-lg px-2.5 py-1 border border-[#7c3bf1]/30">
+                        <span className="text-[11px] text-white font-semibold">
+                          ₹{rentRange[0].toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="w-3 h-0.5 bg-gradient-to-r from-[#7c3bf1] to-[#2761e9] rounded-full"></div>
+                      <div className="flex items-center bg-gradient-to-r from-[#7c3bf1]/20 to-[#2761e9]/20 rounded-lg px-2.5 py-1 border border-[#7c3bf1]/30">
+                        <span className="text-[11px] text-white font-semibold">
+                          ₹{rentRange[1].toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center bg-[#222b39]/50 rounded px-2 py-0.5">
-                      <span className="text-[10px] text-gray-400">
-                        {rentRange[0].toLocaleString()}
-                      </span>
-                    </div>
-                    <span className="text-[10px] text-gray-500">-</span>
-                    <div className="flex items-center bg-[#222b39]/50 rounded px-2 py-0.5">
-                      <span className="text-[10px] text-gray-400">
-                        {rentRange[1].toLocaleString()}
-                      </span>
-                    </div>
+                  <div className="px-1">
+                    <Slider
+                      range
+                      min={500}
+                      max={100000}
+                      step={500}
+                      value={rentRange}
+                      onChange={setRentRange}
+                      className="my-1"
+                      trackStyle={[{
+                        backgroundColor: "#7c3bf1",
+                        height: "5px",
+                        borderRadius: "3px",
+                        boxShadow: "0 0 12px rgba(124, 59, 241, 0.3)",
+                      }]}
+                      handleStyle={[
+                        {
+                          backgroundColor: "#ffffff",
+                          border: "3px solid #7c3bf1",
+                          boxShadow: "0 0 15px rgba(124, 59, 241, 0.5), 0 2px 8px rgba(0, 0, 0, 0.2)",
+                          height: 18,
+                          width: 18,
+                          marginTop: -6.5,
+                          borderRadius: "50%",
+                          cursor: "grab",
+                        },
+                        {
+                          backgroundColor: "#ffffff",
+                          border: "3px solid #7c3bf1",
+                          boxShadow: "0 0 15px rgba(124, 59, 241, 0.5), 0 2px 8px rgba(0, 0, 0, 0.2)",
+                          height: 18,
+                          width: 18,
+                          marginTop: -6.5,
+                          borderRadius: "50%",
+                          cursor: "grab",
+                        }
+                      ]}
+                      railStyle={{
+                        backgroundColor: "rgba(34, 43, 57, 0.8)",
+                        height: "5px",
+                        borderRadius: "3px",
+                      }}
+                    />
                   </div>
                 </div>
-                <Slider
-                  range
-                  min={500}
-                  max={100000}
-                  step={500}
-                  value={rentRange}
-                  onChange={setRentRange}
-                  className="my-1"
-                  trackStyle={[{
-                    backgroundColor: "#7c3bf1",
-                    height: "4px",
-                    boxShadow: "0 0 8px rgba(124, 59, 241, 0.2)",
-                  }]}
-                  handleStyle={[
-                    {
-                      backgroundColor: "#ffffff",
-                      border: "2px solid #7c3bf1",
-                      boxShadow: "0 0 10px rgba(124, 59, 241, 0.4)",
-                      height: 14,
-                      width: 14,
-                      marginTop: -5,
-                      borderRadius: "50%",
-                    },
-                    {
-                      backgroundColor: "#ffffff",
-                      border: "2px solid #7c3bf1",
-                      boxShadow: "0 0 10px rgba(124, 59, 241, 0.4)",
-                      height: 14,
-                      width: 14,
-                      marginTop: -5,
-                      borderRadius: "50%",
-                    }
-                  ]}
-                  railStyle={{
-                    backgroundColor: "#222b39",
-                    height: "4px",
-                  }}
-                />
               </div>
             </div>
 
-            {/* Search Button */}
-            <button
-              className="h-11 px-6 bg-gradient-to-r from-[#7c3bf1] to-[#2761e9] rounded-lg font-medium text-sm whitespace-nowrap transition-all duration-300 hover:shadow-[0_0_20px_rgba(124,59,241,0.3)] hover:scale-[1.02] active:scale-[0.98] w-full md:w-[20%]"
-              onClick={handleSearch}
-            >
-              Search
-            </button>
+            {/* Enhanced Search Button */}
+            <div className="flex-1 lg:flex-[1] flex items-stretch">
+              <button
+                className="w-full h-14 px-6 bg-gradient-to-r from-[#7c3bf1] via-[#6c3aed] to-[#2761e9] rounded-xl font-semibold text-sm text-white whitespace-nowrap transition-all duration-300 hover:shadow-[0_0_30px_rgba(124,59,241,0.4)] hover:scale-[1.02] active:scale-[0.98] hover:from-[#8b4bf7] hover:to-[#3468f0] border border-[#7c3bf1]/30 hover:border-[#7c3bf1]/60 relative overflow-hidden group"
+                onClick={handleSearch}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                <div className="relative flex items-center justify-center gap-2">
+                  <span>Search Properties</span>
+                  <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd"></path>
+                  </svg>
+                </div>
+              </button>
+            </div>
 
           </div>
         </div>

@@ -1,26 +1,83 @@
 /* Custom Slider Styles */
 .rc-slider {
-  @apply w-full;
+  width: 100%;
 }
 
 .rc-slider-handle {
-  @apply cursor-pointer transition-all duration-200 hover:scale-110;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .rc-slider-handle:hover {
-  @apply border-purple-400;
+  transform: scale(1.1);
+  border-color: #a855f7;
   box-shadow: 0 0 0 5px rgba(124, 59, 241, 0.2);
 }
 
 .rc-slider-handle-dragging {
-  @apply border-purple-400;
+  border-color: #a855f7;
   box-shadow: 0 0 0 5px rgba(124, 59, 241, 0.2) !important;
 }
 
 .rc-slider-track {
-  @apply transition-all duration-200;
+  transition: all 0.2s ease;
 }
 
 .rc-slider:hover .rc-slider-track {
-  @apply bg-purple-500;
+  background-color: #8b5cf6;
+}
+
+/* Custom Animation Classes */
+@keyframes slide-in-from-top {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  animation-duration: 0.2s;
+  animation-fill-mode: both;
+}
+
+.slide-in-from-top-2 {
+  animation-name: slide-in-from-top;
+}
+
+/* Enhanced Glass Morphism Effect */
+.glass-morphism {
+  backdrop-filter: blur(16px) saturate(180%);
+  background-color: rgba(17, 25, 40, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.125);
+}
+
+/* Smooth transitions for all interactive elements */
+.smooth-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced focus styles for better accessibility */
+.search-input:focus-within {
+  outline: 2px solid #7c3bf1;
+  outline-offset: 2px;
+}
+
+/* Shimmer effect for loading states */
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(124, 59, 241, 0.1), transparent);
+  background-size: 200px 100%;
+  animation: shimmer 2s infinite;
 }
