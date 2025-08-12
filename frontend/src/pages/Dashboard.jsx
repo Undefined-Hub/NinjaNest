@@ -1910,12 +1910,11 @@ const MyProperties = () => {
     useEffect(() => {
         const fetchProperties = async () => {
             try {
-                const response = await api.get(`api/property/landlord/allproperty`, {
+                const response = await api.get(`${import.meta.env.VITE_SERVER_URL}/api/property/landlord/allproperty`, {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                }
-                );
+                });
 
                 console.log('Fetched properties:', response.data.properties);
                 setProperties(response.data.properties);
