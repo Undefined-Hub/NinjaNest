@@ -75,7 +75,7 @@ const DetailsPage = () => {
 
         const loadingToast = toast.loading('Sending rent request...');
 
-        axios.post('http://localhost:3000/api/request', requestData, {
+        axios.post(`${import.meta.env.VITE_SERVER_URL}/api/request`, requestData, {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('token')}`,
             },
@@ -97,7 +97,7 @@ const DetailsPage = () => {
         window.scrollTo(0, 0);
         const fetchProperty = async () => {
             try {
-                const response = await api.get(`/property/${propertyId}`, {
+                const response = await api.get(`api/property/${propertyId}`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`
                     }
@@ -116,7 +116,7 @@ const DetailsPage = () => {
 
         // const fetchReviews = async () => {
         //     try {
-        //         const response = await axios.get(`http://localhost:3000/api/review/${propertyId}`, {
+        //         const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/review/${propertyId}`, {
         //             headers: {
         //                 Authorization: `Bearer ${localStorage.getItem('token')}`
         //             }

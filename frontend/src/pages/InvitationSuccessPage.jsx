@@ -34,7 +34,7 @@ const InvitationSuccessPage = () => {
                 console.log("Property data is missing landlord info. Fetching complete property data...");
 
                 try {
-                    const propertyResponse = await axios.get(`http://localhost:3000/api/property/${propertyData._id}`, {
+                    const propertyResponse = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/property/${propertyData._id}`, {
                         headers: {
                             Authorization: `Bearer ${localStorage.getItem('token')}`
                         }
@@ -84,7 +84,7 @@ const InvitationSuccessPage = () => {
 
             console.log("Sending rent request with data:", requestData);
 
-            const response = await axios.post('http://localhost:3000/api/request', requestData, {
+            const response = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/request`, requestData, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },
@@ -113,7 +113,7 @@ const InvitationSuccessPage = () => {
         const fetchInvitation = async () => {
             try {
                 console.log("Fetching invitation with ID:", invitationId);
-                const response = await axios.get(`http://localhost:3000/api/invitation/details/${invitationId}`, {
+                const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/invitation/details/${invitationId}`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`
                     }
@@ -134,7 +134,7 @@ const InvitationSuccessPage = () => {
 
                     // Fetch complete property data
                     try {
-                        const propertyResponse = await axios.get(`http://localhost:3000/api/property/${invitationData.propertyId._id}`, {
+                        const propertyResponse = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/property/${invitationData.propertyId._id}`, {
                             headers: {
                                 Authorization: `Bearer ${localStorage.getItem('token')}`
                             }

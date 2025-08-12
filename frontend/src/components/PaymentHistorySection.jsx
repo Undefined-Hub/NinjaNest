@@ -65,7 +65,7 @@ const PaymentHistorySection = ({
             if (filters.fromDate) params.append('fromDate', filters.fromDate);
             if (filters.toDate) params.append('toDate', filters.toDate);
             
-            const response = await axios.get(`http://localhost:3000/api/payment/history?${params.toString()}`, {
+            const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/payment/history?${params.toString()}`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },

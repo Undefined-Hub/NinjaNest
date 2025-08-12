@@ -59,7 +59,7 @@ const AuthPage = () => {
         if (auth) {
             const toastId = toast.loading('Logging in...');
             try {
-                const response = await axios.post(`${SERVER_URL}/auth/login`, loginData);
+                const response = await axios.post(`${SERVER_URL}/api/auth/login`, loginData);
 
                toast.success('Welcome back!', {
                 id: toastId,
@@ -90,7 +90,7 @@ const AuthPage = () => {
         }else {
           const toastId = toast.loading('Creating account...');
           try {
-            const response = await axios.post(`${SERVER_URL}/auth/register`, {
+            const response = await axios.post(`${SERVER_URL}/api/auth/register`, {
               name: signupData.fullName,
               username: signupData.username,
               email: signupData.email,
