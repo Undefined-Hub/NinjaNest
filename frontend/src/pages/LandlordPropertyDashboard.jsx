@@ -91,7 +91,7 @@ function LandlordPropertyDashboard() {
         useEffect(() => {
         const fetchDocuments = async () => {
             try {
-            const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/property/${propertyId}/`, {
+            const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/property/${propertyId}/`, {
                 headers: {
                 Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },
@@ -152,7 +152,7 @@ function LandlordPropertyDashboard() {
     useEffect(() => {
         const fetchProperty = async () => {
             try {
-                const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/property/${propertyId}`, {
+                const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/property/${propertyId}`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`,
                     },
@@ -228,7 +228,7 @@ function LandlordPropertyDashboard() {
     console.log("Document URL:", url);
     
     // Save to database
-    const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/property/${propertyId}/documents`, {
+    const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/property/${propertyId}/documents`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -283,7 +283,7 @@ const handleViewDocument = (doc) => {
 const handleDeleteDocument = async (docId, docType) => {
   try {
     // Call API to delete document
-    // await axios.delete(`${import.meta.env.VITE_SERVER_URL}/api/property/${propertyId}/documents/${docId}`, {
+    // await axios.delete(`${import.meta.env.VITE_SERVER_URL}/property/${propertyId}/documents/${docId}`, {
     //   headers: {
     //     Authorization: `Bearer ${localStorage.getItem('token')}`,
     //   },

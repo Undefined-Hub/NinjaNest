@@ -58,7 +58,7 @@ const AddProperty = () => {
   
       const loadingToast = toast.loading('Listing property...');
   
-      const response = await fetch('${import.meta.env.VITE_SERVER_URL}/api/property/', {
+      const response = await fetch('${import.meta.env.VITE_SERVER_URL}/property/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

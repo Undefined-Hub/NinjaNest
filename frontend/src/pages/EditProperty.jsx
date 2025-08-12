@@ -421,7 +421,7 @@ const onSubmit = (data) => {
     };
 
     console.log('Saving property:', formattedData);
-    axios.put(`${import.meta.env.VITE_SERVER_URL}/api/property/${propertyId}`, formattedData, {
+    axios.put(`${import.meta.env.VITE_SERVER_URL}/property/${propertyId}`, formattedData, {
                     headers: {
                             'Content-Type': 'application/json',
                             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -459,7 +459,7 @@ const onSubmit = (data) => {
     async function fetchProperty() {
       try {
         const token = localStorage.getItem('token'); // Assuming the token is stored in localStorage
-        const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/property/${propertyId}`, {
+        const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/property/${propertyId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

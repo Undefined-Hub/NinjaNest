@@ -16,7 +16,7 @@ const CurrentRental = ({ propertyId }) => {
     useEffect(() => {
         const fetchPropertyAndBooking = async () => {
             try {
-                const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/property/${propertyId}`, {
+                const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/property/${propertyId}`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`,
                     },
@@ -25,7 +25,7 @@ const CurrentRental = ({ propertyId }) => {
 
                 // Fetch booking to check deposit status
                 const bookingRes = await axios.get(
-                    `${import.meta.env.VITE_SERVER_URL}/api/booking/bookings/property/${propertyId}`,
+                    `${import.meta.env.VITE_SERVER_URL}/booking/bookings/property/${propertyId}`,
                     { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
                 );
                 const booking = bookingRes.data.booking || bookingRes.data;
@@ -51,7 +51,7 @@ const CurrentRental = ({ propertyId }) => {
 
     const addMemberToProperty = async () => {
         try {
-            await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/property/members/${propertyId}/`, {
+            await axios.post(`${import.meta.env.VITE_SERVER_URL}/property/members/${propertyId}/`, {
                 userId: user.user._id
             }, {
                 headers: {
@@ -72,7 +72,7 @@ const CurrentRental = ({ propertyId }) => {
             console.log(property);
 
             const bookingResponse = await axios.post(
-                `${import.meta.env.VITE_SERVER_URL}/api/booking/bookings`,
+                `${import.meta.env.VITE_SERVER_URL}/booking/bookings`,
                 {
                     property_id: propertyId,
                     user_id: user.user._id,
@@ -121,7 +121,7 @@ const CurrentRental = ({ propertyId }) => {
 
             // Call MonthRent API
             const rentResponse = await axios.post(
-                `${import.meta.env.VITE_SERVER_URL}/api/rents/`,
+                `${import.meta.env.VITE_SERVER_URL}/rents/`,
                 monthRentPayload,
                 {
                     headers: {
@@ -142,12 +142,12 @@ const CurrentRental = ({ propertyId }) => {
     // useEffect(() => {
     //     const txnId = localStorage.getItem('lastTxnId');
     //     if (txnId && property) {
-    //         axios.get(`${import.meta.env.VITE_SERVER_URL}/api/payment/status/${txnId}`)
+    //         axios.get(`${import.meta.env.VITE_SERVER_URL}/payment/status/${txnId}`)
     //             .then(async res => {
     //                 if (res.data.paymentDetails && res.data.paymentDetails[0].state === "COMPLETED") {
     //                     // 1. Check if deposit is already paid by fetching booking for this property
     //                     const bookingRes = await axios.get(
-    //                         `${import.meta.env.VITE_SERVER_URL}/api/booking/bookings/property/${property._id}`,
+    //                         `${import.meta.env.VITE_SERVER_URL}/booking/bookings/property/${property._id}`,
     //                         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
     //                     );
     //                     const booking = bookingRes.data.booking || bookingRes.data;
@@ -163,7 +163,7 @@ const CurrentRental = ({ propertyId }) => {
     //                         // Deposit already paid, so this is a rent payment
     //                         // Find month rent for this booking where payment_status is not "paid"
     //                         const monthRentRes = await axios.get(
-    //                             `${import.meta.env.VITE_SERVER_URL}/api/rents/${booking[0]._id}`,
+    //                             `${import.meta.env.VITE_SERVER_URL}/rents/${booking[0]._id}`,
     //                             { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
     //                         );
 
@@ -174,7 +174,7 @@ const CurrentRental = ({ propertyId }) => {
     //                         if (latestRent && latestRent.payment_status !== "paid") {
     //                             // Update latest month rent payment status
     //                             await axios.put(
-    //                                 `${import.meta.env.VITE_SERVER_URL}/api/rents/rent/${latestRent._id}`,
+    //                                 `${import.meta.env.VITE_SERVER_URL}/rents/rent/${latestRent._id}`,
     //                                 {
     //                                     payment_status: "paid",
     //                                     amount_paid: latestRent.amount_due,
@@ -207,7 +207,7 @@ const CurrentRental = ({ propertyId }) => {
     //                             };
 
     //                             await axios.post(
-    //                                 `${import.meta.env.VITE_SERVER_URL}/api/rents/`,
+    //                                 `${import.meta.env.VITE_SERVER_URL}/rents/`,
     //                                 nextMonthRentPayload,
     //                                 { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
     //                             );
@@ -231,7 +231,7 @@ const CurrentRental = ({ propertyId }) => {
     const handlePayRent = async (paymentType) => {
         try {
 
-            const response = await axios.post('${import.meta.env.VITE_SERVER_URL}/api/payment/initiate', {
+            const response = await axios.post('${import.meta.env.VITE_SERVER_URL}/payment/initiate', {
                 user_id: user.user._id,
                 price: paymentType == 'deposit' ? property.deposit : property.rent,
                 phone: '9876543210',
