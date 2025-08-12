@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = '${import.meta.env.VITE_SERVER_URL}/api/roommate-payments';
+const API_URL = `${import.meta.env.VITE_SERVER_URL}/api/roommate-payments`;
 
 export const createPaymentRequest = async (paymentData) => {
     const response = await axios.post(API_URL, paymentData, {

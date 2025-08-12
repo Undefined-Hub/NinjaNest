@@ -231,7 +231,7 @@ const CurrentRental = ({ propertyId }) => {
     const handlePayRent = async (paymentType) => {
         try {
 
-            const response = await axios.post('${import.meta.env.VITE_SERVER_URL}/api/payment/initiate', {
+            const response = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/payment/initiate`, {
                 user_id: user.user._id,
                 price: paymentType == 'deposit' ? property.deposit : property.rent,
                 phone: '9876543210',
