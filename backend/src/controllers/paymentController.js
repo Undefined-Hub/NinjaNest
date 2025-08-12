@@ -36,7 +36,7 @@ const initiatePayment = async (req, res) => {
                 type: "PG_CHECKOUT",
                 message: "Payment message used for collect requests",
                 merchantUrls: {
-                    redirectUrl: "http://localhost:5173/currentpropertydashboard/"+property_id,
+                    redirectUrl: "http://ninja-nest-alpha.vercel.app/currentpropertydashboard/"+property_id,
                 },
             },
         };
