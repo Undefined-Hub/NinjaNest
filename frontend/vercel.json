@@ -4,7 +4,7 @@
         {
             
             "source": "/api/:path*",
-            "destination": "https://ninjanest-backend.onrender.com/:path*"
+            "destination": "https://ninjanest-backend.onrender.com/api/:path*"
         },
         {
             
