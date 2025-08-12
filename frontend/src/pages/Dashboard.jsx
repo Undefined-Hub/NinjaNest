@@ -410,7 +410,7 @@ const Notifications = () => {
     useEffect(() => {
         const fetchNotifications = async () => {
             try {
-                const response = await axios.get('${import.meta.env.VITE_SERVER_URL}/api/request', {
+                const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/request`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`,
                     },
@@ -1199,7 +1199,7 @@ const Roommates = () => {
 
                 // Send invitation email
                 await axios.post(
-                    '${import.meta.env.VITE_SERVER_URL}/api/mail/invite',
+                    `${import.meta.env.VITE_SERVER_URL}/api/mail/invite`,
                     emailData,
                     {
                         headers: {
@@ -2430,7 +2430,7 @@ const Profile = () => {
                             }
                             try {
                                 await axios.post(
-                                    "${import.meta.env.VITE_SERVER_URL}/api/auth/change-password",
+                                    `${import.meta.env.VITE_SERVER_URL}/api/auth/change-password`,
                                     {
                                         email: user?.user?.email,
                                         oldPassword,
