@@ -142,7 +142,7 @@ const Dashboard = () => {
 
                     // Fetch user's rent entries
                     const rentRes = await axios.get(
-                        `${import.meta.env.VITE_SERVER_URL}/api/api/rents/${userBooking._id}`,
+                        `${import.meta.env.VITE_SERVER_URL}/api/rents/${userBooking._id}`,
                         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
                     );
 
