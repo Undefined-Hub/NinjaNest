@@ -192,8 +192,8 @@ const sendRoommateInvitation = async (req, res) => {
   }
 
   try {
-    const acceptUrl = `http://localhost:3000/api/invitation/accept/${invitationId}`;
-    const declineUrl = `http://localhost:3000/api/invitation/decline/${invitationId}`;
+    const acceptUrl = `${import.meta.env.VITE_SERVER_URL}/api/invitation/accept/${invitationId}`;
+    const declineUrl = `${import.meta.env.VITE_SERVER_URL}/api/invitation/decline/${invitationId}`;
 
     const mailOptions = {
       from: process.env.EMAIL_USER,

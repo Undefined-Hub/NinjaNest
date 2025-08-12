@@ -44,7 +44,7 @@ app.use("/api/property", propertyRoutes);
 
 app.use("/api/review", reviewRoutes);
 app.use("/api/booking", bookingRoutes);
-app.use("/api/rents", rentRoutes);
+app.use("/rents", rentRoutes);
 
 app.use("/api/payment", paymentRoutes); // Aryan
 app.use("/api/payments", paymentRoutes); // Harsh
