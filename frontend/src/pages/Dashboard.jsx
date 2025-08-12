@@ -1910,7 +1910,7 @@ const MyProperties = () => {
     useEffect(() => {
         const fetchProperties = async () => {
             try {
-                const response = await api.get('/property/landlord/allproperty', {
+                const response = await api.get(`api/property/landlord/allproperty`, {
                     headers: {
                         'Content-Type': 'application/json',
                     },
