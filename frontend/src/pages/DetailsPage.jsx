@@ -97,7 +97,7 @@ const DetailsPage = () => {
         window.scrollTo(0, 0);
         const fetchProperty = async () => {
             try {
-                const response = await api.get(`/property/${propertyId}`, {
+                const response = await api.get(`api/property/${propertyId}`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`
                     }
